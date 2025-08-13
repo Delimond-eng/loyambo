@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Rediriger vers le dossier public
+    RewriteRule ^$ public/ [L]
+
+    # Rediriger vers le dossier public sauf si le fichier ou dossier existe
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+    # Rediriger vers le fichier public/index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+
+#<IfModule mod_rewrite.c>
+    #RewriteEngine on
+    #RewriteCond %{REQUEST_URI} !^public
+    #RewriteRule ^(.*)$ public/$1 [L]
+#</IfModule>

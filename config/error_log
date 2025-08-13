@@ -1,0 +1,16 @@
+[05-May-2024 10:31:20 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php on line 18
+[05-Jul-2024 14:30:57 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php on line 18
+[04-Sep-2024 16:39:58 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php on line 18
+[04-Nov-2024 18:53:50 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function env() in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php:18
+Stack trace:
+#0 {main}
+  thrown in /home4/fiscosar/public_html/mosala-bakend-milleniumhorizon-com/config/database.php on line 18
