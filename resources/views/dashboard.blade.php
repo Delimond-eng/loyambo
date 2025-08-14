@@ -9,77 +9,67 @@
         <!-- Main content -->
         <section class="content">
             <div class="row">
-                <div class="col-xl-3 col-lg-6 col-12">
+                <div class="col-12">
                     <div class="box">
-                        <div class="box-body">
-                            <div class="d-flex align-items-start">
-                                <div>
-                                    <img src="assets/images/food/online-order-1.png" class="w-80 me-20"
-                                        alt="" />
-                                </div>
-                                <div>
-                                    <h2 class="my-0 fw-700">89</h2>
-                                    <p class="text-fade mb-0">Total Order</p>
-                                    <p class="fs-12 mb-0 text-success"><span
-                                            class="badge badge-pill badge-success-light me-5"><i
-                                                class="fa fa-arrow-up"></i></span>3% (15 Days)</p>
+                        <div class="row g-0 py-2">
+                            <div class="col-12 col-lg-3">
+                                <div class="box-body be-1 border-light">
+                                    <div class="flexbox mb-1">
+                                    <span>
+                                        <span class="icon-User fs-40"><span class="path1"></span><span class="path2"></span></span><br>
+                                        Utilisateurs connectés
+                                    </span>
+                                    <span class="text-primary fs-40">845</span>
+                                    </div>
+                                    <div class="progress progress-xxs mt-10 mb-0">
+                                    <div class="progress-bar" role="progressbar" style="width: 35%; height: 4px;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-lg-6 col-12">
-                    <div class="box">
-                        <div class="box-body">
-                            <div class="d-flex align-items-start">
-                                <div>
-                                    <img src="assets/images/food/online-order-2.png" class="w-80 me-20"
-                                        alt="" />
-                                </div>
-                                <div>
-                                    <h2 class="my-0 fw-700">899</h2>
-                                    <p class="text-fade mb-0">Total Delivered</p>
-                                    <p class="fs-12 mb-0 text-success"><span
-                                            class="badge badge-pill badge-success-light me-5"><i
-                                                class="fa fa-arrow-up"></i></span>8% (15 Days)</p>
+
+                            <div class="col-12 col-lg-3 hidden-down">
+                                <div class="box-body be-1 border-light">
+                                    <div class="flexbox mb-1">
+                                    <span>
+                                        <span class="icon-Selected-file fs-40"><span class="path1"></span><span class="path2"></span></span><br>
+                                        Factures journalières
+                                    </span>
+                                    <span class="text-info fs-40">952</span>
+                                    </div>
+                                    <div class="progress progress-xxs mt-10 mb-0">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 55%; height: 4px;" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-lg-6 col-12">
-                    <div class="box">
-                        <div class="box-body">
-                            <div class="d-flex align-items-start">
-                                <div>
-                                    <img src="assets/images/food/online-order-3.png" class="w-80 me-20"
-                                        alt="" />
-                                </div>
-                                <div>
-                                    <h2 class="my-0 fw-700">59</h2>
-                                    <p class="text-fade mb-0">Total Canceled</p>
-                                    <p class="fs-12 mb-0 text-primary"><span
-                                            class="badge badge-pill badge-primary-light me-5"><i
-                                                class="fa fa-arrow-down"></i></span>2% (15 Days)</p>
+
+
+                            <div class="col-12 col-lg-3">
+                                <div class="box-body be-1 border-light">
+                                    <div class="flexbox mb-1">
+                                    <span>
+                                        <span class="icon-Info-circle fs-40"><span class="path1"></span><span class="path2"></span><span class="path3"></span></span><br>
+                                        Commandes annulées
+                                    </span>
+                                    <span class="text-warning fs-40">845</span>
+                                    </div>
+                                    <div class="progress progress-xxs mt-10 mb-0">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 65%; height: 4px;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-lg-6 col-12">
-                    <div class="box">
-                        <div class="box-body">
-                            <div class="d-flex align-items-start">
-                                <div>
-                                    <img src="assets/images/food/online-order-4.png" class="w-80 me-20"
-                                        alt="" />
-                                </div>
-                                <div>
-                                    <h2 class="my-0 fw-700">$789k</h2>
-                                    <p class="text-fade mb-0">Total Revenue</p>
-                                    <p class="fs-12 mb-0 text-primary"><span
-                                            class="badge badge-pill badge-primary-light me-5"><i
-                                                class="fa fa-arrow-down"></i></span>12% (15 Days)</p>
+
+                            <div class="col-12 col-lg-3">
+                                <div class="box-body">
+                                    <div class="flexbox mb-1">
+                                    <span>
+                                        <span class="icon-Cart2 d-block fs-40"><span class="path1"></span><span class="path2"></span></span>
+                                        Ventes journalières
+                                    </span>
+                                    <span class="text-danger fs-40">158</span>
+                                    </div>
+                                    <div class="progress progress-xxs mt-10 mb-0">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 40%; height: 4px;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -87,106 +77,288 @@
                 </div>
 
                 <div class="col-12">
-					<div class="box">
-						<div class="box-header">
-							<h4 class="box-title">Favourite Items</h4>
-						</div>
-						<div class="box-body">
-							<div class="owl-carousel">
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/biryanis.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>Biryanis Pulav</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/burgers.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>king Burgers</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/dals.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>Dal Palak Recipe</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/noodles.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>Pan Noodles</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/main.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>Vegetable Jalfrezi</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-								<div class="item">
-									<div class="pe-20">
-										<img src="assets/images/food/subziyan.jpg" class="img-fluid rounded15 mb-15" alt="" />
-										<h5>Aloo Tamatar Ki Sabzi</h5>
-										<div class="mb-15 d-flex text-warning align-items-center">
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star"></i>
-											<i class="fa fa-star-half-empty"></i>
-											<span class="text-fade ms-10">(150 Review)</span>
-										</div>
-										<a href="#" class="waves-effect waves-light btn btn-sm btn-info-light"><i class="fa fa-heart me-10"></i> 12k Like it</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                    <div class="box bg-transparent no-shadow">
+                        <div class="box-header pt-0 mb-0  px-0 d-flex align-items-center justify-content-between">
+                            <h4 class="box-title">
+                                Produits
+                            </h4>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent"><i
+                                            class="ti-search text-primary"></i></span>
+                                    <input type="text" class="form-control ps-15 bg-white"
+                                        placeholder="Recherche...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body px-0 pt-0 mt-0">
+                            <div class="row">
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-1.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Kung Pao Tofu Recipe</h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-2.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Pan Seared Salmon </h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-3.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Dal Palak Recipe </h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-4.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Vegetable Jalfrezi</h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-5.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Palak Paneer Bhurji </h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-6.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Kadai Paneer Gravy</h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-1.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Gajar Matar Recipe</h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-2.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Aloo Tamatar Ki Sabzi </h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxxl-3 d-xxxl-none d-xl-block d-lg-none col-xl-4 col-lg-6 col-12">
+                                    <div class="box food-box">
+                                        <div class="box-body text-center">
+                                        <div class="menu-item"><img src="assets/images/food/dish-3.png" class="img-fluid w-p75" alt=""></div>
+                                        <div class="menu-details text-center">
+                                            <h4 class="mt-20 mb-10">Vegan Thai Basil</h4>
+                                            <p>Food/Noodle</p>
+                                        </div>
+                                        <div class="act-btn d-flex justify-content-between">
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-success-light btn-xs mb-5"><i class="fa fa-eye-slash"></i></a>
+                                                <small class="d-block">View</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-danger-light btn-xs mb-5"><i class="fa fa-edit"></i></a>
+                                                <small class="d-block">Edit</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-primary-light btn-xs mb-5"><i class="fa fa-trash"></i></a>
+                                                <small class="d-block">Delete</small>
+                                            </div>
+                                            <div class="text-center mx-5">
+                                                <a href="#" class="waves-effect waves-circle btn btn-circle btn-info-light btn-xs mb-5"><i class="fa fa-plus-square-o"></i></a>
+                                                <small class="d-block">Duplicate</small>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
             </div>
         </section>
         <!-- /.content -->

@@ -12,8 +12,11 @@
             <a href="#"><i class="icon-Home"></i>Tableau de bord</a>
         </li>
         <li>
-            <a href="#"><i class="icon-Clipboard-check"><span class="path1">
-                    </span><span class="path2"></span><span class="path3"></span></i>Ventes</a>
+            <a href="#">
+                <i class="icon-Clipboard-check"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                Commandes
+                <span class="label label-danger">5</span>
+            </a>
         </li>
         <li><a href="#"><i class="icon-Dinner"><span class="path1"></span><span class="path2"></span><span
                         class="path3"></span><span class="path4"></span><span class="path5"></span></i>Menus</a>
@@ -27,7 +30,7 @@
             </ul>
         </li>
         <li><a href="#"><i class="icon-Group"><span class="path1"></span><span
-                        class="path2"></span></i>Utilisateurs</a>
+                        class="path2"></span></i>Utilisateurs<span class="label label-success ms-1">5</span></a>
             <ul>
                 <li><a href="customer.html"><i class="icon-Commit"><span class="path1"></span><span
                                 class="path2"></span></i>Customer list</a></li>
@@ -35,11 +38,13 @@
                                 class="path2"></span></i>Members</a></li>
             </ul>
         </li>
-        <li><a href="analysis.html"><i class="icon-Chart-line"><span class="path1"></span><span
-                        class="path2"></span></i>Factures</a></li>
-        <li><a href="analysis.html"><i class="icon-Chart-line"><span class="path1"></span><span
-                        class="path2"></span></i>Stock</a></li>
-
+        <li><a href="analysis.html">
+            <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>Factures</a>
+        </li>
+        <li>
+            <a href="analysis.html">
+            <i class="icon-Cart2"><span class="path1"></span><span class="path2"></span></i>Stock</a>
+        </li>
         <li><a href="#"><i class="icon-Cart"><span class="path1"></span><span class="path2"></span></i>Dépôt</a>
             <ul>
                 <li><a href="ecommerce_products.html"><i class="icon-Commit"><span class="path1"></span><span
@@ -62,7 +67,7 @@
         </li>
 
         <li><a href="#"><i span class="icon-Layout-grid"><span class="path1"></span><span
-                        class="path2"></span></i>Tables</a>
+                        class="path2"></span></i>Tables <span class="label label-warning ms-1">2</span></a>
             <ul>
                 <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
                                 class="path2"></span></i>Apps</a>
@@ -112,8 +117,8 @@
             </ul>
         </li>
 
-        <li><a href="#"><i span class="icon-User"><span class="path1"></span><span
-                        class="path2"></span></i>Rapports</a>
+        <li><a href="#">
+            <i span class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>Rapports</a>
             <ul>
                 <li><a href="contact_userlist.html"><i class="icon-Commit"><span class="path1"></span><span
                                 class="path2"></span></i>Userlist</a></li>

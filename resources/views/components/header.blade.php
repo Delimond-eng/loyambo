@@ -46,7 +46,7 @@
                     </li>
                     <!-- Notifications -->
                     <li class="dropdown notifications-menu">
-                        <span class="label label-primary">5</span>
+                        <span class="label label-danger">5</span>
                         <a href="#" class="waves-effect waves-light dropdown-toggle btn-primary-light"
                             data-bs-toggle="dropdown" title="Notifications">
                             <i class="icon-Notifications"><span class="path1"></span><span
