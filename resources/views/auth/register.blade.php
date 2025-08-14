@@ -78,13 +78,6 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-6">
-                                <div class="checkbox">
-                                    <input type="checkbox" id="basic_checkbox_1">
-                                    <label for="basic_checkbox_1">Garder ma session</label>
-                                </div>
-                            </div>
-
                             <div class="col-12 text-center">
                                 <button type="submit" style="width:100%;" class="waves-effect waves-light btn mb-5 btn-warning mt-10 text-uppercase">Créer</button>
                                 <a href="{{ route("login") }}" style="width:100%;" class="waves-effect waves-light btn btn-outline btn-primary mt-2 text-uppercase">Connexion</a>
