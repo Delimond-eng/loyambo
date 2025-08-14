@@ -13,21 +13,11 @@
         </li>
         <li>
             <a href="#">
-                <i class="icon-Clipboard-check"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                <i class="icon-Dinner"><span class="path1"></span><span class="path2"></span><span
+                        class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                 Commandes
                 <span class="label label-danger">5</span>
             </a>
-        </li>
-        <li><a href="#"><i class="icon-Dinner"><span class="path1"></span><span class="path2"></span><span
-                        class="path3"></span><span class="path4"></span><span class="path5"></span></i>Menus</a>
-            <ul>
-                <li><a href="add_new_menu.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Add New Menu</a></li>
-                <li><a href="menu_list.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Menu List</a></li>
-                <li><a href="menu_categories.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Categories</a></li>
-            </ul>
         </li>
         <li><a href="#"><i class="icon-Group"><span class="path1"></span><span
                         class="path2"></span></i>Utilisateurs<span class="label label-success ms-1">5</span></a>
