@@ -18,12 +18,13 @@
     <link rel="stylesheet" href="assets/css/horizontal-menu.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/skin_color.css">
+    @stack("styles")
 </head>
 
 <body class="layout-top-nav light-skin theme-primary fixed">
 
     <div class="wrapper">
-        <div id="loader"></div>
+        <!-- <div id="loader"></div> -->
 
         @include("components.header")
 
@@ -54,11 +55,15 @@
     <script src="assets/vendors/lib/4/themes/animated.js"></script>
 
 
+
     <!-- Riday Admin App -->
     <script src="assets/js/jquery.smartmenus.js"></script>
+    <script src="assets/vendors/components/datatable/datatables.min.js"></script>	
     <script src="assets/js/menus.js"></script>
     <script src="assets/js/template.js"></script>
     <script src="assets/js/pages/dashboard.js"></script>
+
+    @stack("scripts")
 
 </body>
 

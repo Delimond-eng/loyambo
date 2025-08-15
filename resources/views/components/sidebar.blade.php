@@ -8,150 +8,152 @@
 
     <!-- Sample menu definition -->
     <ul id="main-menu" class="sm sm-blue">
-        <li class="current">
-            <a href="#"><i class="icon-Home"></i>Tableau de bord</a>
+
+        <!-- Menu Tdb -->
+        <li class="@active('home')">
+            <a href="{{ route('home') }}"><i class="icon-Home"></i>Tableau de bord</a>
         </li>
-        <li>
-            <a href="#">
-                <i class="icon-Dinner"><span class="path1"></span><span class="path2"></span><span
-                        class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+        <!-- End Tbd -->
+
+        <!-- Menu Ventes -->
+        <li class="@active('sells')">
+            <a href="{{ route('sells') }}">
+                <i class="icon-Dollar"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                Ventes
+            </a>
+        </li>
+        <!-- End Ventes -->
+
+        <!-- Menu Commandes -->
+        <li class="@active('orders')">
+            <a href="{{ route('orders') }}">
+                <i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
                 Commandes
                 <span class="label label-danger">5</span>
             </a>
         </li>
-        <li><a href="#"><i class="icon-Group"><span class="path1"></span><span
-                        class="path2"></span></i>Utilisateurs<span class="label label-success ms-1">5</span></a>
+        <!-- End Commandes -->
+
+        <!-- Menu users -->
+        <li class="@active('users')">
+            <a href="#">
+                <i class="icon-Add-user"><span class="path1"></span><span class="path2"></span></i>Utilisateurs
+            </a>
             <ul>
-                <li><a href="customer.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Customer list</a></li>
-                <li><a href="members.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Members</a></li>
+                <li>
+                    <a href="{{ route('users') }}">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Comptes Utilisateurs
+                    </a>
+                </li>
+                <li>
+                    <a href="customer.html">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Rôles & attribution accès
+                    </a>
+                </li>
             </ul>
         </li>
-        <li><a href="analysis.html">
-            <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>Factures</a>
+        <!-- End users -->
+
+        <!-- Menu factures -->
+        <li class="@active("factures")">
+            <a href="{{ route("factures") }}">
+                <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>
+                Factures <span class="label label-success ms-1">2</span>
+            </a>
         </li>
+        <!-- end Factures -->
+
+        <!-- Menu serveurs -->
+        <li class="@active(["serveurs.*"])">
+            <a href="#">
+                <i class="icon-Group"><span class="path1"></span><span class="path2"></span></i>Gestion serveurs
+            </a>
+            <ul>
+                <li class="@active("serveurs")">
+                    <a href="{{ route("serveurs") }}">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Liste des serveurs
+                    </a>
+                </li>
+                <li class="@active("serveurs.activities")">
+                    <a href="{{ route("serveurs.activities") }}">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Serveurs en service <span class="label label-warning ms-1">5</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route("sells") }}">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Produits vendus <span class="label label-success ms-1">5</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- End Serveurs -->
+
+        <!-- Menu produits & stock -->
         <li>
             <a href="analysis.html">
-            <i class="icon-Cart2"><span class="path1"></span><span class="path2"></span></i>Stock</a>
-        </li>
-        <li><a href="#"><i class="icon-Cart"><span class="path1"></span><span class="path2"></span></i>Dépôt</a>
+                <i class="icon-Cart"><span class="path1"></span><span class="path2"></span></i>Produits
+            </a>
             <ul>
-                <li><a href="ecommerce_products.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Products</a></li>
-                <li><a href="ecommerce_cart.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Products Cart</a></li>
-                <li><a href="ecommerce_products_edit.html"><i class="icon-Commit"><span
-                                class="path1"></span><span class="path2"></span></i>Products Edit</a></li>
-                <li><a href="ecommerce_details.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Product Details</a></li>
-                <li><a href="ecommerce_orders.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Product Orders</a></li>
-                <li><a href="ecommerce_checkout.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Products Checkout</a></li>
-                <li><a href="invoice.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Invoice</a></li>
-                <li><a href="invoicelist.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Invoice List</a></li>
+                <li>
+                    <a href="customer.html">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Catégories
+                    </a>
+                </li>
+                <li>
+                    <a href="customer.html">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Produits
+                    </a>
+                </li>
+                <li>
+                    <a href="customer.html">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Mouvements stock
+                    </a>
+                </li>
             </ul>
         </li>
+        <!-- end Produits -->
 
-        <li><a href="#"><i span class="icon-Layout-grid"><span class="path1"></span><span
-                        class="path2"></span></i>Tables <span class="label label-warning ms-1">2</span></a>
+        <!-- Menu emplacements & Tables -->
+        <li>
+            <a href="#">
+                <i class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
+                Tables
+            </a>
             <ul>
-                <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Apps</a>
-                    <ul>
-                        <li><a href="mailbox.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Mailbox</a></li>
-                        <li><a href="extra_calendar.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Calendar</a></li>
-                        <li><a href="contact_app.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Contact List</a></li>
-                        <li><a href="contact_app_chat.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Chat</a></li>
-                        <li><a href="extra_taskboard.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Todo</a></li>
-                    </ul>
+                <li>
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">2</span></a>
                 </li>
-                <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Widgets</a>
-                    <ul>
-                        <li><a href="widgets_blog.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Blog</a></li>
-                        <li><a href="widgets_chart.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Chart</a></li>
-                        <li><a href="widgets_list.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>List</a></li>
-                        <li><a href="widgets_social.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Social</a></li>
-                        <li><a href="widgets_statistic.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Statistic</a></li>
-                        <li><a href="widgets_weather.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Weather</a></li>
-                        <li><a href="widgets.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Widgets</a></li>
-                        <li><a href="email_index.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Emails</a></li>
-                    </ul>
+                <li>
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Emplacements</a>
                 </li>
-                <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Maps</a>
-                    <ul>
-                        <li><a href="map_google.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Google Map</a></li>
-                        <li><a href="map_vector.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Vector Map</a></li>
-                    </ul>
+                <li>
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables</a>
                 </li>
             </ul>
         </li>
+        <!-- end emplacements -->
 
-        <li><a href="#">
-            <i span class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>Rapports</a>
+        <!-- Menu rapports -->
+        <li>
+            <a href="#">
+                <i class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                Rapports
+            </a>
             <ul>
-                <li><a href="contact_userlist.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Userlist</a></li>
-                <li><a href="sample_faq.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>FAQs</a></li>
-                <li><a href="sample_blank.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Blank</a></li>
-                <li><a href="sample_coming_soon.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Coming Soon</a></li>
-                <li><a href="sample_custom_scroll.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Custom Scrolls</a></li>
-                <li><a href="sample_gallery.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Gallery</a></li>
-                <li><a href="sample_lightbox.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Lightbox Popup</a></li>
-                <li><a href="sample_pricing.html"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Pricing</a></li>
-                <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Authentication</a>
-                    <ul>
-                        <li><a href="auth_login.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Login</a></li>
-                        <li><a href="auth_register.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Register</a></li>
-                        <li><a href="auth_lockscreen.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Lockscreen</a></li>
-                        <li><a href="auth_user_pass.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Recover password</a>
-                        </li>
-                    </ul>
-                </li>
-                <li><a href="#"><i class="icon-Commit"><span class="path1"></span><span
-                                class="path2"></span></i>Miscellaneous</a>
-                    <ul>
-                        <li><a href="error_404.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Error 404</a></li>
-                        <li><a href="error_500.html"><i class="icon-Commit"><span class="path1"></span><span
-                                        class="path2"></span></i>Error 500</a></li>
-                        <li><a href="error_maintenance.html"><i class="icon-Commit"><span
-                                        class="path1"></span><span class="path2"></span></i>Maintenance</a></li>
-                    </ul>
+                <li>
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
                 </li>
             </ul>
         </li>
+        <!-- end rapports -->
+
     </ul>
 </nav>

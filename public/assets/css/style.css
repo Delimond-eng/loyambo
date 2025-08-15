@@ -91,7 +91,7 @@ Waves
 @import url(../vendors/icons/weather-icons/css/weather-icons.min.css);
 @import url(../vendors/icons/iconsmind/style.css);
 @import url(../vendors/icons/icomoon/style.css);
-@import url(../../assets/vendor_components/animate/animate.css);
+@import url(../vendors/components/animate/animate.css);
 
 html {
   height: 100%;
@@ -40964,7 +40964,7 @@ time {
   }
 }
 
-@-webkit-keyframes "mappulse" {
+@-webkit-keyframes mappulse {
   0% {
     -webkit-transform: scale(0);
     opacity: 0.0;
@@ -43938,7 +43938,7 @@ textarea.form-control {
 }
 
 .modal-content {
-  border-radius: 0;
+  border-radius: 15px;
   -webkit-box-shadow: 0 2px 3px rgba(0, 0, 0, 0.125);
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.125);
   border: 0;
@@ -50007,7 +50007,7 @@ button.btn.dropdown-toggle:after {
 @media (min-width: 576px) {
   .card-columns {
     column-count: 3;
-    column-gap: calc($default-gutter-width / 2);
+    /*     column-gap: calc($default-gutter-width / 2); */
     orphans: 1;
     widows: 1;
   }
@@ -50382,4 +50382,21 @@ img.online {
 /* Firefox Bug: link not triggered */
 .waves-effect .waves-ripple {
   z-index: -1;
+}
+
+
+.avatar.status-info::after {
+  background-color: #634fd2 !important;
+}
+
+.avatar.status-success::after {
+  background-color: #01b075 !important;
+}
+
+.avatar.status-danger::after {
+  background-color: #e66430 !important;
+}
+
+.avatar.status-warning::after {
+  background-color: #4c95dd !important;
 }

@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\Route;
 */
 Auth::routes();
 Route::view('/', "dashboard")->name("home");
+Route::view('/orders', "orders")->name("orders");
+Route::view('/sells', "sells")->name("sells");
+Route::view('/users', "users")->name("users");
+Route::view('/factures', "factures")->name("factures");
+Route::view('/serveurs', "serveurs")->name("serveurs");
+Route::view('/serveurs.activities', "serveurs_activities")->name("serveurs.activities");
 /* Auth::routes();
 Route::middleware(["auth", "logs"])->group(function(){
  
