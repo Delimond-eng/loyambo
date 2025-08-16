@@ -94,25 +94,25 @@
         <!-- End Serveurs -->
 
         <!-- Menu produits & stock -->
-        <li>
-            <a href="analysis.html">
+        <li class="@active(["products.*","products"])">
+            <a href="#">
                 <i class="icon-Cart"><span class="path1"></span><span class="path2"></span></i>Produits
             </a>
             <ul>
-                <li>
-                    <a href="customer.html">
+                <li class="@active(["products.categories"])">
+                    <a href="{{ route("products.categories") }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Catégories
                     </a>
                 </li>
-                <li>
-                    <a href="customer.html">
+                <li class="@active(["products"])">
+                    <a href="{{ route("products") }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Produits
                     </a>
                 </li>
-                <li>
-                    <a href="customer.html">
+                <li class="@active(["products.mvts"])">
+                    <a href="{{ route("products.mvts") }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Mouvements stock
                     </a>
@@ -122,34 +122,37 @@
         <!-- end Produits -->
 
         <!-- Menu emplacements & Tables -->
-        <li>
+        <li class="@active(["tables.*"])">
             <a href="#">
                 <i class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
-                Tables
+                Emplacements
             </a>
             <ul>
-                <li>
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">2</span></a>
+                <li class="@active(["tables.occuped"])">
+                    <a href="{{ route("tables.occuped") }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">2</span></a>
                 </li>
-                <li>
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Emplacements</a>
+                <li class="@active(["tables.emplacements"])">
+                    <a href="{{ route("tables.emplacements") }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Emplacements</a>
                 </li>
-                <li>
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables</a>
+                <li class="@active(["tables"])">
+                    <a href="{{ route("tables") }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables</a>
+                </li>
+                <li class="#">
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chambres</a>
                 </li>
             </ul>
         </li>
         <!-- end emplacements -->
 
         <!-- Menu rapports -->
-        <li>
+        <li class="@active(["reports.*"])">
             <a href="#">
                 <i class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
                 Rapports
             </a>
             <ul>
-                <li>
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
+                <li class="@active(["reports.global"])">
+                    <a href="{{ route("reports.global") }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
                 </li>
             </ul>
         </li>

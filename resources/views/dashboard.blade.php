@@ -4,6 +4,23 @@
  <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
+        <div class="content-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="me-auto">
+                    <h3 class="page-title">Tableau de bord</h3>
+                    <!-- <div class="d-inline-block align-items-center">
+                        <nav>
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="mdi mdi-home-outline"></i></a></li>
+                                <li class="breadcrumb-item" aria-current="page">Commandes</li>
+                                <li class="breadcrumb-item active" aria-current="page">Listes des commandes</li>
+                            </ol>
+                        </nav>
+                    </div> -->
+                </div>
+                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">Clôturer la journée</a>					
+            </div>
+        </div>
         <!-- Main content -->
         <section class="content">
             <div class="row">
@@ -74,7 +91,7 @@
                     </div>
                 </div>
 
-                <div class="col-12">
+                <!-- <div class="col-12">
                     <div class="box bg-transparent no-shadow">
                         <div class="box-header pt-0 mb-0  px-0 d-flex align-items-center justify-content-between">
                             <h4 class="box-title">
@@ -356,7 +373,7 @@
                         </div>
                     </div>
                     
-                </div>
+                </div> -->
             </div>
         </section>
         <!-- /.content -->

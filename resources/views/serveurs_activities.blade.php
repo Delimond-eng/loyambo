@@ -54,7 +54,7 @@ $serveurs = [
 								
 							</tbody>
 						</table>
-						<button class="btn btn-info"><i class="fa fa-arrow-left" onclick="location.href='/'"></i> Retour</button>
+						<a href="{{ route('home') }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Retour</a>
 					</div>
 
 				  </div>

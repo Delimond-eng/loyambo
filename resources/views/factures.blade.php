@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center">
             <div class="me-auto">
                 <h3 class="page-title">Liste des Factures</h3>
-                <div class="d-inline-block align-items-center">
+                <!-- <div class="d-inline-block align-items-center">
                     <nav>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="#"><i class="mdi mdi-home-outline"></i></a></li>
@@ -16,7 +16,7 @@
                             <li class="breadcrumb-item active" aria-current="page">Liste des factures</li>
                         </ol>
                     </nav>
-                </div>
+                </div> -->
             </div>
 
         </div>
@@ -33,7 +33,6 @@
                     </div>
                     <div class="box-body">
                         <div class="table-responsive">
-
                             <table id="example" class="table table-lg invoice-archive">
                                 <thead>
                                     <tr>
@@ -94,7 +93,6 @@
                                     </tr>
                                 </tbody>
                             </table>
-
                         </div>
                     </div>
                 </div>

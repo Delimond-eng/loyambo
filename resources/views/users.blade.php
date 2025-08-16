@@ -11,7 +11,7 @@
 			<div class="d-flex align-items-center">
 				<div class="me-auto">
 					<h3 class="page-title">Liste des utilisateurs</h3>
-					<div class="d-inline-block align-items-center">
+					<!-- <div class="d-inline-block align-items-center">
 						<nav>
 							<ol class="breadcrumb">
 								<li class="breadcrumb-item"><a href="{{ route("home") }}"><i class="mdi mdi-home-outline"></i></a></li>
@@ -19,7 +19,7 @@
 								<li class="breadcrumb-item active" aria-current="page">Liste</li>
 							</ol>
 						</nav>
-					</div>
+					</div> -->
 				</div>
 
 			</div>
@@ -35,7 +35,7 @@
                                 Les utilisateurs
                                 <small class="subtitle">Actifs et non actifs</small>
                             </h4>
-                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-primary text-center">+ Créer nouveau utilisateur</a>
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-primary text-center btn-rounded">+ Créer nouveau utilisateur</a>
                         </div>
                         <div class="box-body py-0">
                             <div class="table-responsive">
@@ -51,6 +51,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @for ($i=0; $i<5; $i++)
                                         <tr>
                                             <td>
                                                 <div class="bg-lightest h-50 w-50 l-h-50 rounded text-center overflow-hidden">
@@ -76,95 +77,13 @@
                                             </td>
                                             <td>14 April 2021,<span class="fs-12"> 03:13 AM</span></td>
                                             <td class="text-end">
-                                                <a href="#" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Settings-2 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+                                                <a href="#" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Plus fs-18"><span class="path1"></span><span class="path2"></span></span></a>
                                                 <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
                                                 <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="bg-lightest h-50 w-50 l-h-50 rounded text-center overflow-hidden">
-                                                    <img src="assets/images/avatar/avatar-2.png" class="h-50 align-self-end" alt="">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <a href="#" class="text-dark fw-600 hover-primary fs-16">Vivamus consectetur</a>
-                                                <span class="text-fade d-block">Pharetra, Nulla , Nec, Aliquet</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-dark fw-600 d-block fs-16">
-                                                    Intertico
-                                                </span>
-                                                <span class="text-fade d-block">
-                                                    Web, UI/UX Design
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-pill badge-success-light">Connecté</span>
-                                            </td>
-                                            <td>14 April 2021,<span class="fs-12"> 03:13 AM</span></td>
-                                            <td class="text-end">
-                                                <a href="#" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Settings-1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="bg-lightest h-50 w-50 l-h-50 rounded text-center overflow-hidden">
-                                                    <img src="assets/images/avatar/avatar-3.png" class="h-50 align-self-end" alt="">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <a href="#" class="text-dark fw-600 hover-primary fs-16">Vivamus consectetur</a>
-                                                <span class="text-fade d-block">Pharetra, Nulla , Nec, Aliquet</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-dark fw-600 d-block fs-16">
-                                                    Intertico
-                                                </span>
-                                                <span class="text-fade d-block">
-                                                    Web, UI/UX Design
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-pill badge-danger-light">Hors ligne</span>
-                                            </td>
-                                            <td>14 April 2021,<span class="fs-12"> 03:13 AM</span></td>
-                                            <td class="text-end">
-                                                <a href="#" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Settings-1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="bg-lightest h-50 w-50 l-h-50 rounded text-center overflow-hidden">
-                                                    <img src="assets/images/avatar/avatar-4.png" class="h-50 align-self-end" alt="">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <a href="#" class="text-dark fw-600 hover-primary fs-16">Vivamus consectetur</a>
-                                                <span class="text-fade d-block">Pharetra, Nulla , Nec, Aliquet</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-dark fw-600 d-block fs-16">
-                                                    Intertico
-                                                </span>
-                                                <span class="text-fade d-block">
-                                                    Web, UI/UX Design
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-pill badge-success-light">Connecté</span>
-                                            </td>
-                                            <td>14 April 2021,<span class="fs-12"> 03:13 AM</span></td>
-                                            <td class="text-end">
-                                                <a href="#" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Settings-1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                            </td>
-                                        </tr>
+                                        @endfor
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -191,36 +110,66 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h4 class="modal-title" id="myModalLabel">Add Contact</h4>
+					<h4 class="modal-title" id="myModalLabel">Création compte utilisateur</h4>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<form class="form-horizontal">
 						<div class="form-group">
-							<label class="col-md-12 form-label">Name</label>
-							<div class="col-md-12">
-								<input type="text" class="form-control" placeholder="Name">
-							</div>
-							<label class="col-md-12 form-label">Email</label>
-							<div class="col-md-12">
-								<input type="email" class="form-control" placeholder="Email">
-							</div>
-							<label class="col-md-12 form-label">Phone</label>
-							<div class="col-md-12">
-								<input type="tel" class="form-control" placeholder="Phone">
-							</div>
-						</div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-transparent"><i
+                                        class="ti-user text-primary"></i></span>
+                                <input type="text" class="form-control ps-15 bg-transparent"
+                                    placeholder="Nom d'utilisateur">
+                            </div>
+                        </div>
+
 						<div class="form-group">
-							<label class="col-md-12 form-label">Address</label>
-							<div class="col-md-12">
-								<textarea class="form-control" placeholder=""></textarea>
-							</div>
-						</div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-transparent"><i
+                                        class="ti-lock text-primary"></i></span>
+                                <input type="text" class="form-control ps-15 bg-transparent"
+                                    placeholder="Mot de passe">
+                            </div>
+                        </div>
+	
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-transparent"><i
+                                        class="ti-money text-primary"></i></span>
+                                <input type="text" class="form-control ps-15 bg-transparent"
+                                    placeholder="Salaire en CDF/Heure">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-transparent"><i
+                                        class="ti-user text-primary"></i></span>
+                                <select class="form-control ps-15 bg-transparent">
+                                    <option value="" selected hidden label="Sélectionnez rôle"></option>
+                                    <option value="admin">Administateur</option>
+                                    <option value="caissier">Caissier</option>
+                                    <option value="serveur">Serveur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-transparent"><i
+                                        class="ti-location-pin text-primary"></i></span>
+                                <select class="form-control ps-15 bg-transparent">
+                                    <option value="" selected hidden label="Sélectionnez un emplacement."></option>
+                                </select>
+                            </div>
+                        </div>
+
 					</form>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-success" data-bs-dismiss="modal">Add</button>
-					<button type="button" class="btn btn-danger float-end" data-bs-dismiss="modal">Cancel</button>
+				<div class="modal-footer d-flex g-2">
+					<button type="button" class="btn btn-success" data-bs-dismiss="modal">Enregistrer</button>
+					<button type="button" class="btn btn-danger float-end" data-bs-dismiss="modal">Fermer</button>
 				</div>
 			</div>
 			<!-- /.modal-content -->

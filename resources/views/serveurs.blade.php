@@ -28,7 +28,7 @@ $serveurs = [
 			    </div>
                 @foreach ($serveurs as $sa)
                     <div class="col-md-6 col-sm-3 col-lg-2 col-6">
-                        <div class="box box-body text-center py-30 box-inverse bg-primary">
+                        <div class="box box-body text-center py-30 box-inverse bg-indigo-500">
                             <a href="#">
                                 <img class="avatar avatar-xxl" src="assets/images/serveur.png" alt="">
                             </a>

@@ -59,6 +59,10 @@
     <!-- Riday Admin App -->
     <script src="assets/js/jquery.smartmenus.js"></script>
     <script src="assets/vendors/components/datatable/datatables.min.js"></script>	
+    <script src="assets/vendors/components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+	<script src="assets/vendors/components/bootstrap-tagsinput/dist/bootstrap-tagsinput.js"></script>
+	<script src="assets/vendors/components/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.js"></script>
+	<script src="assets/vendors/components/select2/dist/js/select2.full.js"></script>
     <script src="assets/js/menus.js"></script>
     <script src="assets/js/template.js"></script>
     <script src="assets/js/pages/dashboard.js"></script>
