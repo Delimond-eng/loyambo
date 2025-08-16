@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Etablissement;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
@@ -52,6 +54,10 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'telephone' => ['required', 'string', 'min:10', 'confirmed'],
+            'nom' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', 'max:255'],
+            'adresse' => ['required', 'string', 'max:255'],
         ]);
     }
 
@@ -63,10 +69,28 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        // 1️⃣ Créer l'établissement
+        $etablissement = Etablissement::create([
+            'nom' => $data['nom'],
+            'type' => $data['type'] ?? null,
+            'adresse' => $data['adresse'] ?? null,
+            'telephone' => $data['telephone'] ?? null,
+        ]);
+
+        // 2️⃣ Créer l'utilisateur admin lié à cet établissement
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'actif' => true,
+            'role' => 'admin',
+            'etablissement_id' => $etablissement->id,
         ]);
+
+        // 3️⃣ Assigner le rôle admin via Spatie
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        $user->assignRole($roleAdmin);
+
+        return $user;
     }
 }

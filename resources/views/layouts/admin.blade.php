@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="assets/images/favicon.png">
 
     <title>Loyambo | Home</title>
@@ -48,11 +49,11 @@
 
     <script src="assets/vendors/components/OwlCarousel2/dist/owl.carousel.js"></script>
 
-    <script src="assets/vendors/lib/4/core.js"></script>
+   <!--  <script src="assets/vendors/lib/4/core.js"></script>
     <script src="assets/vendors/lib/4/maps.js"></script>
     <script src="assets/vendors/lib/4/geodata/worldLow.js"></script>
     <script src="assets/vendors/lib/4/themes/kelly.js"></script>
-    <script src="assets/vendors/lib/4/themes/animated.js"></script>
+    <script src="assets/vendors/lib/4/themes/animated.js"></script> -->
 
 
 

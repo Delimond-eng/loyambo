@@ -52,18 +52,21 @@
                             data-bs-toggle="dropdown" title="User">
                             <span class="ps-30 d-md-inline-block d-none"></span>
                             <div class="text-start d-md-inline-block d-none">
-                                <strong class="text-white">Gaston delimond</strong><br>
-                                <small class="text-white">Administrateur</small>
+                                <strong class="text-white">{{ Auth::user()->name }}</strong><br>
+                                <small class="text-white">{{ Auth::user()->role }}</small>
                             </div>
                             <img src="assets/images/avatar/avatar-2.png"
                                 class="user-image rounded-circle avatar bg-white mx-10" alt="User Image">
                         </a>
                         <ul class="dropdown-menu animated flipInX">
                             <li class="user-body">
-                                <a class="dropdown-item text-warning" href="#"><i class="fa fa-sign-out text-muted me-2"></i>
+                                <a class="dropdown-item text-danger" href="#"><i class="fa fa-sign-out me-2"></i>
                                     Clotûrer la journée</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/login"><i
+                                <form id="logout-form" hidden action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                </form>
+                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i
                                         class="ti-lock text-muted me-2"></i>
                                     Deconnexion</a>
                             </li>

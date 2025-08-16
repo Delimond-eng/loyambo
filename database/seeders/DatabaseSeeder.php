@@ -27,72 +27,12 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $user = \App\Models\User::create([
-            "name"=>"Mr. Didier ",
-            "email"=>"admin@gmail.com",
-            "password"=>bcrypt("12345"),
-            "role"=>"ADMIN"
+            "name"=>"Richard",
+            "email"=>"richard@gmail.com",
+            "password"=>bcrypt("123456"),
+            "role"=>"caissier",
+            "ets_id"=>4
         ]);
-        if($user){
-            if ($user->role === 'ADMIN') {
-                foreach (['Update', 'Delete', 'Export'] as $type) {
-                    UserPermission::create([
-                        'user_id' => $user->id,
-                        'permission_type' => $type,
-                        'enabled' => true,
-                    ]);
-                }
-            }
-        }
-
-        foreach([
-            "Réunion",
-            "Entretien",
-            "Livraison",
-            "Support",
-            "Séminaire",
-            "Proposition commerciale",
-            "Réparation",
-            "Inspection",
-            "Consultation",
-            "Formation",
-        ] as $purpose){
-            VisitPurpose::create(["libelle"=>$purpose]);
-        }
-
-        foreach([
-            "Ressources Humaines",
-            "Informatique",
-            "Administration",
-            "Ventes",
-            "Support Technique",
-            "Juridique",
-            "Marketing",
-            "Maintenance",
-            "Opérations"
-        ] as $dpt){
-            Department::create(["libelle"=>$dpt]);
-        }
-
-        foreach([
-            "Fournisseur",
-            "Candidat",
-            "Coursier",
-            "Client",
-            "Invité",
-            "Technicien",
-            "Auditeur",
-            "Employé",
-        ] as $vtype){
-            VisitorType::create(["libelle"=>$vtype]);
-        }
-
-        foreach([
-            "Carte d'Electeur",
-            "Permis de conduire",
-            "Carte de Service",
-            "Passeport"
-        ] as $profType){
-            ProfType::create(["libelle"=>$profType]);
-        }
+        $user->assignRole("caissier");
     }
 }

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="assets/images/favicon.png">
 
     <title>Loyambo Plateforme</title>
@@ -30,9 +31,10 @@
 
     <!-- Vendor JS -->
     <script src="assets/js/vendors.min.js"></script>
-    <script src="assets/js/pages/chat-popup.js"></script>
-    <script src="assets/vendors/components/apexcharts-bundle/dist/apexcharts.min.js"></script>
-    <script src=assets/vendors/icons/feather-icons/feather.min.js"></script>
+    <script src="assets/vendors/icons/feather-icons/feather.min.js"></script>
+    <script src="assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js"></script>
+    <script src="{{ asset("assets/js/libs/vue2.js") }}"></script>
+    @stack("scripts")
 </body>
 
 </html>

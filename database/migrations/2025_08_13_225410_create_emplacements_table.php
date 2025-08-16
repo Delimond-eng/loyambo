@@ -25,7 +25,6 @@ return new class extends Migration
         Schema::create('emplacements', function (Blueprint $table) {
             $table->id();
             $table->string('libelle', 50);
-            $table->foreignId('ets_id')->constrained('etablissements')->cascadeOnDelete();
             $table->timestamps();
         });
     }

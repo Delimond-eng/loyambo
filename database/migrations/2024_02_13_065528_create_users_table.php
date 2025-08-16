@@ -13,20 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('libelle', 50);
-            $table->timestamps();
-        });
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // ID utilisateur unique, auto-incrémenté (clé primaire)
             $table->string('name'); // Nom complet de l'utilisateur
             $table->string('email')->unique(); // Adresse email unique
             $table->timestamp('email_verified_at')->nullable(); // Date de vérification de l’email (null si non vérifié)
             $table->string('password'); // Mot de passe chiffré
-             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->boolean('actif')->default(false);
             $table->decimal('salaire', 10, 2)->default(0);
+            $table->string('role')->default('user');
+            $table->unsignedBigInteger("ets_id");
+            $table->unsignedBigInteger("emplacement_id")->nullable();
             $table->rememberToken(); // Jeton de session pour l’authentification "remember me"
             $table->timestamps(); // Champs created_at et updated_at automatiques
         });
@@ -39,7 +36,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('roles');
         Schema::dropIfExists('users');
     }
 };

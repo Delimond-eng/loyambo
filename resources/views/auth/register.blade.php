@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="col-12">
-    <div class="row justify-content-center g-0">
+    <div class="row justify-content-center g-0" id="App">
         <div class="col-lg-4 col-md-5 col-12">
             <div class="bg-white rounded10 shadow-lg">
                 <div class="content-top-agile p-20 pb-0">
@@ -10,21 +10,21 @@
                     <p class="mb-0">Créer un nouveau établissement !</p>
                 </div>
                 <div class="p-40">
-                    <form action="/" method="get">
+                    <form method="POST"  @submit.prevent="register" action="{{ route('create.account') }}">
                         <div class="form-group">
                             <div class="input-group mb-3">
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-flag text-primary"></i></span>
                                 <input type="text" class="form-control ps-15 bg-transparent"
-                                    placeholder="Nom de l'Ets...">
+                                    placeholder="Nom de l'Ets..." name="nom" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="input-group mb-3">
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-flag-alt text-primary"></i></span>
-                                <select class="form-control ps-15 bg-transparent">
-                                    <option value="" selected hidden label="Type"></option>
+                                <select class="form-control ps-15 bg-transparent" name="type" required>
+                                    <option value="" selected hidden label="Secteur d'activités"></option>
                                     <option value="restaurant">Restaurant</option>
                                     <option value="lounge">Lounge</option>
                                     <option value="lounge">Hôtel</option>
@@ -38,7 +38,7 @@
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-location-pin text-primary"></i></span>
                                 <input type="text" class="form-control ps-15 bg-transparent"
-                                    placeholder="Adresse">
+                                    placeholder="Adresse" name="adresse" required>
                             </div>
                         </div>
 
@@ -48,7 +48,7 @@
                                 <span class="input-group-text bg-transparent"><i
                                         class="fa fa-phone text-primary me-1"></i></span>
                                 <input type="tel" class="form-control ps-15 bg-transparent"
-                                    placeholder="Téléphone">
+                                    placeholder="Téléphone" name="telephone">
                             </div>
                         </div>
 
@@ -57,7 +57,7 @@
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-email text-primary"></i></span>
                                 <input type="email" class="form-control ps-15 bg-transparent"
-                                    placeholder="Email">
+                                    placeholder="Email" name="email">
                             </div>
                         </div>
 
@@ -66,7 +66,7 @@
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-user text-primary"></i></span>
                                 <input type="text" class="form-control ps-15 bg-transparent"
-                                    placeholder="Administrateur">
+                                    placeholder="Nom d'utilisateur.. ex:Gaston" name="name">
                             </div>
                         </div>
                         <div class="form-group">
@@ -74,12 +74,12 @@
                                 <span class="input-group-text  bg-transparent"><i
                                         class="ti-lock text-primary"></i></span>
                                 <input type="password" class="form-control ps-15 bg-transparent"
-                                    placeholder="Mot de passe">
+                                    placeholder="Mot de passe" name="password">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-12 text-center">
-                                <button type="submit" style="width:100%;" class="waves-effect waves-light btn mb-5 btn-warning mt-10 text-uppercase">Créer</button>
+                                <button type="submit" :disabled="isLoading" style="width:100%;" class="waves-effect waves-light btn mb-5 btn-warning mt-10 text-uppercase"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>Créer</button>
                                 <a href="{{ route("login") }}" style="width:100%;" class="waves-effect waves-light btn btn-outline btn-primary mt-2 text-uppercase">Connexion</a>
                             </div>
                             <!-- /.col -->
@@ -91,3 +91,7 @@
     </div>
 </div>
 @endsection
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/auth.js") }}"></script>
+@endpush

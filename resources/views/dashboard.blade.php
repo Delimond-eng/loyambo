@@ -8,17 +8,15 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div class="me-auto">
                     <h3 class="page-title">Tableau de bord</h3>
-                    <!-- <div class="d-inline-block align-items-center">
+                    <div class="d-inline-block align-items-center">
                         <nav>
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="mdi mdi-home-outline"></i></a></li>
-                                <li class="breadcrumb-item" aria-current="page">Commandes</li>
-                                <li class="breadcrumb-item active" aria-current="page">Listes des commandes</li>
+                               <li class="breadcrumb-item ms-1" aria-current="page">Bienvenue {{ Auth::user()->name }}, Vous êtes connectés comme <span class="text-primary fw-700">{{ Auth::user()->role }}</span></li>
                             </ol>
                         </nav>
-                    </div> -->
+                    </div>
                 </div>
-                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">Clôturer la journée</a>					
+                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded"><i class="fa fa-sign-out"></i> Clôturer la journée</a>					
             </div>
         </div>
         <!-- Main content -->
