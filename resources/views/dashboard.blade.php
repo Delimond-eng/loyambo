@@ -16,7 +16,11 @@
                         </nav>
                     </div>
                 </div>
-                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded"><i class="fa fa-sign-out"></i> Clôturer la journée</a>					
+                @canCloseDay
+                     <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded"><i class="fa fa-sign-out"></i> Clôturer la journée</a>
+                @else
+                     <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-primary text-center btn-rounded"><i class="fa fa-sign-in"></i> Commencer la journée</a>
+                @endif
             </div>
         </div>
         <!-- Main content -->
