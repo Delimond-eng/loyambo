@@ -8,7 +8,7 @@
 		<div class="content-header">
 		</div>
 		<!-- Main content -->
-		<section class="content">
+		<section class="content" id="AppProduct" v-cloak>
 			<div class="row">
                 <div class="col-md-4">
                     <div class="box">
@@ -90,12 +90,13 @@
                                 <i class="ti-save-alt"></i> Enregistrer
                             </button>
 
-                            <button type="button" class="btn btn-warning">
+                            <button type="button" @click="resetAll" class="btn btn-warning">
                                 <i class="ti-trash"></i> Annuler
                             </button>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-8">
                     <div class="box">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
