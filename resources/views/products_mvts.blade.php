@@ -23,13 +23,10 @@
                                     <label class="form-label">Produit concerné</label>
                                     <div class="input-group mb-3">
                                         <select class="form-control select2">
-                                            <option selected="selected" hidden>Sélectionner un produit</option>
-                                            <option>Alaska</option>
-                                            <option>California</option>
-                                            <option>Delaware</option>
-                                            <option>Tennessee</option>
-                                            <option>Texas</option>
-                                            <option>Washington</option>
+                                            <option value="" selected="selected" hidden></option>
+                                            @foreach ($produits as $prod)
+                                            <option value="{{ $prod->id }}">{{ $prod->libelle }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
@@ -46,10 +43,11 @@
                                     <div class="input-group mb-3">
                                         <span class="input-group-text bg-transparent"><i
                                                 class="ti-layout-accordion-separated text-primary"></i></span>
-                                        <select class="form-control ps-15 bg-transparent">
+                                        <select class="form-control ps-15 bg-transparent" v-model="formMvt.type_mouvement" required>
                                             <option value="" selected hidden label="Type de mouvement"></option>
-                                            <option value="in">Entrée</option>
-                                            <option value="out">Sortie</option>
+                                            <option value="entrée">Entrée</option>
+                                            <option value="sortie">Sortie</option>
+                                            <option value="transfert">transfert</option>
                                         </select>
                                     </div>
                                 </div>
@@ -304,6 +302,5 @@
 @endsection
 
 @push("scripts")
-    <script src="assets/js/pages/data-table.js"></script>
-    <script src="assets/js/pages/advanced-form-element.js"></script>
+    <script type="module" src="{{ asset("assets/js/scripts/product.js") }}"></script>
 @endpush

@@ -45,5 +45,9 @@ class AppServiceProvider extends ServiceProvider
 
             return $todaySale && $accessAllowed;
         });
+
+        Blade::directive("lastRate", function(){
+            return "<?php echo \\App\\Models\\Currencie::latest()->value('currencie_value') ?? 0; ?>";
+        });
     }
 }

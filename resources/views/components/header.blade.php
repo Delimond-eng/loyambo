@@ -60,8 +60,17 @@
                         </a>
                         <ul class="dropdown-menu animated flipInX">
                             <li class="user-body">
-                                <a class="dropdown-item text-danger" href="#"><i class="fa fa-sign-out me-2"></i>
+                                @canCloseDay
+                                    @can("cloturer-journee")
+                                    <a class="dropdown-item text-danger" href="{{ route("orders.portal") }}"><i class="fa fa-sign-out me-2"></i>
                                     Clotûrer la journée</a>
+                                    @endcan
+                                @else
+                                    @can("ouvrir-journee")
+                                    <a class="dropdown-item text-primary btn-start-day" href="#"><i class="fa fa-sign-in me-2"></i>
+                                    Commencer la journée</a>
+                                    @endcan
+                                @endif
                                 <div class="dropdown-divider"></div>
                                 <form id="logout-form" hidden action="{{ route('logout') }}" method="POST">
                                 @csrf

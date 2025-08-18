@@ -8,7 +8,9 @@ use App\Models\UserPermission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -54,11 +56,74 @@ class UserController extends Controller
             ]);
 
         }
-         catch (\Illuminate\Validation\ValidationException $e) {
+        catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+
+
+
+     //CREATE NEW USER
+    public function createUser(Request $request)
+    {
+        try {
+            // Validation
+            $data = $request->validate([
+                'name'=>'required|string',
+                'password'=>'required|string',
+                'emplacement_id'=>'required|int|exists:emplacements,id',
+                'role'=>"required|string",
+                'salaire'=>'nullable|numeric'
+            ]);
+
+            $userId = $request->id ?? null;
+            if ($userId) { // seulement si on met à jour un utilisateur existant
+                $userToEdit = User::find($userId);
+                // Vérifier si l'utilisateur a le rôle "admin"
+                if ($userToEdit->hasRole('admin')) {
+                    // Vérifier s'il n'y a qu'un seul admin dans la base
+                    $adminCount = User::role('admin')->count();
+                    if ($adminCount <= 1) {
+                        return response()->json([
+                            'errors' => "Impossible de modifier cet utilisateur car il est le seul admin existant."
+                        ]);
+                    }
+                }
+            }
+            $data["email"] = trim(strtolower($data["name"])) . "@gmail.com";
+            $data["ets_id"] = Auth::user()->ets_id;
+            $data["password"] = bcrypt($data["password"]);
+
+            Log::info($data["password"]);
+
+            // Création ou mise à jour
+            $user = User::updateOrCreate(
+                ["id" => $request->id ?? null],
+                $data
+            );
+
+            // Assigner le rôle
+            $user->assignRole($data["role"]);
+
+            // Synchroniser les permissions du rôle vers l'utilisateur
+            $role = Role::findByName($data["role"]);
+            $user->syncPermissions($role->permissions->pluck('name')->toArray());
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Utilisateur créé avec succès',
+                'result' => $user->getAllPermissions() // ou $user->permissions si tu veux seulement direct + rôle fusionné
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
 }

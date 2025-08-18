@@ -106,6 +106,10 @@ body.layout-boxed {
   height: 100%;
 }
 
+[v-cloak] {
+  display: none;
+}
+
 .wrapper {
   height: 100%;
   overflow-x: hidden;

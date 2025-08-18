@@ -6,25 +6,22 @@
 	<div class="container-full">
 	<!-- Content Header (Page header) -->
 	 	<div class="content-header">
-            <div class="d-flex align-items-center">
+            <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
                 <div class="me-auto">
                     <h3 class="page-title">Bienvenu à la session de Gaston</h3>
                 </div>
+
+				<div class="btn-group">
+					<button class="btn btn-success gallery-header-center-right-links-current" id="filter-all"> <i class="fa fa-exchange me-2"></i> Transferer Table</button>
+					<button class="btn btn-warning gallery-header-center-right-links-current" id="filter-studio"><i class="mdi mdi-link me-2"></i>Combiner Table</button>
+					<button class="btn btn-info gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-lock-plus me-2"></i>Reservation</button>
+					<button class="btn btn-danger gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-close-box me-2"></i>Annuler</button>
+				</div>
             </div>
         </div>
 
 		<section class="content">
 		  	<div>
-			  	<div class="box bg-transparent no-shadow b-0">
-				<div class="box-body text-center p-0">
-					<div class="btn-group">
-					  <button class="btn btn-success gallery-header-center-right-links-current" id="filter-all"> <i class="fa fa-exchange me-2"></i> Transferer Table</button>
-					  <button class="btn btn-warning gallery-header-center-right-links-current" id="filter-studio"><i class="mdi mdi-link me-2"></i>Combiner Table</button>
-					  <button class="btn btn-info gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-lock-plus me-2"></i>Reservation</button>
-					  <button class="btn btn-danger gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-close-box me-2"></i>Annuler</button>
-					</div>
-				</div>
-			  </div>
 			  <!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">

@@ -33,4 +33,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Etablissement::class, "ets_id");
     }
+    public function emplacement()
+    {
+        return $this->belongsTo(Emplacement::class, "emplacement_id");
+    }
+
+    // 🔹 Relation vers les logs
+    public function logs()
+    {
+        return $this->hasMany(UserLog::class, 'user_id');
+    }
+
+    public function lastLog()
+    {
+        return $this->hasOne(UserLog::class, 'user_id')->latest('log_date');
+    }
 }

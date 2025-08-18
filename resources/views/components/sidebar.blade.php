@@ -35,25 +35,27 @@
         <!-- End Commandes -->
 
         <!-- Menu users -->
-        <li class="@active('users')">
+        @can("manage-users")
+        <li class="@active(['users.*', 'users'])">
             <a href="#">
                 <i class="icon-Add-user"><span class="path1"></span><span class="path2"></span></i>Utilisateurs
             </a>
             <ul>
-                <li>
+                <li class="@active('users')">
                     <a href="{{ route('users') }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Comptes Utilisateurs
                     </a>
                 </li>
-                <li>
-                    <a href="customer.html">
+                <!-- <li>
+                    <a href="#">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Rôles & attribution accès
                     </a>
-                </li>
+                </li> -->
             </ul>
         </li>
+        @endcan
         <!-- End users -->
 
         <!-- Menu factures -->

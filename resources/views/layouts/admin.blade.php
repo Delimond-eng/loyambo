@@ -35,6 +35,8 @@
 
         @include("components.footer")
 
+        <!-- Modal pour commencer une journée -->
+        @include("components.modals.day_start_modal")
 
         <!-- Add the sidebar's background. This div must be placed immediately after the control sidebar -->
         <div class="control-sidebar-bg"></div>
@@ -46,7 +48,6 @@
     <script src="assets/js/pages/chat-popup.js"></script>
     <script src="assets/vendors/components/apexcharts-bundle/dist/apexcharts.min.js"></script>
     <script src="assets/vendors/icons/feather-icons/feather.min.js"></script>
-
     <script src="assets/vendors/components/OwlCarousel2/dist/owl.carousel.js"></script>
 
    <!--  <script src="assets/vendors/lib/4/core.js"></script>
@@ -65,8 +66,21 @@
 	<script src="assets/vendors/components/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.js"></script>
 	<script src="assets/vendors/components/select2/dist/js/select2.full.js"></script>
     <script src="assets/js/menus.js"></script>
+    <script src="assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js"></script>
     <script src="assets/js/template.js"></script>
     <script src="assets/js/pages/dashboard.js"></script>
+    <script src="{{ asset("assets/vendors/plugins/moment/moment.js") }}"></script>
+
+    <script>
+        const startBtn = document.querySelectorAll('.btn-start-day');
+        startBtn.forEach(el=>{
+            el.addEventListener('click', function(){
+                $("body").toggleClass("right-bar-toggle");
+            });
+        });
+    </script>
+
+    <script src="{{ asset("assets/js/libs/vue2.js") }}"></script>
 
     @stack("scripts")
 

@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Emplacement extends Model
 {
     use HasFactory;
+
+
+    protected $primaryKey = 'id';
+
+    protected $fillable = [
+        "libelle",
+        "ets_id",
+    ];
 }

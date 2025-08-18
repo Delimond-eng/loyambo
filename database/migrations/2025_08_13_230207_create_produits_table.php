@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('libelle', 100);
             $table->decimal('prix_unitaire', 15, 2);
             $table->string('unite', 20);
+            $table->integer("qte_init")->default(0);
             $table->integer('seuil_reappro')->default(0);
             $table->string('image', 255)->nullable();
             $table->timestamps();

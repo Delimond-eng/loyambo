@@ -1,0 +1,155 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Categorie;
+use App\Models\MouvementStock;
+use App\Models\Produit;
+use App\Models\Stock;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class ProductController extends Controller
+{
+
+    /**
+     * Create categorie
+     * @param Request $request
+     * @return mixed
+    */
+    public function createCategory(Request $request){
+        try{
+            $data = $request->validate([
+                "libelle"=>"required|string",
+                "code"=>"required|string",
+                "type_service"=>"required|string",
+                "couleur"=>"required|string"
+            ]);
+
+            $categorie = Categorie::updateOrCreate(["id"=>$request->id], $data);
+
+            return response()->json([
+                "status"=>"success",
+                "categorie"=>$categorie
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    //GET CATEGORIES
+     public function getAllCategories(){
+        $categories = Categorie::with("produits.stocks")->orderBy("libelle")->get();
+        return response()->json(["categories"=>$categories]);
+    }
+
+
+    /**
+     * Create categorie
+     * @param Request $request
+     * @return mixed
+    */
+    public function createProduct(Request $request){
+        try{
+
+            $data = $request->validate([
+                "code_barre"=>"required|string",
+                "reference"=>"required|string",
+                "categorie_id"=>"required|int|exists:categories,id",
+                "libelle"=>"required|string",
+                "prix_unitaire"=>"required|string",
+                "unite"=>"required|string",
+                "seuil_reappro"=>"required|int",
+                "qte_init"=>"required|int"
+            ]);
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('photo');
+                $filename = uniqid('product') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/products');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['image'] = url('uploads/products/' . $filename);
+            }
+
+            $produit = Produit::updateOrCreate(["id"=>$request->id ?? null], $data);
+
+            if($produit && $produit->qte_init >= 1){
+                MouvementStock::create([
+                    "produit_id"=>$produit->id,
+                    "quantite"=>$produit->qte_init,
+                    "type_mouvement"=>"entrée",
+                    "destination"=>$request->emplacement_id,
+                    "date_mouvement"=> Carbon::now()->setTimezone("Africa/kinshasa"),
+                    "user_id"=>Auth::id()
+                ]);
+            }
+            return response()->json([
+                "status"=>"success",
+                "produit"=>$produit
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    //ALL PRODUCT
+    public function getAllProducts(){
+        $products = Produit::with(["categorie", "stocks"])->orderBy("libelle")->get();
+        return response()->json(["produits"=>$products]);
+    }
+
+
+    /**
+     * create Mouvement stock
+     * @param Request $request
+     * @return mixed
+    */
+    public function createStockMvt(Request $request){
+        try{
+            $data = $request->validate([
+                "produit_id"=>"required|int|exists:produits,id",
+                "type_mouvement"=>"required|string",
+                "numdoc"=>"required|int",
+                "quantite"=>"required|int",
+                "source"=>"required|int",
+                "destination"=>"required|int",
+                "date_mouvement"=>"nullable|datetime",
+            ]);
+
+            $data["date_mouvement"] = !isset($data["date_mouvement"]) ? Carbon::now()->setTimezone("Africa/kinshasa") : $data["date_mouvement"];
+            $data["user_id"]= Auth::id();
+            $mvt = MouvementStock::updateOrCreate(["id"=>$request->id ?? null],$data);
+
+            return response()->json([
+                "status"=>"success",
+                "result"=>$mvt
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    //Get all mouvement
+    public function getStockMvts(){
+        $mvts = MouvementStock::with("produit")->orderByDesc("id")->get();
+        return response()->json([
+            "status"=>"success",
+            "mouvements"=>$mvts
+        ]);
+    }
+
+}

@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('stocks', function (Blueprint $table) {
+        Schema::create('currencies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produit_id')->constrained('produits')->cascadeOnDelete();
-            $table->integer('quantite')->default(0);
-            $table->foreignId('emplacement_id')->constrained('emplacements')->cascadeOnDelete();
+            $table->date("currencie_date");
+            $table->float("currencie_value");
+            $table->string("currencie_exchange")->default("USD");
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stocks');
+        Schema::dropIfExists('currencies');
     }
 };

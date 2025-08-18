@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('etablissements', function (Blueprint $table) {
             $table->id();
             $table->string('nom', 100);
-            $table->string('type', 50)->nullable(); // restaurant, lounge, complexe...
+            $table->string('type', 50)->nullable();
             $table->string('adresse', 255)->nullable();
             $table->string('telephone', 20)->nullable();
             $table->timestamps();
@@ -25,6 +25,7 @@ return new class extends Migration
         Schema::create('emplacements', function (Blueprint $table) {
             $table->id();
             $table->string('libelle', 50);
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

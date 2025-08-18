@@ -31,5 +31,13 @@ class AuthServiceProvider extends ServiceProvider
                 return true; // accès total
             }
         });
+        Gate::define('manage-users', function ($user) {
+            return $user->hasAnyPermission([
+                'creer-utilisateurs',
+                'voir-utilisateurs',
+                'modifier-utilisateurs',
+                'supprimer-utilisateurs',
+            ]);
+        });
     }
 }
