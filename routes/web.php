@@ -33,8 +33,9 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/serveurs', "serveurs")->name("serveurs");
     Route::view('/serveurs.activities', "serveurs_activities")->name("serveurs.activities");
     Route::view('/orders.portal', "serveur_portal")->name("orders.portal");
+    Route::view('/orders.interface', "orders_interface")->name("orders.interface");
     Route::view('/products.categories', "product_categories")->name("products.categories");
-    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->get()]))->name("products.mvts");
+    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->get(), "emplacements" => Emplacement::all()]))->name("products.mvts");
     Route::get('/products', fn()=>view("products", ["categories"=>Categorie::all()]))->name("products");
 
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");
@@ -63,5 +64,11 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/products.all", [ProductController::class, "getAllProducts"])->name("products.all")->middleware("can:voir-produits");
     Route::post("/mvt.create", [ProductController::class, "createStockMvt"])->name("mvt.create")->middleware("can:creer-mouvements-stock");
     Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("products.all")->middleware("can:voir-mouvements-stock");
+
+    //EMPLACEMENTS & TABLES MANAGEMENTS
+    Route::post("/emplacement.create", [AdminController::class, "createEmplacement"])->name("emplacement.create")->middleware("can:creer-emplacements");
+    Route::get("/emplacements.all", [AdminController::class, "getAllEmplacements"])->name("emplacements.all")->middleware("can:voir-emplacements");
+    Route::post("/table.create", [AdminController::class, "createTable"])->name("table.create")->middleware("can:creer-tables");
+    Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
 });
 

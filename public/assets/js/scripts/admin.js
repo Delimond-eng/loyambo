@@ -24,6 +24,7 @@ new Vue({
     },
 
     mounted() {
+        this.whenModalHidden();
         this.viewAllUsers();
         this.getAllPermissions();
     },
@@ -250,6 +251,27 @@ new Vue({
                         stack: 6,
                     });
                 });
+        },
+
+        resetAll() {
+            this.form = {
+                password: "",
+                name: "",
+                emplacement_id: "",
+                role: "",
+                salaire: "",
+                id: "",
+            };
+        },
+
+        whenModalHidden() {
+            const self = this;
+            const modals = document.querySelectorAll(".modal");
+            modals.forEach((el) => {
+                el.addEventListener("hidden.bs.modal", function (event) {
+                    self.resetAll();
+                });
+            });
         },
     },
 

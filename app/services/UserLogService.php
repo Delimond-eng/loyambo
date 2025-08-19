@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class UserLogService{
     public function storeLog(Request $request){
         $user = Auth::user();
-        $now = Carbon::now()->setTimezone("Africa/kinshasa");
+        $now = Carbon::now()->setTimezone("Africa/Kinshasa");
 
         // Récupération du log du jour (s'il existe déjà)
         $log = UserLog::where("user_id", $user->id)

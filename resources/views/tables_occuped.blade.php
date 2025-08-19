@@ -25,37 +25,34 @@
         </div>
 
         <!-- Main content -->
-		<section class="content">
+		<section class="content" id="AppPlace" v-cloak>
 			<div class="row">
-                <div class="col-12">
-                    <div class="box-body">
-                        <h4 class="box-title text-primary mb-0 fw-600"><i class="ti-location-pin me-15"></i> PAVILLON 01</h4>
+                <div class="col-12" v-for="(data, index) in allEmplacements" :key="index">
+                    <div class="box-body" v-if="data.tables.length">
+                        <h4 class="box-title text-primary mb-0 fw-600"><i class="ti-home me-15"></i> @{{ data.libelle }}</h4>
                         <hr class="my-15">
-                        <div class="row">
-                            @for($i=0; $i<5; $i++)
-                            <div class="col-md-6 col-sm-3 col-lg-2 col-6">
+                        <div class="row" v-if="data.tables">
+                            <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in data.tables">
                                 <a href="#" class="box">
                                     <div class="box-body ribbon-box">
-                                        <div class="ribbon {{  $i%2 ? 'ribbon-danger' : 'ribbon-success' }}"><span>{{ $i%2 ? "Occupée" : "Libre" }}</span></div>
-                                        <img src="{{ $i%2 ? 'assets/images/table5.png' : 'assets/images/table4.avif' }}" class="img-fluid">
+                                        <div class="ribbon" :class="{'ribbon-danger': table.statut==='occupée', 'ribbon-success':table.statut==='libre','ribbon-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
+                                        <img v-if="data.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.avif' : 'assets/images/table5.png'" class="img-fluid">
+                                        <img v-else :src="table.statut==='libre' ? 'assets/images/table5.png' : 'assets/images/table4.avif'" class="img-fluid">
                                         <div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
-                                            0{{ $i+1 }}
+                                            @{{ table.numero }}
                                         </div>
                                     </div> <!-- end box-body-->
                                 </a>
                             </div>
-                            @endfor
                         </div>
                     </div>
                 </div>
 		    </div>
 		</section>
 		<!-- /.content -->
-    
     </div>
 </div>
 @endsection
-
 @push("scripts")
-    <script src="assets/js/pages/order.js"></script>	
+    <script type="module" src="{{ asset("assets/js/scripts/places.js") }}"></script>	
 @endpush

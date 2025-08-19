@@ -25,6 +25,7 @@ return new class extends Migration
         Schema::create('emplacements', function (Blueprint $table) {
             $table->id();
             $table->string('libelle', 50);
+            $table->string('type');
             $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });

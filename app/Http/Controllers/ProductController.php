@@ -44,7 +44,7 @@ class ProductController extends Controller
 
     //GET CATEGORIES
      public function getAllCategories(){
-        $categories = Categorie::with("produits.stocks")->orderBy("libelle")->get();
+        $categories = Categorie::with("produits.stocks", "produits.categorie")->orderBy("libelle")->get();
         return response()->json(["categories"=>$categories]);
     }
 
@@ -85,7 +85,7 @@ class ProductController extends Controller
                     "quantite"=>$produit->qte_init,
                     "type_mouvement"=>"entrée",
                     "destination"=>$request->emplacement_id,
-                    "date_mouvement"=> Carbon::now()->setTimezone("Africa/kinshasa"),
+                    "date_mouvement"=> Carbon::now()->setTimezone("Africa/Kinshasa"),
                     "user_id"=>Auth::id()
                 ]);
             }
@@ -119,15 +119,26 @@ class ProductController extends Controller
             $data = $request->validate([
                 "produit_id"=>"required|int|exists:produits,id",
                 "type_mouvement"=>"required|string",
-                "numdoc"=>"required|int",
+                "numdoc"=>"nullable|int",
                 "quantite"=>"required|int",
-                "source"=>"required|int",
+                "source"=>"nullable|int",
                 "destination"=>"required|int",
-                "date_mouvement"=>"nullable|datetime",
+                "date_mouvement"=>"nullable|date",
             ]);
 
-            $data["date_mouvement"] = !isset($data["date_mouvement"]) ? Carbon::now()->setTimezone("Africa/kinshasa") : $data["date_mouvement"];
-            $data["user_id"]= Auth::id();
+            $data["date_mouvement"] = !isset($data["date_mouvement"]) ? Carbon::now()->setTimezone("Africa/Kinshasa") : $data["date_mouvement"];
+            $data["user_id"] = Auth::id();
+
+            if(!$data["numdoc"]){
+                $lastMvt = MouvementStock::latest()->first();
+                if($lastMvt){
+                    $data["numdoc"]= (int)$lastMvt->numdoc + 1;
+                }
+                else{
+                    $data["numdoc"] = 1;
+                }
+            }
+
             $mvt = MouvementStock::updateOrCreate(["id"=>$request->id ?? null],$data);
 
             return response()->json([
@@ -145,7 +156,7 @@ class ProductController extends Controller
 
     //Get all mouvement
     public function getStockMvts(){
-        $mvts = MouvementStock::with("produit")->orderByDesc("id")->get();
+        $mvts = MouvementStock::with(["produit","prov", "dest", "user"])->orderByDesc("id")->get();
         return response()->json([
             "status"=>"success",
             "mouvements"=>$mvts

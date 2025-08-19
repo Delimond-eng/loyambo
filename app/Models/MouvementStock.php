@@ -26,5 +26,25 @@ class MouvementStock extends Model
         return $this->belongsTo(Produit::class, 'produit_id');
     }
 
+
+    public function user(){
+        return $this->belongsTo(User::class, "user_id");
+    }
+
+
+    public function prov(){
+        return $this->belongsTo(Emplacement::class, "source");
+    }
+    
+    public function dest(){
+        return $this->belongsTo(Emplacement::class, "destination");
+    }
+
+
+    protected $casts = [
+        'created_at'=>'datetime:d/m/Y H:i',
+        'updated_at'=>'datetime:d/m/Y H:i',
+    ];
+
     
 }

@@ -163,6 +163,11 @@
                     <a href="{{ route('tables.occuped') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">2</span></a>
                 </li>
                 @endcan
+                @can('voir-chambres')
+                <li class="#">
+                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chambres <span class="label label-danger ms-1">1</span></a>
+                </li>
+                @endcan
                 @can('voir-emplacements')
                 <li class="@active('tables.emplacements')">
                     <a href="{{ route('tables.emplacements') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Emplacements</a>
@@ -170,14 +175,10 @@
                 @endcan
                 @can('voir-tables')
                 <li class="@active('tables')">
-                    <a href="{{ route('tables') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables</a>
+                    <a href="{{ route('tables') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables & chambres</a>
                 </li>
                 @endcan
-                @can('voir-chambres')
-                <li class="#">
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chambres</a>
-                </li>
-                @endcan
+               
             </ul>
         </li>
         @endcan

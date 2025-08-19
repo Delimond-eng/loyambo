@@ -34,14 +34,12 @@
                 </ul>
             </div>
 
-            <div class="navbar-custom-menu r-side">
-                <ul class="nav navbar-nav">
-                    <li class="btn-group nav-item d-lg-inline-flex d-none">
-                        <a href="#" data-provide="fullscreen"
-                            class="waves-effect waves-light nav-link full-screen btn-info-light"
-                            title="Full Screen">
-                            <i class="icon-Expand-arrows"><span class="path1"></span><span
-                                    class="path2"></span></i>
+            <div class="navbar-custom-menu r-side" >
+                <ul class="nav navbar-nav AppService">
+                    <li class="btn-group nav-item">
+                        <span class="label label-danger">@{{ cart.length }}</span>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#modal-right" title="Setting" class="waves-effect waves-light nav-link full-screen btn-danger-light">
+                            <span class="icon-Cart2"><span class="path1"></span><span class="path2"></span></span>
                         </a>
                     </li>
 
@@ -81,9 +79,57 @@
                             </li>
                         </ul>
                     </li>
-
                 </ul>
             </div>
         </nav>
     </div>
 </header>
+<div class="modal modal-right fade AppService" id="modal-right" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title fs-20 fw-700 d-flex">Bon de commande Table <div class="bg-primary fw-500 fs-12 ms-2 rounded-circle w-30 h-30 l-h-30 text-center">
+											05</div></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>PU</th>
+                                <th style="width:100px">QTE</th>
+                                <th style="text-align:center">Total</th>
+                                <th style="text-align:center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="i in 5">
+                                <td class="fs-12">
+                                    Product Name Here
+                                </td>
+                                <td class="fs-12">$270</td>
+                                <td>
+                                    <input type="number" class="form-control" placeholder="1" min="1">
+                                </td>
+                                <td align="center" class="fw-900 fs-12">$270</td>
+                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" title=""><i class="ti-trash"></i></a></td>
+                            </tr>					
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-uniform">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary float-end"><i class="fa fa-shopping-bag"></i> Valider & continuer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
+@endpush
+
+

@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\AccessAllow;
 use App\Models\Currencie;
+use App\Models\Emplacement;
+use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
 
 class AdminController extends Controller
@@ -34,7 +38,7 @@ class AdminController extends Controller
                 ["sale_date"=>Carbon::now()->toDateString()],
                 [
                 "sale_date"=>Carbon::now()->toDateString(),
-                "start_time"=>Carbon::now()->setTimezone("Africa/kinshasa"),
+                "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa"),
                 "end_time"=>null
             ]);
             $accessAllow = AccessAllow::latest()->first();
@@ -62,8 +66,14 @@ class AdminController extends Controller
 
 
     //GET ALL USERS 
-    public function getAllUsersWithLatestLog(){
-        $users = User::with(["lastLog", "emplacement","permissions", "roles.permissions"])->orderBy("name")->get();
+    public function getAllUsersWithLatestLog(Request $request){
+        $role = $request->query("role") ?? null;
+        $query = User::with(["lastLog", "emplacement","permissions", "roles.permissions"])
+                ->orderBy("name");
+        if($role){
+            $query->where("role", $role);
+        }
+        $users = $query->get();
         return response()->json([
             "status"=>"success",
             "users"=>$users
@@ -112,6 +122,102 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
         
+    }
+
+    /**
+     * Create Emplacement
+     * @param Request $request
+     * @return mixed
+    */
+    public function createEmplacement(Request $request){
+        try{
+            // Validation
+            $data = $request->validate([
+                "libelle"=>"required|string",
+                "type"=>"required|string",
+            ]);
+            $data["ets_id"] = Auth::user()->ets_id;
+            $emplacement = Emplacement::updateOrCreate([
+                "id"=>$request->id ?? null
+            ],$data);
+           
+            return response()->json([
+                'status'=>'success',
+                'message' => 'Nouveau emplacement créé avec succès !',
+                'result' => $emplacement
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+
+    //GET ALL Emplacements with tables
+    public function getAllEmplacements(){
+        $emplacements = Emplacement::with("tables")->orderBy("libelle")->get();
+        return response()->json([
+            "status"=>"success",
+            "emplacements"=>$emplacements
+        ]);
+    }
+
+    /**
+     * Create Table
+     * @param Request $request
+     * @return mixed
+    */
+    public function createTable(Request $request){
+        try{
+            // Validation
+            $data = $request->validate([
+                "tables.*.numero"=>"required|string",
+                "tables.*.emplacement_id"=>"required|int|exists:emplacements,id",
+                "tables.*.id"=>"nullable|int",
+            ]);
+            $tables = $data["tables"];
+            foreach ($tables as $table) {
+                if(isset($table["id"])){
+                    $cdts["id"] = $table["id"];
+                }
+                else{
+                    $cdts = [
+                        "numero"=>$table["numero"],
+                        "emplacement_id"=>$table["emplacement_id"]
+                    ];
+                }
+                Log::info($cdts);
+                RestaurantTable::updateOrCreate($cdts,["numero"=>$table["numero"], "emplacement_id"=>$table["emplacement_id"]]);
+            }
+            return response()->json([
+                'status'=>'success',
+                'message' => 'Nouvelle table créée avec succès !',
+                'result' => 'Nouvelle table créée avec succès !',
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    //GET ALL TABLES
+    public function getAllTables(Request $request){
+        $placeId = $request->query("place") ?? null;
+        $query = RestaurantTable::with("emplacement")->orderBy("numero");
+        if($placeId){
+            $query->where("emplacement_id", $placeId);
+        }
+        $tables = $query->get();
+        return response()->json([
+            "status"=>"success",
+            "tables"=>$tables
+        ]);
     }
    
 

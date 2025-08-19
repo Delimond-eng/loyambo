@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
 
         SaleDay::create([
             "sale_date"=>Carbon::now()->toDateString(),
-            "start_time"=>Carbon::now()->setTimezone("Africa/kinshasa")
+            "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa")
         ]);
     }
 }

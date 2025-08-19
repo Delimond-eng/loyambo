@@ -20,7 +20,7 @@
                         </nav>
                     </div> -->
                 </div>
-                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>					
+                <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>					
             </div>
         </div>
 

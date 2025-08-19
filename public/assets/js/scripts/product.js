@@ -1,4 +1,5 @@
 import { post, get, postJson } from "../modules/http.js";
+
 new Vue({
     el: "#AppProduct",
     data() {
@@ -97,6 +98,7 @@ new Vue({
                 this.isDataLoading = true;
                 get("/mvts.all")
                     .then(({ data, status }) => {
+                        console.log(JSON.stringify(data));
                         this.isDataLoading = false;
                         this.mouvements = data.mouvements;
                     })
@@ -209,7 +211,7 @@ new Vue({
         //CREATE MVTS
         submitStockMvt() {
             this.isLoading = true;
-            postJson("/product.create", this.formProduct)
+            postJson("/mvt.create", this.formMvt)
                 .then(({ data, status }) => {
                     this.isLoading = false;
                     // Gestion des erreurs
@@ -253,6 +255,11 @@ new Vue({
                         stack: 6,
                     });
                 });
+        },
+
+        editMvt(data) {
+            this.formMvt = data;
+            $(".select2").val(data.produit_id).trigger("change");
         },
 
         resetAll() {
@@ -312,6 +319,11 @@ new Vue({
             return this.mouvements;
         },
 
+        formateSimpleDate() {
+            return (date) =>
+                moment(date, "YYYY-MM-DD").locale("fr").format("DD MMMM YYYY");
+            // ex: "14 avril 2021"
+        },
         formateDate() {
             return (date) =>
                 moment(date, "DD/MM/YYYY HH:mm")

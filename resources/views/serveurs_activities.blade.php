@@ -1,13 +1,3 @@
-@php
-$serveurs = [
-    "Gaston Delimond",
-    "Lionnel nawej",
-    "Djo Perkins",
-    "Isaac Lebo",
-    "Kasanda Ilain",
-]
-@endphp
-
 @extends("layouts.admin")
 
 @section("content")
@@ -16,7 +6,7 @@ $serveurs = [
 	  <div class="container-full">
 		<!-- Content Header (Page header) -->
 
-		<section class="content">
+		<section class="content" id="AppService" v-cloak>
 
 		  <div class="row">
 			  <div class="col-12 col-lg-8">
@@ -36,22 +26,20 @@ $serveurs = [
 								</tr>
 							</thead>
 							<tbody>
-								@foreach ($serveurs as $sa)
-									<tr>
-										<td>
-											<div class="d-flex align-items-center">
-												<img src="assets/images/service.jpg" class="me-2" alt="" width="80">
-												<div>
-													<h5 class="fw-500">{{ $sa }}</h5>
-													<p>14 April 2021,<span class="fs-12"> 03:13 AM</span></p>
-												</div>
+								<tr v-for="(data, index) in allServeurs" :key="index">
+									<td>
+										<div class="d-flex align-items-center">
+											<img src="assets/images/service.jpg" class="me-2" alt="" width="80">
+											<div>
+												<h5 class="fw-500">@{{ data.name }}</h5>
+												<p v-if="data.last_log">@{{ formateDate(data.last_log.logged_in_at) }},<span class="fs-12"> @{{ formateTime(data.last_log.logged_in_at) }}</span></p>
+												<p v-else>Aucune activité</p>
 											</div>
-										</td>
-										<td align="center" class="fw-900">$270</td>
-										<td align="center"><a href="javascript:void(0)" class="btn btn-circle btn-danger btn-xs" title="" data-bs-toggle="tooltip" data-bs-original-title="Delete"><i class="fa fa-sign-out"></i></a></td>
-									</tr>
-								@endforeach
-								
+										</div>
+									</td>
+									<td align="center" class="fw-900">$270</td>
+									<td align="center"><a href="javascript:void(0)" class="btn btn-circle btn-danger btn-xs" title="" data-bs-toggle="tooltip" data-bs-original-title="Delete"><i class="fa fa-sign-out"></i></a></td>
+								</tr>
 							</tbody>
 						</table>
 						<a href="{{ route('home') }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Retour</a>
@@ -66,47 +54,8 @@ $serveurs = [
 	  </div>
   </div>
   <!-- /.content-wrapper -->
-
-    <!-- Popup Model Plase Here -->
-	<div id="myModal" class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h4 class="modal-title" id="myModalLabel">Add Contact</h4>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<form class="form-horizontal">
-						<div class="form-group">
-							<label class="col-md-12 form-label">Name</label>
-							<div class="col-md-12">
-								<input type="text" class="form-control" placeholder="Name">
-							</div>
-							<label class="col-md-12 form-label">Email</label>
-							<div class="col-md-12">
-								<input type="email" class="form-control" placeholder="Email">
-							</div>
-							<label class="col-md-12 form-label">Phone</label>
-							<div class="col-md-12">
-								<input type="tel" class="form-control" placeholder="Phone">
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-md-12 form-label">Address</label>
-							<div class="col-md-12">
-								<textarea class="form-control" placeholder=""></textarea>
-							</div>
-						</div>
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-success" data-bs-dismiss="modal">Add</button>
-					<button type="button" class="btn btn-danger float-end" data-bs-dismiss="modal">Cancel</button>
-				</div>
-			</div>
-			<!-- /.modal-content -->
-		</div>
-		<!-- /.modal-dialog -->
-	</div>
-  <!-- /Popup Model Plase Here -->
 @endsection
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
+@endpush
