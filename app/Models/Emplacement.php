@@ -17,8 +17,33 @@ class Emplacement extends Model
         "ets_id",
     ];
 
+    // Relation tables (pour tout sauf hôtel)
+    public function tables()
+    {
+        return $this->hasMany(RestaurantTable::class, "emplacement_id", "id")
+                    ->whereHas("emplacement", function ($q) {
+                        $q->where("type", "!=", "hôtel");
+                    });
+    }
 
-    public function tables(){
-        return $this->hasMany(RestaurantTable::class, "emplacement_id", "id");
+    // Relation beds (uniquement hôtel)
+    public function beds()
+    {
+        return $this->hasMany(RestaurantTable::class, "emplacement_id", "id")
+                    ->whereHas("emplacement", function ($q) {
+                        $q->where("type", "hôtel");
+                    });
+    }
+
+    // Attribut calculé : items (toujours correct)
+    protected $appends = ['items'];
+
+    public function getItemsAttribute()
+    {
+        if ($this->type === 'hôtel') {
+            return $this->beds;
+        }
+
+        return $this->tables;
     }
 }

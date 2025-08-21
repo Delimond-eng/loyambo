@@ -39,6 +39,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get('/products', fn()=>view("products", ["categories"=>Categorie::all()]))->name("products");
 
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");
+    Route::view('/beds.occuped', "bedroom_occuped")->name("beds.occuped");
     Route::view('/tables.emplacements', "emplacements")->name("tables.emplacements");
     Route::view('/tables', "tables")->name("tables");
     Route::view('/reports.global', "reports_global")->name("reports.global");

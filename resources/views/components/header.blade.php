@@ -88,12 +88,11 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title fs-20 fw-700 d-flex">Bon de commande Table <div class="bg-primary fw-500 fs-12 ms-2 rounded-circle w-30 h-30 l-h-30 text-center">
-											05</div></h5>
+            <h5 class="modal-title fs-20 fw-700 d-flex" v-if="selectedTable">Bon de commande Table <div class="bg-primary fw-500 fs-12 ms-2 rounded-circle w-30 h-30 l-h-30 text-center">@{{ selectedTable.numero }}</div></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="table-responsive">
+                <div v-if="cart.length" class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
@@ -105,19 +104,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="i in 5">
+                            <tr v-for="(data, index) in cart">
                                 <td class="fs-12">
-                                    Product Name Here
+                                    @{{data.libelle}}
                                 </td>
-                                <td class="fs-12">$270</td>
+                                <td class="fs-12">@{{ data.prix_unitaire }}</td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="1" min="1">
+                                    <input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
                                 </td>
-                                <td align="center" class="fw-900 fs-12">$270</td>
-                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" title=""><i class="ti-trash"></i></a></td>
+                                <td align="center" class="fw-900 fs-12">@{{ data.prix_unitaire * data.qte }}</td>
+                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" title=""><i class="ti-close"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-800">Total</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="fw-800">@{{ totalGlobal }}</td>
                             </tr>					
                         </tbody>
                     </table>
+                </div>
+
+                <div v-else class="d-flex justify-content-center align-items-center flex-column">
+                    <span class="text-bg-secondary icon-Cart2 fs-140 opacity-50"><span class="path1"></span><span class="path2"></span></span>
+                    <h4 class="mt-3 text-uppercase fw-700">Panier vide !</h4>
                 </div>
             </div>
             <div class="modal-footer modal-footer-uniform">

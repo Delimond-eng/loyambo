@@ -9,7 +9,7 @@
         <div class="content-header">
             <div class="d-flex align-items-center">
                 <div class="me-auto">
-                    <h3 class="page-title">Occupation des tables</h3>
+                    <h3 class="page-title">Occupation des chambres</h3>
                     <!-- <div class="d-inline-block align-items-center">
                         <nav>
                             <ol class="breadcrumb">
@@ -28,15 +28,15 @@
 		<section class="content AppPlace" v-cloak>
 			<div class="row">
                 <div class="col-12" v-for="(data, index) in allEmplacements" :key="index">
-                    <div class="box-body" v-if="data.tables.length">
+                    <div class="box-body" v-if="data.beds.length">
                         <h4 class="box-title text-primary mb-0 fw-600"><i class="ti-home me-15"></i> @{{ data.libelle }}</h4>
                         <hr class="my-15">
                         <div class="row" v-if="data.tables">
-                            <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in data.tables">
+                            <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in data.beds">
                                 <a href="#" class="box">
                                     <div class="box-body ribbon-box">
                                         <div class="ribbon" :class="{'ribbon-danger': table.statut==='occupée', 'ribbon-success':table.statut==='libre','ribbon-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-                                        <img v-if="data.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid">
+                                        <img v-if="data.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table5.png'" class="img-fluid">
                                         <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid">
                                         <div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
                                             @{{ table.numero }}

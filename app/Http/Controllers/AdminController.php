@@ -158,7 +158,7 @@ class AdminController extends Controller
 
     //GET ALL Emplacements with tables
     public function getAllEmplacements(){
-        $emplacements = Emplacement::with("tables")->orderBy("libelle")->get();
+        $emplacements = Emplacement::with(["tables", "beds"])->orderBy("libelle")->get();
         return response()->json([
             "status"=>"success",
             "emplacements"=>$emplacements

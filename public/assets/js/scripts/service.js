@@ -1,5 +1,9 @@
 import { post, get } from "../modules/http.js";
 
+const Store = Vue.observable({
+    cart: [],
+});
+
 document.querySelectorAll(".AppService").forEach((el) => {
     new Vue({
         el: el,
@@ -14,12 +18,14 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 categories: [],
                 products: [],
                 session: null,
-                cart: [],
+                table: null,
+                store: Store,
             };
         },
 
         mounted() {
             this.refreshUserOrderSession();
+            this.refreshTableData();
             this.getAllServeurs();
             this.viewAllTables();
             this.viewAllCategories();
@@ -58,10 +64,18 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 localStorage.setItem("user", JSON.stringify(user));
                 location.href = "/orders.portal";
             },
+            goToOrderPannel(table) {
+                localStorage.setItem("table", JSON.stringify(table));
+                location.href = "/orders.interface";
+            },
 
             refreshUserOrderSession() {
                 const data = localStorage.getItem("user");
                 this.session = JSON.parse(data);
+            },
+            refreshTableData() {
+                const data = localStorage.getItem("table");
+                this.table = JSON.parse(data);
             },
 
             viewAllCategories() {
@@ -81,6 +95,9 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         computed: {
+            cart() {
+                return this.store.cart;
+            },
             allProducts() {
                 return this.products;
             },
@@ -91,6 +108,16 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             userSession() {
                 return this.session;
+            },
+
+            selectedTable() {
+                return this.table;
+            },
+
+            totalGlobal() {
+                return this.cart.reduce((sum, item) => {
+                    return sum + item.prix_unitaire * item.qte;
+                }, 0);
             },
 
             allTables() {

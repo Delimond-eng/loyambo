@@ -151,8 +151,7 @@
         <!-- end Produits -->
 
         <!-- Menu emplacements & Tables -->
-        @can('voir-tables')
-        <li class="@active(['tables.*'])">
+        <li class="@active(['tables.*', 'beds.occuped']) AppPlace">
             <a href="#">
                 <i class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
                 Emplacements
@@ -160,12 +159,12 @@
             <ul>
                 @can('voir-occupations-tables')
                 <li class="@active('tables.occuped')">
-                    <a href="{{ route('tables.occuped') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">2</span></a>
+                    <a href="{{ route('tables.occuped') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des tables <span class="label label-danger ms-1">@{{ tablePendingsCount }}</span></a>
                 </li>
                 @endcan
                 @can('voir-chambres')
-                <li class="#">
-                    <a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chambres <span class="label label-danger ms-1">1</span></a>
+                <li class="@active('beds.occuped')">
+                    <a href="{{ route('beds.occuped') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Occupations des Chambres <span class="label label-danger ms-1">@{{ bedPendingsCount }}</span></a>
                 </li>
                 @endcan
                 @can('voir-emplacements')
@@ -178,10 +177,8 @@
                     <a href="{{ route('tables') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables & chambres</a>
                 </li>
                 @endcan
-               
             </ul>
         </li>
-        @endcan
         <!-- end emplacements -->
 
         <!-- Menu rapports -->
@@ -202,3 +199,7 @@
 
     </ul>
 </nav>
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/places.js") }}"></script>	
+@endpush

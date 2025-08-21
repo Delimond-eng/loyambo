@@ -3,12 +3,12 @@
 @section("content")
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-	  <div class="container-full AppService">
+	  <div class="container-full AppService" v-cloak>
 		<!-- Content Header (Page header) -->
 		<div class="content-header">
 			<div class="d-flex align-items-center">
 				<div class="me-auto">
-					<h3 class="page-title">Bon de commande Table 03</h3>
+					<h3 class="page-title">Bon de commande <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span></h3>
 					<div class="d-inline-block align-items-center">
 						<nav>
 							<ol class="breadcrumb">
@@ -52,7 +52,7 @@
 						<div class="box-body">
 							<div class="row">
 								<div class="col-lg-4 col-6" v-for="(data, i) in allProducts" :key="i">
-									<a href="#" class="box box-shadowed text-center">
+									<a href="#" @click="data.qte = 1; cart.push(data)" class="box box-shadowed text-center">
 										<div class="box-body" :style="`background-color:${data.categorie.couleur}; color:${getTextColor(data.categorie.couleur)}`">
 											<h4 class="text-truncate fw-700">@{{ data.libelle }}</h4>
 											<h4>@{{ data.prix_unitaire }} F</h4>
@@ -68,40 +68,38 @@
 				<div class="col-12 col-lg-4">
 					<div class="box">
 						<div class="box-header p-3 bg-primary">
-							<h4 class="box-title fw-600">Bon de commande Table 03</h4>
+							<h4 class="box-title fw-600">Bon de commande <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span></h4>
 						</div>
 
 						<div class="box-body">
-							<div class="table-responsive">
+							<div class="table-responsive" v-if="cart.length">
 								<table class="table simple mb-0">
 									<tbody>
-										<tr>
-											<td>Total</td>
-											<td class="text-end fw-700">$3240</td>
+										<tr v-for="(data, index) in cart">
+											<td style="width:70%">@{{ data.libelle }}</td>
+											<td style="width:20%">
+												<input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
+											</td>
+											<td style="width:10%" class="text-end fw-700">@{{ data.prix_unitaire * data.qte }}</td>
 										</tr>
-										<tr>
-											<td>Coupan Discount</td>
-											<td class="text-end fw-700"><span class="text-danger me-15">50%</span>-$1620</td>
-										</tr>
-										<tr>
-											<td>Delivery Charges</td>
-											<td class="text-end fw-700">$50</td>
-										</tr>
-										<tr>
-											<td>Tax</td>
-											<td class="text-end fw-700">$18</td>
-										</tr>
-										<tr>
-											<th class="bt-1">Payable Amount</th>
-											<th class="bt-1 text-end fw-900 fs-18">$1688</th>
+									
+										<tr v-if="cart.length">
+											<th class="bt-1">Total</th>
+											<th class="bt-1"></th>
+											<th class="bt-1 text-end fw-900 fs-18">@{{ totalGlobal }}</th>
 										</tr>
 									</tbody>
 								</table>
 							</div>
+
+							<div v-else class="d-flex justify-content-center align-items-center flex-column">
+								<span class="text-bg-secondary icon-Cart2 fs-140 opacity-50"><span class="path1"></span><span class="path2"></span></span>
+								<h4 class="mt-3 text-uppercase fw-700">Panier vide !</h4>
+							</div>
 						</div>
 						<div class="box-footer">
-							<button class="btn btn-danger">Cancel Order</button>
-							<button class="btn btn-primary pull-right">Place Order</button>
+							<button class="btn btn-danger">Annuler</button>
+							<button class="btn btn-success pull-right"> <i class="fa fa-arrow-right me-1"></i> Valider la commande</button>
 						</div>
 					</div>
 				</div>
