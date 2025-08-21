@@ -25,7 +25,7 @@
 			<div class="row">
 				<div class="col-12 col-lg-8">
 					<div class="box">
-						<div class="box-header bg-dark p-3">
+						<div class="box-header bg-primary p-3">
 							<h4 class="box-title">Catégories</h4>
 						</div>
 						<div class="box-body">
@@ -62,7 +62,48 @@
 							</div>
 						</div>
 					</div>
-					
+
+				</div>
+
+				<div class="col-12 col-lg-4">
+					<div class="box">
+						<div class="box-header p-3 bg-primary">
+							<h4 class="box-title fw-600">Bon de commande Table 03</h4>
+						</div>
+
+						<div class="box-body">
+							<div class="table-responsive">
+								<table class="table simple mb-0">
+									<tbody>
+										<tr>
+											<td>Total</td>
+											<td class="text-end fw-700">$3240</td>
+										</tr>
+										<tr>
+											<td>Coupan Discount</td>
+											<td class="text-end fw-700"><span class="text-danger me-15">50%</span>-$1620</td>
+										</tr>
+										<tr>
+											<td>Delivery Charges</td>
+											<td class="text-end fw-700">$50</td>
+										</tr>
+										<tr>
+											<td>Tax</td>
+											<td class="text-end fw-700">$18</td>
+										</tr>
+										<tr>
+											<th class="bt-1">Payable Amount</th>
+											<th class="bt-1 text-end fw-900 fs-18">$1688</th>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="box-footer">
+							<button class="btn btn-danger">Cancel Order</button>
+							<button class="btn btn-primary pull-right">Place Order</button>
+						</div>
+					</div>
 				</div>
 
 			</div>

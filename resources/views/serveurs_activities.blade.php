@@ -6,7 +6,7 @@
 	  <div class="container-full">
 		<!-- Content Header (Page header) -->
 
-		<section class="content" id="AppService" v-cloak>
+		<section class="content AppService" v-cloak>
 
 		  <div class="row">
 			  <div class="col-12 col-lg-8">
