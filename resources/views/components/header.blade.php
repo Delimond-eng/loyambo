@@ -35,7 +35,7 @@
             </div>
 
             <div class="navbar-custom-menu r-side" >
-                <ul class="nav navbar-nav AppService">
+                <ul class="nav navbar-nav AppService" v-cloak>
                     <li class="btn-group nav-item">
                         <span class="label label-danger">@{{ cart.length }}</span>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-right" title="Setting" class="waves-effect waves-light nav-link full-screen btn-danger-light">
@@ -113,7 +113,7 @@
                                     <input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
                                 </td>
                                 <td align="center" class="fw-900 fs-12">@{{ data.prix_unitaire * data.qte }}</td>
-                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" title=""><i class="ti-close"></i></a></td>
+                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" @click="removeFromCart(data)" title=""><i class="ti-close"></i></a></td>
                             </tr>
                             <tr>
                                 <td class="fw-800">Total</td>
@@ -133,7 +133,7 @@
             </div>
             <div class="modal-footer modal-footer-uniform">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-primary float-end"><i class="fa fa-shopping-bag"></i> Valider & continuer</button>
+                <button type="button" class="btn btn-success float-end"><i class="mdi mdi-check-all me-1"></i> Valider & continuer</button>
             </div>
         </div>
     </div>

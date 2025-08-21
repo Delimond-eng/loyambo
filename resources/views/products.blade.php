@@ -156,24 +156,35 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text bg-transparent"><i
-                                                class="ti-layout-accordion-separated text-primary"></i></span>
-                                        <select class="form-control ps-15 bg-transparent" v-model="formProduct.unite">
-                                            <option value="" selected hidden label="Unité"></option>
-                                            <option value="boite">Boite</option>
-                                            <option value="bouteille">Bouteille</option>
-                                            <option value="cannete">Cannette</option>
-                                            <option value="carton">Carton</option>
-                                            <option value="kg">Kg</option>
-                                            <option value="paquet">Paquet</option>
-                                            <option value="pce">Pce</option>
-                                            <option value="sachet">Sachet</option>
-                                            <option value="filet">Filet</option>
-                                            <option value="pots">Pots</option>
-                                            <option value="litre">Litre</option>
-                                        </select>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-transparent"><i
+                                                        class="ti-layout-accordion-separated text-primary"></i></span>
+                                                <select class="form-control ps-15 bg-transparent" v-model="formProduct.unite">
+                                                    <option value="" selected hidden label="Unité"></option>
+                                                    <option value="boite">Boite</option>
+                                                    <option value="bouteille">Bouteille</option>
+                                                    <option value="cannete">Cannette</option>
+                                                    <option value="carton">Carton</option>
+                                                    <option value="kg">Kg</option>
+                                                    <option value="paquet">Paquet</option>
+                                                    <option value="pce">Pce</option>
+                                                    <option value="sachet">Sachet</option>
+                                                    <option value="filet">Filet</option>
+                                                    <option value="pots">Pots</option>
+                                                    <option value="litre">Litre</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="demo-checkbox mt-2">
+                                            <input type="checkbox" id="basic_checkbox_2" class="filled-in">
+                                            <label for="basic_checkbox_2">Quantifiable</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

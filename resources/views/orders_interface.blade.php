@@ -45,14 +45,14 @@
 							<div class="input-group" style="width: 300px">
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-search text-primary"></i></span>
-                                <input type="text" name="name" class="form-control ps-15 bg-transparent"
+                                <input type="text" v-model="search" name="name" class="form-control ps-15 bg-transparent"
                                     placeholder="Recherche produit...">
                             </div>
 						</div>
 						<div class="box-body">
 							<div class="row">
 								<div class="col-lg-4 col-6" v-for="(data, i) in allProducts" :key="i">
-									<a href="#" @click="data.qte = 1; cart.push(data)" class="box box-shadowed text-center">
+									<a href="#" @click="addToCart(data)" class="box box-shadowed text-center">
 										<div class="box-body" :style="`background-color:${data.categorie.couleur}; color:${getTextColor(data.categorie.couleur)}`">
 											<h4 class="text-truncate fw-700">@{{ data.libelle }}</h4>
 											<h4>@{{ data.prix_unitaire }} F</h4>
@@ -76,11 +76,16 @@
 								<table class="table simple mb-0">
 									<tbody>
 										<tr v-for="(data, index) in cart">
-											<td style="width:70%">@{{ data.libelle }}</td>
+											<td style="width:65%">@{{ data.libelle }}</td>
 											<td style="width:20%">
 												<input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
 											</td>
-											<td style="width:10%" class="text-end fw-700">@{{ data.prix_unitaire * data.qte }}</td>
+											<td style="width:15%" class="text-end fw-700">
+												<div class="d-flex">
+													<span>@{{ data.prix_unitaire * data.qte }}</span>
+													<a href="#" @click="removeFromCart(data)" class="btn btn-danger-light btn-xs ms-2" title=""><i class="ti-close fs-10"></i></a>
+												</div>
+											</td>
 										</tr>
 									
 										<tr v-if="cart.length">
@@ -99,7 +104,7 @@
 						</div>
 						<div class="box-footer">
 							<button class="btn btn-danger">Annuler</button>
-							<button class="btn btn-success pull-right"> <i class="fa fa-arrow-right me-1"></i> Valider la commande</button>
+							<button class="btn btn-success pull-right"> <i class="mdi mdi-check-all me-1"></i> Valider la commande</button>
 						</div>
 					</div>
 				</div>

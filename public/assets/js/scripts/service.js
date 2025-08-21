@@ -20,6 +20,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 session: null,
                 table: null,
                 store: Store,
+                search: "",
             };
         },
 
@@ -32,6 +33,56 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         methods: {
+            //ADD TO CART
+            addToCart(product) {
+                product.qte = 1;
+                const found = this.cart.find((p) => p.id === product.id);
+                if (found) {
+                    /* if (found.quantity > product.stock) {
+                        new Swal({
+                            title: "Stock insuffisant !",
+                            text:
+                                "Impossible d'ajouter un produit au panier, stock insuffisant ! Stock actuel : " +
+                                product.stock,
+                            icon: "warning",
+                            timer: 3000,
+                            showConfirmButton: !1,
+                        });
+                        if (product.stock == 0) {
+                            this.cart = this.cart.filter(
+                                (p) => p.id !== product.id
+                            );
+                        } else {
+                            found.quantity = product.stock;
+                        }
+                        return;
+                    } */
+                    found.qte += 1;
+                } else {
+                    /* if (product.stock == 0) {
+                        new Swal({
+                            title: "Stock insuffisant !",
+                            text:
+                                "Impossible d'ajouter un produit au panier, stock insuffisant. stock actuel : " +
+                                product.stock,
+                            icon: "warning",
+                            timer: 3000,
+                            showConfirmButton: !1,
+                        });
+                        return;
+                    } */
+                    this.cart.push({ ...product, quantity: 1 });
+                }
+            },
+
+            //REMOVE ITEM
+            removeFromCart(product) {
+                this.store.cart = this.store.cart.filter(
+                    (p) => p.id !== product.id
+                );
+            },
+
+            //GET ALL AGENTS SERVEUR
             getAllServeurs() {
                 this.isDataLoading = true;
                 get("/users.all")
@@ -99,6 +150,13 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 return this.store.cart;
             },
             allProducts() {
+                if (this.search) {
+                    return this.products.filter((p) =>
+                        p.libelle
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase())
+                    );
+                }
                 return this.products;
             },
 
