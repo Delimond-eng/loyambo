@@ -54,14 +54,14 @@
                     </a>
                 </li>
                 @endcan
-                @can('gerer-roles') {{-- ou permission personnalisée si nécessaire --}}
+                <!-- @can('gerer-roles') {{-- ou permission personnalisée si nécessaire --}}
                 <li>
                     <a href="#">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
                         Rôles & attribution accès
                     </a>
                 </li>
-                @endcan
+                @endcan -->
             </ul>
         </li>
         @endcan

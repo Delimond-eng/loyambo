@@ -82,6 +82,10 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 );
             },
 
+            cancelCart() {
+                this.store.cart = [];
+            },
+
             //GET ALL AGENTS SERVEUR
             getAllServeurs() {
                 this.isDataLoading = true;
@@ -121,12 +125,16 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             refreshUserOrderSession() {
-                const data = localStorage.getItem("user");
-                this.session = JSON.parse(data);
+                if (location.pathname === "/orders.portal") {
+                    const data = localStorage.getItem("user");
+                    this.session = JSON.parse(data);
+                }
             },
             refreshTableData() {
-                const data = localStorage.getItem("table");
-                this.table = JSON.parse(data);
+                if (location.pathname === "/orders.interface") {
+                    const data = localStorage.getItem("table");
+                    this.table = JSON.parse(data);
+                }
             },
 
             viewAllCategories() {

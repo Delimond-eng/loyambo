@@ -30,7 +30,7 @@
 							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in allTables">
 								<a href="#" @click="goToOrderPannel(table)" class="box">
 									<div class="box-body ribbon-box">
-										<div class="ribbon" :class="{'ribbon-danger': table.statut==='occupée', 'ribbon-success':table.statut==='libre','ribbon-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
+										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
 										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid">
                                         <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">

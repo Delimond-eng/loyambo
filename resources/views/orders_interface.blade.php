@@ -103,8 +103,8 @@
 							</div>
 						</div>
 						<div class="box-footer">
-							<button class="btn btn-danger">Annuler</button>
-							<button class="btn btn-success pull-right"> <i class="mdi mdi-check-all me-1"></i> Valider la commande</button>
+							<button class="btn btn-danger" @click="cancelCart">Annuler</button>
+							<button class="btn btn-success pull-right" > <i class="mdi mdi-check-all me-1"></i> Valider la commande</button>
 						</div>
 					</div>
 				</div>

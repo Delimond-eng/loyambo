@@ -4,7 +4,7 @@
 <div class="col-12">
     <div class="row justify-content-center g-0" id="App">
         <div class="col-lg-4 col-md-5 col-12">
-            <div class="bg-white rounded10 shadow-lg">
+            <div class="bg-white rounded10 shadow-lg loginBox">
                 <div class="content-top-agile p-20 pb-0">
                     <h2 class="text-primary">Loyambo Resto & Lounge</h2>
                     <p class="mb-0">Identifiez-vous pour continuer</p>

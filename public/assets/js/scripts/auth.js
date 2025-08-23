@@ -21,6 +21,7 @@ new Vue({
                     this.isLoading = false;
                     // Gestion des erreurs
                     if (data.errors !== undefined) {
+                        this.startAnimated();
                         this.error = data.errors;
                         $.toast({
                             heading: "Identifiants erronés.",
@@ -33,6 +34,7 @@ new Vue({
                         });
                     }
                     if (data.alerts !== undefined) {
+                        this.startAnimated();
                         this.error = data.alerts;
                         $.toast({
                             heading: "Permission non accordé",
@@ -125,6 +127,17 @@ new Vue({
                         stack: 6,
                     });
                 });
+        },
+
+        startAnimated() {
+            $(".loginBox")
+                .addClass("animated tada")
+                .one(
+                    "webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend",
+                    function () {
+                        $(this).removeClass("animated tada");
+                    }
+                );
         },
     },
 });
