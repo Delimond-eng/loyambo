@@ -102,6 +102,18 @@ class ProductController extends Controller
         }
     }
 
+    public function updateProductQuantified(Request $request){
+        $produit = Produit::find($request->id);
+        if($produit){
+            $produit->update(["quantified"=>$request->quantified]);
+        }
+        return response()->json([
+            "status"=>"success",
+            "result"=>"updated success",
+            "product"=>$request->all()
+        ]);
+    }
+
     //ALL PRODUCT
     public function getAllProducts(){
         $products = Produit::with(["categorie", "stocks"])->orderBy("libelle")->get();

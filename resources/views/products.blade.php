@@ -30,6 +30,7 @@
                                             <th>Prix unitaire</th>
                                             <th>Qté Initial</th>
                                             <th>unité</th>
+                                            <th>Quantifiable</th>
                                             <th>statut</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
@@ -57,15 +58,22 @@
                                             <td>
                                                 <h6 class="mb-0 fw-bold">@{{ data.unite }}</h6>
                                             </td>
-                                           
                                             <td>
-                                                <span class="badge badge-pill badge-success">Paid on Mar 16, 2018</span>
+                                                <div class="demo-checkbox m-0 p-0">
+                                                    <input type="checkbox" @change="updateQuantified(data, $event)" :id="`md_checkbox_${data.id}`" class="filled-in chk-col-success" :checked="data.quantified">
+                                                    <label :for="`md_checkbox_${data.id}`">Quantifiable</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-pill badge-success">actif</span>
                                             </td>
 
                                              <td class="text-center">
-                                                <a href="#" class="btn btn-primary-light btn-rounded btn-sm me-1"><i class="icon-Clipboard fs-16"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i></a>
-												<a href="#" data-bs-toggle="modal" data-bs-target="#productModal"  @click="formProduct = data" class="btn btn-info-light btn-sm btn-rounded me-1"><span class="icon-Write fs-16"><span class="path1"></span><span class="path2"></span></span></a>
-												<a href="#" class="btn btn-danger-light btn-rounded btn-sm"><span class="icon-Trash1 fs-16"><span class="path1"></span><span class="path2"></span></span></a>
+                                                <div class="d-flex">
+                                                    <button type="button" class="btn btn-primary btn-xs me-1"><i class="mdi mdi-view-grid"></i></button>
+                                                    <button type="button" class="btn btn-primary-light btn-xs me-1" data-bs-toggle="modal" data-bs-target="#productModal"  @click="formProduct = data"><i class="mdi mdi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-delete"></i></button>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -182,7 +190,7 @@
 
                                     <div class="col-md-4">
                                         <div class="demo-checkbox mt-2">
-                                            <input type="checkbox" id="basic_checkbox_2" class="filled-in">
+                                            <input type="checkbox" v-model="formProduct.quantified" id="basic_checkbox_2" class="filled-in">
                                             <label for="basic_checkbox_2">Quantifiable</label>
                                         </div>
                                     </div>

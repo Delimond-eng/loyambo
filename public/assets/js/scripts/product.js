@@ -28,6 +28,7 @@ new Vue({
                 unite: "",
                 seuil_reappro: "",
                 qte_init: "",
+                quantified: true,
             },
 
             formMvt: {
@@ -192,6 +193,44 @@ new Vue({
                         this.viewAllProducts();
                         this.resetAll();
                         $("#productModal").modal("hide");
+                    }
+                })
+                .catch((err) => {
+                    this.isLoading = false;
+                    $.toast({
+                        heading: "Echec de traitement",
+                        text: "Veuillez réessayer plutard !",
+                        position: "top-right",
+                        loaderBg: "#ff4949ff",
+                        icon: "error",
+                        hideAfter: 3000,
+                        stack: 6,
+                    });
+                });
+        },
+
+        updateQuantified(data, event) {
+            const checked = event.target.checked;
+            const productId = data.id;
+            postJson("/product.update.quantified", {
+                id: productId,
+                quantified: checked,
+            })
+                .then(({ data, status }) => {
+                    if (data.status === "success") {
+                        this.error = null;
+                        this.result = data.result;
+                        this.products = [];
+                        this.viewAllProducts();
+                        $.toast({
+                            heading: "Opération effectuée",
+                            text: `Produit quantifié !`,
+                            position: "top-right",
+                            loaderBg: "#49ff5eff",
+                            icon: "success",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
                     }
                 })
                 .catch((err) => {

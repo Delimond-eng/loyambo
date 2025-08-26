@@ -8,7 +8,7 @@
 			<div class="content-header">
 			</div>
 			<!-- Main content -->
-			<section class="content" id="AppPlace" v-cloak>
+			<section class="content AppPlace" v-cloak>
 				<div class="row">
 					<div class="col-xl-6">
 						<div class="box">
