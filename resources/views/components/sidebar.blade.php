@@ -196,7 +196,6 @@
         </li>
         @endcan
         <!-- end rapports -->
-
     </ul>
 </nav>
 
