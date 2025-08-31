@@ -8,4 +8,42 @@ use Illuminate\Database\Eloquent\Model;
 class Facture extends Model
 {
     use HasFactory;
+
+    // Les champs assignables
+    protected $fillable = [
+        'numero_facture',
+        'user_id',
+        'table_id',
+        'sale_day_id',
+        'total_ht',
+        'remise',
+        'total_ttc',
+        'statut',
+    ];
+
+    // Relations
+
+    // Facture appartient à un utilisateur
+    public function user()
+    {
+        return $this->belongsTo(User::class, "user_id");
+    }
+
+    // Facture peut être liée à une table de restaurant
+    public function table()
+    {
+        return $this->belongsTo(RestaurantTable::class, 'table_id');
+    }
+
+    // Facture peut être liée à un sale day
+    public function saleDay()
+    {
+        return $this->belongsTo(SaleDay::class, "sale_day_id");
+    }
+
+    // Une facture a plusieurs détails
+    public function details()
+    {
+        return $this->hasMany(FactureDetail::class, "facture_id", "id");
+    }
 }

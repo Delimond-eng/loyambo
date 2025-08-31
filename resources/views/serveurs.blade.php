@@ -6,16 +6,24 @@
 	  <div class="container-full">
 		<!-- Content Header (Page header) -->
 
+		<div class="content-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="me-auto">
+                    <h3 class="page-title">Liste des serveurs</h3>
+                    <div class="d-inline-block align-items-center">
+                        <nav>
+                            <ol class="breadcrumb">
+                               <li class="breadcrumb-item ms-1" aria-current="page">Veuillez sélectionner un serveur !</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 		<!-- Main content -->
 		<section class="content AppService" v-cloak>
 			<div class="row">
-			  <div class="col-12">
-                    <div class="box box-primary">
-                        <div class="box-header d-flex align-items-center justify-content-center" style="padding: 1rem">
-                            <h4 class="box-title fw-900"><span class="fw-900 text-white text-uppercase">Sélectionnez votre compte</span></h4>
-                        </div>
-                    </div>
-			    </div>
                 <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(data, index) in allServeurs" :key="index">
 					<a href="#" @click="goToUserOrderSession(data)" class="box box-body d-flex flex-column justify-content-center align-items-center py-30 box-inverse bg-indigo-500">
 						<img class="avatar avatar-xxl" src="assets/images/serveur.png" alt="">

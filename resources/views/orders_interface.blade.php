@@ -98,13 +98,12 @@
 							</div>
 
 							<div v-else class="d-flex justify-content-center align-items-center flex-column">
-								<span class="text-bg-secondary icon-Cart2 fs-140 opacity-50"><span class="path1"></span><span class="path2"></span></span>
-								<h4 class="mt-3 text-uppercase fw-700">Panier vide !</h4>
+								<p class="mt-3 text-danger">Panier vide !</p>
 							</div>
 						</div>
-						<div class="box-footer">
+						<div class="box-footer" v-if="cart.length">
 							<button class="btn btn-danger" @click="cancelCart">Annuler</button>
-							<button class="btn btn-success pull-right" > <i class="mdi mdi-check-all me-1"></i> Valider la commande</button>
+							<button class="btn btn-success pull-right" @click="createFacture" :disabled="isLoading"> <i class="mdi mdi-check-all me-1"></i> Valider la commande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button>
 						</div>
 					</div>
 				</div>

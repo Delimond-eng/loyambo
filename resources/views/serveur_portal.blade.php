@@ -12,11 +12,18 @@
                     <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span v-else>Inconnu</span></h3>
                 </div>
 
-				<div class="btn-group">
+				<!-- <div class="btn-group">
 					<button class="btn btn-success gallery-header-center-right-links-current" id="filter-all"> <i class="fa fa-exchange me-2"></i> Transferer Table</button>
 					<button class="btn btn-warning gallery-header-center-right-links-current" id="filter-studio"><i class="mdi mdi-link me-2"></i>Combiner Table</button>
 					<button class="btn btn-info gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-lock-plus me-2"></i>Reservation</button>
 					<button class="btn btn-danger gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-close-box me-2"></i>Annuler</button>
+				</div> -->
+
+				<div class="clearfix">
+					<button type="button" class="waves-effect waves-light btn btn-rounded btn-primary mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
+					<button type="button" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
+					<button type="button" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button>
+					<button type="button" class="waves-effect waves-light btn btn-rounded btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
 				</div>
             </div>
         </div>

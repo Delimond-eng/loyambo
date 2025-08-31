@@ -1,5 +1,5 @@
-<nav class="main-nav" role="navigation">
-
+@if (!Route::is("licences.pricing"))
+    <nav class="main-nav" role="navigation">
     <!-- Mobile menu toggle button (hamburger/x icon) -->
     <input id="main-menu-state" type="checkbox" />
     <label class="main-menu-btn" for="main-menu-state">
@@ -198,6 +198,8 @@
         <!-- end rapports -->
     </ul>
 </nav>
+@endif
+
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/places.js") }}"></script>	

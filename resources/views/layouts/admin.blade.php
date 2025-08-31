@@ -8,17 +8,18 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="assets/images/favicon.png">
+    <link rel="icon" href="{{ asset("assets/images/favicon.png") }}">
 
     <title>Loyambo | Home</title>
 
     <!-- Vendors Style-->
-    <link rel="stylesheet" href="assets/css/vendors_css.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/vendors_css.css') }}">
 
-    <!-- Style-->
-    <link rel="stylesheet" href="assets/css/horizontal-menu.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/skin_color.css">
+    <!-- Style -->
+    <link rel="stylesheet" href="{{ asset('assets/css/horizontal-menu.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/skin_color.css') }}">
+
     @stack("styles")
 </head>
 
@@ -44,11 +45,12 @@
     </div>
 
     <!-- Vendor JS -->
-    <script src="assets/js/vendors.min.js"></script>
-    <script src="assets/js/pages/chat-popup.js"></script>
-    <script src="assets/vendors/components/apexcharts-bundle/dist/apexcharts.min.js"></script>
-    <script src="assets/vendors/icons/feather-icons/feather.min.js"></script>
-    <script src="assets/vendors/components/OwlCarousel2/dist/owl.carousel.js"></script>
+    <script src="{{ asset('assets/js/vendors.min.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/chat-popup.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/apexcharts-bundle/dist/apexcharts.min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/icons/feather-icons/feather.min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/OwlCarousel2/dist/owl.carousel.js') }}"></script>
+
 
    <!--  <script src="assets/vendors/lib/4/core.js"></script>
     <script src="assets/vendors/lib/4/maps.js"></script>
@@ -59,16 +61,16 @@
 
 
     <!-- Riday Admin App -->
-    <script src="assets/js/jquery.smartmenus.js"></script>
-    <script src="assets/vendors/components/datatable/datatables.min.js"></script>	
-    <script src="assets/vendors/components/bootstrap-select/dist/js/bootstrap-select.js"></script>
-	<script src="assets/vendors/components/bootstrap-tagsinput/dist/bootstrap-tagsinput.js"></script>
-	<script src="assets/vendors/components/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.js"></script>
-	<script src="assets/vendors/components/select2/dist/js/select2.full.js"></script>
-    <script src="assets/js/menus.js"></script>
-    <script src="assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js"></script>
-    <script src="assets/js/template.js"></script>
-    <script src="assets/js/pages/dashboard.js"></script>
+    <script src="{{ asset('assets/js/jquery.smartmenus.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/datatable/datatables.min.js') }}"></script>	
+    <script src="{{ asset('assets/vendors/components/bootstrap-select/dist/js/bootstrap-select.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/bootstrap-tagsinput/dist/bootstrap-tagsinput.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/select2/dist/js/select2.full.js') }}"></script>
+    <script src="{{ asset('assets/js/menus.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js') }}"></script>
+    <script src="{{ asset('assets/js/template.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/dashboard.js') }}"></script>
     <script src="{{ asset("assets/vendors/plugins/moment/moment.js") }}"></script>
 
     <script>

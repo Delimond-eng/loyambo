@@ -5,8 +5,8 @@
             <a href="{{ route("home") }}" class="logo">
                 <!-- logo-->
                 <div class="logo-lg">
-                    <span class="light-logo"><img src="assets/images/logo-3.jpg" alt="logo"></span>
-                    <span class="dark-logo"><img src="assets/images/logo-light-text.png" alt="logo"></span>
+                    <span class="light-logo"><img src="{{ asset("assets/images/logo-3.jpg") }}" alt="logo"></span>
+                    <span class="dark-logo"><img src="{{ asset("assets/images/logo-light-text.png") }}" alt="logo"></span>
                 </div>
             </a>
         </div>
@@ -53,11 +53,12 @@
                                 <strong class="text-white">{{ Auth::user()->name }}</strong><br>
                                 <small class="text-white">{{ Auth::user()->role }}</small>
                             </div>
-                            <img src="assets/images/avatar/avatar-2.png"
+                            <img src="{{ asset("assets/images/avatar/avatar-2.png") }}"
                                 class="user-image rounded-circle avatar bg-white mx-10" alt="User Image">
                         </a>
                         <ul class="dropdown-menu animated flipInX">
                             <li class="user-body">
+                                <a class="dropdown-item" href="{{ url('/licences/pricing') }}"> <i class="mdi mdi-key-variant text-muted me-2"></i>Licence trial <small class="text-info">(7 jrs restants)</small></a>
                                 @canCloseDay
                                     @can("cloturer-journee")
                                     <a class="dropdown-item text-danger" href="{{ route("orders.portal") }}"><i class="fa fa-sign-out me-2"></i>
@@ -89,6 +90,7 @@
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title fs-20 fw-700 d-flex" v-if="selectedTable">Bon de commande Table <div class="bg-primary fw-500 fs-12 ms-2 rounded-circle w-30 h-30 l-h-30 text-center">@{{ selectedTable.numero }}</div></h5>
+            <h5 class="modal-title fs-20 text-danger" v-else>Aucune Table trouvé</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -125,13 +127,11 @@
                         </tbody>
                     </table>
                 </div>
-
-                <div v-else class="d-flex justify-content-center align-items-center flex-column">
-                    <span class="text-bg-secondary icon-Cart2 fs-140 opacity-50"><span class="path1"></span><span class="path2"></span></span>
-                    <h4 class="mt-3 text-uppercase fw-700">Panier vide !</h4>
+                <div v-else style="height:100%" class="d-flex justify-content-center align-items-center flex-column">
+                    <p class="mt-3 text-danger">Panier vide !</p>
                 </div>
             </div>
-            <div class="modal-footer modal-footer-uniform">
+            <div class="modal-footer modal-footer-uniform" v-if="selectedTable">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
                 <button type="button" class="btn btn-success float-end"><i class="mdi mdi-check-all me-1"></i> Valider & continuer</button>
             </div>

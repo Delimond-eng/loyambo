@@ -27,6 +27,7 @@ Auth::routes();
 Route::post("/create.account", [UserController::class, "createEtsAccount"])->name("create.account");
 Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "dashboard")->name("home");
+    Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
     Route::view('/orders', "orders")->name("orders");
     Route::view('/sells', "sells")->name("sells");
     Route::view('/factures', "factures")->name("factures");
@@ -72,5 +73,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/emplacements.all", [AdminController::class, "getAllEmplacements"])->name("emplacements.all")->middleware("can:voir-emplacements");
     Route::post("/table.create", [AdminController::class, "createTable"])->name("table.create")->middleware("can:creer-tables");
     Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
+    
+    Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
 });
 
