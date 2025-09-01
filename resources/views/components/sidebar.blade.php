@@ -9,11 +9,12 @@
     <ul id="main-menu" class="sm sm-blue">
 
         <!-- Menu Tdb -->
-        @can('voir-dashboard')
+        <!-- @can('voir-dashboard')
+        
+        @endcan -->
         <li class="@active('home')">
             <a href="{{ route('home') }}"><i class="icon-Home"></i>Tableau de bord</a>
         </li>
-        @endcan
         <!-- End Tbd -->
 
         <!-- Menu Ventes -->
@@ -33,7 +34,7 @@
             <a href="{{ route('orders') }}">
                 <i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
                 Commandes
-                <span class="label label-danger">5</span>
+                <span class="label label-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
             </a>
         </li>
         @endcan
@@ -72,7 +73,7 @@
         <li class="@active('factures')">
             <a href="{{ route('factures') }}">
                 <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>
-                Factures <span class="label label-success ms-1">2</span>
+                Factures <span class="label label-primary ms-1 AppDashboard">@{{ counts.facs ?? 0 }}</span>
             </a>
         </li>
         @endcan
@@ -202,5 +203,6 @@
 
 
 @push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>	
     <script type="module" src="{{ asset("assets/js/scripts/places.js") }}"></script>	
 @endpush

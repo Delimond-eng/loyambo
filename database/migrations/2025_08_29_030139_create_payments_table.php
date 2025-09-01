@@ -20,11 +20,12 @@ return new class extends Migration
             $table->enum("mode",["cash", "mobile", "cheque","virement"]);
             $table->string("mode_ref")->nullable();
             $table->dateTime("pay_date");
-             $table->unsignedBigInteger("emplacement_id")->nullable();
+            $table->unsignedBigInteger("emplacement_id")->nullable();
             $table->unsignedBigInteger("facture_id");
             $table->unsignedBigInteger("table_id");
             $table->unsignedBigInteger("chambre_id");
             $table->unsignedBigInteger("caisse_id");
+            $table->unsignedBigInteger("user_id");
             $table->timestamps();
         });
     }

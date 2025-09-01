@@ -19,6 +19,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 products: [],
                 session: null,
                 table: null,
+                selectedPendingTable: null,
                 store: Store,
                 search: "",
             };
@@ -101,10 +102,13 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             viewAllTables() {
                 this.refreshUserOrderSession();
-                const validPath = location.pathname === "/orders.portal";
+                const validPath = true;
                 if (validPath) {
+                    let url = this.session
+                        ? `/tables.all?place=${this.session.emplacement_id}`
+                        : "/tables.all";
                     this.isDataLoading = true;
-                    get(`/tables.all?place=${this.session.emplacement_id}`)
+                    get(url)
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
                             this.tables = data.tables;
@@ -119,7 +123,12 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 localStorage.setItem("user", JSON.stringify(user));
                 location.href = "/orders.portal";
             },
-            goToOrderPannel(table) {
+            goToOrderPannel(table, isTable = false) {
+                if (table.statut === "occupée" && !isTable) {
+                    this.selectedPendingTable = table;
+                    $(".modal-commande").modal("show");
+                    return;
+                }
                 localStorage.setItem("table", JSON.stringify(table));
                 location.href = "/orders.interface";
             },
@@ -163,7 +172,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 });
                 const form = {
                     table_id: table.id,
-                    user_id: user.id ?? null,
+                    user_id: user ? user.id : null,
                     details: details,
                 };
 
@@ -196,6 +205,10 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                 hideAfter: 3000,
                                 stack: 6,
                             });
+
+                            setTimeout(() => {
+                                location.href = "/orders.portal";
+                            }, 1000);
                         }
                     })
                     .catch((err) => {

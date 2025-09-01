@@ -23,71 +23,47 @@
     </div>
 
     <!-- Main content -->
-    <section class="content">
+    <section class="content AppFacture" v-cloak>
         <div class="row">
             <div class="col-12">
                 <div class="box">
                     <div class="box-header with-border" style="padding: 1.5rem;">
-                        <h4 class="box-title">Invoice List</h4>
-                        <h6 class="box-subtitle">Exportez La liste des factures à CSV, Excel, Copy, PDF & Print</h6>
+                        <h4 class="box-title">Liste des facture d'une journée de vente</h4>
+                        <h6 class="box-subtitle">Exportez La liste des factures à CSV, Excel, PDF</h6>
                     </div>
                     <div class="box-body">
-                        <div class="table-responsive">
-                            <table id="example" class="table table-lg invoice-archive">
+                        <div class="table-responsive rounded card-table">
+                            <table class="table border-no" id="example1">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th>Period</th>
-                                        <th>Issued to</th>
+                                        <th>N° FAC</th>
+                                        <th>Journée du</th>
+                                        <th>Date facture</th>
+                                        <th>N° Table/Chambre</th>
+                                        <th>Emplacement</th>
+                                        <th>Montant</th>
+                                        <th>Créée par</th>
                                         <th>Status</th>
-                                        <th>Issue date</th>
-                                        <th>Due date</th>
-                                        <th>Amount</th>
-                                        <th class="text-center">Actions</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
-                                 <tbody>
-                                    <tr>
-                                        <td>#0025</td>
-                                        <td>February 2018</td>
-                                        <td>
-                                            <h6 class="mb-0">
-                                                <a href="#">Jacob</a>
-                                                <span class="d-block text-muted">Payment method: Skrill</span>
-                                            </h6>
+                                <tbody>
+                                    <tr v-for="(data, index) in allFactures" class="hover-primary">
+                                        <td>@{{ data.numero_facture }}</td>
+                                        <td>@{{ formateDate(data.sale_day.sale_date) }}</td>
+                                        <td>@{{ formateDate(data.date_facture) }},<span class="fs-12">@{{ formateTime(data.date_facture) }}</span></td>
+                                        <td>@{{ data.table.numero}}</td>
+                                        <td>@{{ data.table.emplacement.libelle}}</td>
+                                        <td>@{{ data.total_ttc }}</td>
+                                        <td>@{{ data.user.name }}</td>
+                                        <td>												
+                                            <span class="badge badge-pill" :class="{'badge-warning':data.statut==='en_attente', 'badge-success':data.statut==='payée', 'badge-danger':data.statut==='annulée'}">@{{ data.statut.replaceAll('_', ' ') }}</span>
                                         </td>
-                                        <td>
-                                            <select name="status" class="form-select" data-placeholder="Select status">
-                                                <option value="overdue">Overdue</option>
-                                                <option value="hold" selected>On hold</option>
-                                                <option value="pending">Pending</option>
-                                                <option value="paid">Paid</option>
-                                                <option value="invalid">Invalid</option>
-                                                <option value="cancel">Canceled</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            April 18, 2018
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-pill badge-success">Paid on Mar 16, 2018</span>
-                                        </td>
-                                        <td>
-                                            <h6 class="mb-0 fw-bold">$36,890 <span class="d-block text-muted fw-normal">VAT $4,859</span></h6>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="list-icons d-inline-flex">
-                                                <a href="#" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" class="list-icons-item me-10"><i class="fa fa-eye-slash"></i></a>
-                                                <div class="list-icons-item dropdown">
-                                                    <a href="#" class="list-icons-item dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-file-text"></i></a>
-                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                        <a href="#" class="dropdown-item"><i class="fa fa-download"></i> Télécharger</a>
-                                                        <a href="#" class="dropdown-item"><i class="fa fa-print"></i> Imprimer</a>
-                                                        <div class="dropdown-divider"></div>
-                                                        <a href="#" class="dropdown-item"><i class="fa fa-pencil"></i> Editer</a>
-                                                        <a href="#" class="dropdown-item"><i class="fa fa-remove"></i> Supprimer</a>
-                                                    </div>
-                                                </div>
+                                        <td>												
+                                            <div class="d-flex">
+                                                <button type="button" class="btn btn-success btn-xs me-1" @click="selectedFacture = data; printInvoice()"><i class="mdi mdi-printer"></i></button>
+                                                <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
+                                                <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -98,106 +74,83 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="btn btn-success btn-sm me-2 rounded-3"> <i class="mdi mdi-printer"></i></button>
+                        <button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
+                        <h4 class="modal-title" id="myModalLabel">Facture détails</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <section v-if="selectedFacture" class="invoice border-0 p-0 printableArea">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="page-header">
+                                        <h2 class="d-inline"><span class="fs-30">@{{ selectedFacture.numero_facture }}</span></h2>
+                                        <div class="pull-right text-end">
+                                            <h3>@{{ formateDate(selectedFacture.date_facture) }}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!-- /.col -->
+                            </div>
+                        
+                            <div class="row" v-if="selectedFacture.details">
+                                <div class="col-12 table-responsive">
+                                    <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Designation</th>
+                                        <th class="text-end">Quantité</th>
+                                        <th class="text-end">Prix unitaire</th>
+                                        <th class="text-end">Sous total</th>
+                                    </tr>
+                                    <tr v-for="(detail, index) in selectedFacture.details" :key="index">
+                                        <td>@{{ index+1 }}</td>
+                                        <td>@{{ detail.produit.libelle }}</td>
+                                        <td class="text-end">@{{ detail.quantite }}</td>
+                                        <td class="text-end">@{{ detail.prix_unitaire }}</td>
+                                        <td class="text-end">@{{ detail.total_ligne }}</td>
+                                    </tr>
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-end">
+                                    <p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
+
+                                    <div>
+                                        <p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
+                                        <p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
+                                        <p>TVA  :  0</p>
+                                    </div>
+                                    <div class="total-payment">
+                                        <h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>
+                                    </div>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                        </section>
+                    </div>
+                
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
     </section>
     <!-- /.content -->
     </div>
 </div>
-
-<div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">Facture détails</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <section class="invoice border-0 p-0 printableArea">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-header">
-                                <h2 class="d-inline"><span class="fs-30">Facture NO.60</span></h2>
-                                <div class="pull-right text-end">
-                                    <h3>22 April 2018</h3>
-                                </div>
-                            </div>
-                        </div>
-                    <!-- /.col -->
-                    </div>
-                   
-                    <div class="row">
-                        <div class="col-12 table-responsive">
-                            <table class="table table-bordered">
-                            <tbody>
-                            <tr>
-                                <th>#</th>
-                                <th>Description</th>
-                                <th>Serial #</th>
-                                <th class="text-end">Quantity</th>
-                                <th class="text-end">Unit Cost</th>
-                                <th class="text-end">Subtotal</th>
-                            </tr>
-                            <tr>
-                                <td>1</td>
-                                <td>Milk Powder</td>
-                                <td>12345678912514</td>
-                                <td class="text-end">2</td>
-                                <td class="text-end">$26.00</td>
-                                <td class="text-end">$52.00</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Air Conditioner</td>
-                                <td>12345678912514</td>
-                                <td class="text-end">1</td>
-                                <td class="text-end">$1500.00</td>
-                                <td class="text-end">$1500.00</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>TV</td>
-                                <td>12345678912514</td>
-                                <td class="text-end">2</td>
-                                <td class="text-end">$540.00</td>
-                                <td class="text-end">$1080.00</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>Mobile</td>
-                                <td>12345678912514</td>
-                                <td class="text-end">3</td>
-                                <td class="text-end">$320.00</td>
-                                <td class="text-end">$960.00</td>
-                            </tr>
-                            </tbody>
-                            </table>
-                        </div>
-                        <!-- /.col -->
-                    </div>
-                    <div class="row">
-                        <div class="col-12 text-end">
-                            <p class="lead"><b>Payment Due</b><span class="text-danger"> 14/08/2018 </span></p>
-
-                            <div>
-                                <p>Sub - Total amount  :  $3,592.00</p>
-                                <p>Tax (18%)  :  $646.56</p>
-                                <p>Shipping  :  $110.44</p>
-                            </div>
-                            <div class="total-payment">
-                                <h3><b>Total :</b> $4,349.00</h3>
-                            </div>
-
-                        </div>
-                        <!-- /.col -->
-                    </div>
-                </section>
-            </div>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
 @endsection
 
 @push("scripts")
-    <script src="assets/js/pages/data-table.js"></script>
+    <script type="module" src="{{ asset("assets/js/scripts/facture.js") }}"></script>
 @endpush

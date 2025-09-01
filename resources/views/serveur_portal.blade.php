@@ -9,7 +9,7 @@
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a>
                 <div class="me-auto">
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span v-else>Inconnu</span></h3>
+                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span v-else>{{ Auth::user()->name }}</span></h3>
                 </div>
 
 				<!-- <div class="btn-group">
@@ -54,6 +54,33 @@
 		  <!-- /.box -->
 
 		</section>
+
+		<div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content" v-if="selectedPendingTable">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Bons de commande Table @{{ selectedPendingTable.numero }}</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20">+ Nouveau bon de commande</button>
+
+						<div class="row g-3">
+							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
+								<div class="btn-group">
+									<button class="btn btn-primary-light btn-block">Bon de Commande N°@{{ cmd.id }}</button>
+									<button class="btn btn-success"><i class="mdi mdi-printer"></i></button>
+									<button class="btn btn-warning"><i class="mdi mdi-glass-tulip"></i></button>	
+									<button class="btn btn-primary"><i class="mdi mdi-eye"></i></button>	
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
 
 	</div>
 </div>

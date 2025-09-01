@@ -75,5 +75,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
     
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
+    Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
+    Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
 });
 

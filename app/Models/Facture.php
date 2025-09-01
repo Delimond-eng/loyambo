@@ -18,6 +18,7 @@ class Facture extends Model
         'total_ht',
         'remise',
         'total_ttc',
+        'date_facture',
         'statut',
     ];
 
@@ -45,5 +46,9 @@ class Facture extends Model
     public function details()
     {
         return $this->hasMany(FactureDetail::class, "facture_id", "id");
+    }
+
+    public function payments(){
+        return $this->hasMany(Payments::class, "facture_id", "id");
     }
 }

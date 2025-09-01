@@ -76,6 +76,7 @@ new Vue({
                     });
                 });
         },
+
         register(event) {
             const formData = new FormData(event.target);
             const url = event.target.getAttribute("action");
