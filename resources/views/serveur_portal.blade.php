@@ -67,7 +67,7 @@
 						<div class="row g-3">
 							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
 								<div class="btn-group">
-									<button class="btn btn-primary-light btn-block">Bon de Commande N°@{{ cmd.id }}</button>
+									<button class="btn btn-primary-light btn-block"><i class="mdi mdi-file-document me-2"></i> Bon de Commande N°@{{ cmd.id }}</button>
 									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
 									<button class="btn btn-warning"><i class="mdi mdi-glass-tulip"></i></button>	
 									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
