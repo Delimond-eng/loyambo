@@ -64,18 +64,88 @@
 					</div>
 					<div class="modal-body">
 						<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20">+ Nouveau bon de commande</button>
-
 						<div class="row g-3">
 							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
 								<div class="btn-group">
 									<button class="btn btn-primary-light btn-block">Bon de Commande N°@{{ cmd.id }}</button>
-									<button class="btn btn-success"><i class="mdi mdi-printer"></i></button>
+									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
 									<button class="btn btn-warning"><i class="mdi mdi-glass-tulip"></i></button>	
-									<button class="btn btn-primary"><i class="mdi mdi-eye"></i></button>	
+									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
 								</div>
 							</div>
 						</div>
 					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+
+
+		<div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="btn btn-success btn-sm me-2 rounded-3" @click="printInvoiceFromJson(selectedFacture, selectedPendingTable.emplacement)"> <i class="mdi mdi-printer"></i></button>
+						<button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
+						<h4 class="modal-title" id="myModalLabel">Facture détails</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<section v-if="selectedFacture" class="invoice border-0 p-0 printableArea">
+							<div class="row">
+								<div class="col-12">
+									<div class="page-header">
+										<h2 class="d-inline"><span class="fs-30">@{{ selectedFacture.numero_facture }}</span></h2>
+										<div class="pull-right text-end">
+											<h3>@{{ formateDate2(selectedFacture.date_facture) }}</h3>
+										</div>
+									</div>
+								</div>
+							<!-- /.col -->
+							</div>
+						
+							<div class="row" v-if="selectedFacture.details">
+								<div class="col-12 table-responsive">
+									<table class="table table-bordered">
+									<tbody>
+									<tr>
+										<th>#</th>
+										<th>Designation</th>
+										<th class="text-end">Quantité</th>
+										<th class="text-end">Prix unitaire</th>
+										<th class="text-end">Sous total</th>
+									</tr>
+									<tr v-for="(detail, index) in selectedFacture.details" :key="index">
+										<td>@{{ index+1 }}</td>
+										<td>@{{ detail.produit.libelle }}</td>
+										<td class="text-end">@{{ detail.quantite }}</td>
+										<td class="text-end">@{{ detail.prix_unitaire }}</td>
+										<td class="text-end">@{{ detail.total_ligne }}</td>
+									</tr>
+									</tbody>
+									</table>
+								</div>
+								<!-- /.col -->
+							</div>
+							<div class="row">
+								<div class="col-12 text-end">
+									<p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
+
+									<div>
+										<p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
+										<p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
+										<p>TVA  :  0</p>
+									</div>
+									<div class="total-payment">
+										<h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>
+									</div>
+								</div>
+								<!-- /.col -->
+							</div>
+						</section>
+					</div>
+				
 				</div>
 				<!-- /.modal-content -->
 			</div>

@@ -209,7 +209,7 @@ class AdminController extends Controller
     //GET ALL TABLES
     public function getAllTables(Request $request){
         $placeId = $request->query("place") ?? null;
-        $query = RestaurantTable::with("emplacement", "commandes.details", "commandes.payments" )->orderBy("numero");
+        $query = RestaurantTable::with("emplacement", "commandes.details.produit", "commandes.payments" )->orderBy("numero");
         if($placeId){
             $query->where("emplacement_id", $placeId);
         }else{

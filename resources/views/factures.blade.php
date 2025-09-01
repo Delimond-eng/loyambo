@@ -61,7 +61,7 @@
                                         </td>
                                         <td>												
                                             <div class="d-flex">
-                                                <button type="button" class="btn btn-success btn-xs me-1" @click="selectedFacture = data; printInvoice()"><i class="mdi mdi-printer"></i></button>
+                                                <button type="button" class="btn btn-success btn-xs me-1" @click="printInvoice(data, data.table.emplacement)"><i class="mdi mdi-printer"></i></button>
                                                 <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
                                                 <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                             </div>
@@ -97,7 +97,6 @@
                                 </div>
                             <!-- /.col -->
                             </div>
-                        
                             <div class="row" v-if="selectedFacture.details">
                                 <div class="col-12 table-responsive">
                                     <table class="table table-bordered">
