@@ -9,21 +9,14 @@
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a>
                 <div class="me-auto">
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span v-else>{{ Auth::user()->name }}</span></h3>
+                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span class="fw-800 text-primary" v-else>{{ Auth::user()->name }}</span></h3>
                 </div>
 
-				<!-- <div class="btn-group">
-					<button class="btn btn-success gallery-header-center-right-links-current" id="filter-all"> <i class="fa fa-exchange me-2"></i> Transferer Table</button>
-					<button class="btn btn-warning gallery-header-center-right-links-current" id="filter-studio"><i class="mdi mdi-link me-2"></i>Combiner Table</button>
-					<button class="btn btn-info gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-lock-plus me-2"></i>Reservation</button>
-					<button class="btn btn-danger gallery-header-center-right-links-current" id="filter-landscape"><i class="mdi mdi-close-box me-2"></i>Annuler</button>
-				</div> -->
-
 				<div class="clearfix">
-					<button type="button" class="waves-effect waves-light btn btn-rounded btn-primary mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
-					<button type="button" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
-					<button type="button" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button>
-					<button type="button" class="waves-effect waves-light btn btn-rounded btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
+					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
+					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
+					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
+					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
 				</div>
             </div>
         </div>
@@ -35,11 +28,11 @@
 					<div class="box-body">
 						<div class="row">
 							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in allTables">
-								<a href="#" @click="goToOrderPannel(table)" class="box">
+								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
 										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid">
-                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid">
+										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
+                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
 											@{{ table.numero }}
 										</div>
@@ -55,6 +48,7 @@
 
 		</section>
 
+		<!-- Modal Commandes -->
 		<div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<div class="modal-content" v-if="selectedPendingTable">
@@ -63,13 +57,16 @@
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20">+ Nouveau bon de commande</button>
+						<div class="d-flex">
+							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20 me-2">+ Nouveau bon de commande</button>
+							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
+						</div>
 						<div class="row g-3">
 							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
 								<div class="btn-group">
 									<button class="btn btn-primary-light btn-block"><i class="mdi mdi-file-document me-2"></i> Bon de Commande N°@{{ cmd.id }}</button>
 									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
-									<button class="btn btn-warning"><i class="mdi mdi-glass-tulip"></i></button>	
+									<button @click="selectedFacture=cmd" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-info"> <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi mdi-glass-tulip"></i> </button>	
 									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
 								</div>
 							</div>
@@ -81,7 +78,51 @@
 			<!-- /.modal-dialog -->
 		</div>
 
+		<!-- Modal mode de paiement -->
+		<div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content" v-if="selectedFacture">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Servir le bon de commande n°@{{ selectedFacture.id }}</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p class="text-danger">Sélectionnez un mode de paiement.</p>
+						<div class="flexbox flex-justified text-center">
+							<a href="#"
+								v-for="mode in modes" 
+								@click="selectedMode=mode.value; selectedModeRef=''"
+								class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
+								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
+							>
+								<p class="mb-0 fa-3x">
+									<i :class="mode.icon"></i>
+								</p>
+								<p class="mb-2 fw-300">@{{ mode.label }}</p>
+							</a>
+						</div>
+						<!-- Input de référence uniquement si le mode n'est pas CASH et qu'un mode est sélectionné -->
+						<input 
+							v-if="selectedMode && selectedMode !== 'cash'" 
+							type="text" 
+							v-model="selectedModeRef"
+							placeholder="Réference du mode de paiement ..." 
+							class="form-control mt-2 mb-2"
+						>
 
+						<div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
+							<button class="btn btn-success mt-5" @click="triggerPayment">
+								Valider <i class="mdi mdi-check-all"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+
+		<!-- Modal Facture Details -->
 		<div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">

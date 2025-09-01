@@ -21,8 +21,26 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 table: null,
                 selectedPendingTable: null,
                 selectedFacture: null,
+                modes: [
+                    { value: "cash", label: "CASH", icon: "fa fa-money" },
+                    {
+                        value: "mobile",
+                        label: "MOBILE MONEY",
+                        icon: "fa fa-mobile-phone",
+                    },
+                    {
+                        value: "card",
+                        label: "BANQUE/CARTE",
+                        icon: "fa fa-credit-card",
+                    },
+                ],
+                selectedMode: null,
+                selectedModeRef: "",
+                operation: null,
+                selectedTables: [],
                 store: Store,
                 search: "",
+                load_id: "",
             };
         },
 
@@ -35,6 +53,108 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         methods: {
+            setOperation(op) {
+                this.operation = op;
+            },
+
+            triggerOperation(data) {
+                postJson(`/table.operation`, data)
+                    .then(({ data, status }) => {
+                        if (data.status === "success") {
+                            this.setOperation("");
+                            this.selectedTables = [];
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            libererTable(table) {
+                postJson(`/table.liberer`, { table_id: table.id })
+                    .then(({ data, status }) => {
+                        $(".modal-commande").modal("hide");
+                        if (data.status === "success") {
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            triggerPayment() {
+                const facture = this.selectedFacture;
+                this.load_id = facture.id;
+                $(".modal-pay-trigger").modal("hide");
+                postJson(`/payment.create`, {
+                    facture_id: facture.id,
+                    mode: this.selectedMode,
+                    mode_ref: this.selectedModeRef,
+                })
+                    .then(({ data, status }) => {
+                        this.load_id = "";
+                        if (data.errors !== undefined) {
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: data.errors,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            return;
+                        }
+                        if (data.status === "success") {
+                            this.selectedPendingTable.commandes =
+                                this.selectedPendingTable.commandes.filter(
+                                    (c) => c.id !== facture.id
+                                );
+                            $.toast({
+                                heading: "Commande servie.",
+                                text: "Commande servie et payée avec succès!",
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.load_id = "";
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
             //ADD TO CART
             addToCart(product) {
                 product.qte = 1;
@@ -124,7 +244,67 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 localStorage.setItem("user", JSON.stringify(user));
                 location.href = "/orders.portal";
             },
+
             goToOrderPannel(table, isTable = false) {
+                if (this.operation) {
+                    this.selectedTables.push(table);
+                    if (this.selectedTables.length === 2) {
+                        if (this.operation === "transfert") {
+                            let source = this.selectedTables.find(
+                                (t) => t.statut === "occupée"
+                            );
+                            let cible = this.selectedTables.find(
+                                (t) => t.statut === "libre"
+                            );
+
+                            if (!source || !cible) {
+                                $.toast({
+                                    heading: "Erreur de transfert",
+                                    text: "Choisissez une table occupée et une table libre !",
+                                    position: "top-right",
+                                    loaderBg: "#49f3ff",
+                                    icon: "info",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            } else {
+                                this.triggerOperation({
+                                    op: "transfert",
+                                    source_id: source.id,
+                                    cible_id: cible.id,
+                                });
+                            }
+                        }
+
+                        if (this.operation === "combiner") {
+                            let tablesOccupees = this.selectedTables.filter(
+                                (t) => t.statut === "occupée"
+                            );
+                            if (tablesOccupees.length !== 2) {
+                                $.toast({
+                                    heading: "Erreur de combinaison",
+                                    text: "Choisissez deux tables occupées !",
+                                    position: "top-right",
+                                    loaderBg: "#ff5733",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            } else {
+                                this.triggerOperation({
+                                    op: "combiner",
+                                    table1_id: tablesOccupees[0].id,
+                                    table2_id: tablesOccupees[1].id,
+                                });
+                            }
+                        }
+                        // reset toujours après deux sélections
+                        this.selectedTables = [];
+                        this.operation = "";
+                    }
+                    return;
+                }
+
                 if (table.statut === "occupée" && !isTable) {
                     this.selectedPendingTable = table;
                     $(".modal-commande").modal("show");
@@ -320,6 +500,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             cart() {
                 return this.store.cart;
             },
+
             allProducts() {
                 if (this.search) {
                     return this.products.filter((p) =>
@@ -377,6 +558,25 @@ document.querySelectorAll(".AppService").forEach((el) => {
                         .locale("fr")
                         .format("hh:mm");
                 // ex: "03:13 AM"
+            },
+
+            getTableOperationColorClass() {
+                let borderClass = "border-primary";
+                switch (this.operation) {
+                    case "transfert":
+                        borderClass = "border-info";
+                        break;
+                    case "combiner":
+                        borderClass = "border-success";
+                        break;
+                    case "reservation":
+                        borderClass = "border-info";
+                        break;
+                    default:
+                        borderClass = "border-primary";
+                        break;
+                }
+                return borderClass;
             },
 
             getTextColor() {

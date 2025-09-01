@@ -59,7 +59,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("/user.give.access", [AdminController::class, "updateUserPermissions"])->name("user.give.access")->middleware("can:modifier-utilisateurs");
     Route::post("/user.create", [UserController::class, "createUser"])->name("user.create")->middleware("can:creer-utilisateurs");
 
-    //PRODUCT MANAGEMENT
+    //==========PRODUCT MANAGEMENT===============//
     Route::post("/categorie.create", [ProductController::class, "createCategory"])->name("categorie.create")->middleware("can:creer-categories");
     Route::get("/categories.all", [ProductController::class, "getAllCategories"])->name("categories.all")->middleware("can:voir-categories");
     Route::post("/product.create", [ProductController::class, "createProduct"])->name("product.create")->middleware("can:creer-produits");
@@ -68,14 +68,19 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("/mvt.create", [ProductController::class, "createStockMvt"])->name("mvt.create")->middleware("can:creer-mouvements-stock");
     Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("products.all")->middleware("can:voir-mouvements-stock");
 
-    //EMPLACEMENTS & TABLES MANAGEMENTS
+    ///==========EMPLACEMENTS & TABLES MANAGEMENTS=======//
     Route::post("/emplacement.create", [AdminController::class, "createEmplacement"])->name("emplacement.create")->middleware("can:creer-emplacements");
     Route::get("/emplacements.all", [AdminController::class, "getAllEmplacements"])->name("emplacements.all")->middleware("can:voir-emplacements");
     Route::post("/table.create", [AdminController::class, "createTable"])->name("table.create")->middleware("can:creer-tables");
     Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
+    Route::post("/table.operation", [AdminController::class, "triggerTableOperation"])->name("table.operation")->middleware("can:voir-tables");
+    Route::post("/table.liberer", [AdminController::class, "libererTable"])->name("table.liberer");
     
+    ///==========PAYMENT & INVOICE=============//
+    Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
+    Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
 });
 

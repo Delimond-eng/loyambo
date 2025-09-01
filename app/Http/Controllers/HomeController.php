@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -122,6 +123,8 @@ class HomeController extends Controller
         $isServeur = $user->role === "serveur";
         $status = $request->query("status");
 
+        Log::info("status $status");
+
         $req = Facture::with([
             "details.produit",
             "table.emplacement",
@@ -136,11 +139,37 @@ class HomeController extends Controller
             $query->where("user_id", $user->id);
         });
 
+        if($status){
+            $req->where("statut", "en_attente");
+        }
+
         $factures = $req->orderByDesc("id")->get();
 
         return response()->json([
             "status" => "success",
             "factures" => $factures
+        ]);
+    }
+
+
+    /**
+     * Voir toutes les ventes d'une journée ouvrable
+     * @return mixed
+    */
+    public function getAllSells(Request $request)
+    {
+        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+
+        $sells = MouvementStock::with("produit")
+            ->selectRaw("produit_id, SUM(quantite) as total_vendu")
+            ->where("type_mouvement", "vente")
+            ->where("sale_day_id", $saleDay->id)
+            ->groupBy("produit_id")
+            ->get();
+
+        return response()->json([
+            "status" => "success",
+            "ventes" => $sells
         ]);
     }
 
@@ -199,6 +228,5 @@ class HomeController extends Controller
         return  str_pad((string)$str,2,  "0", STR_PAD_LEFT);
     }
 
-    
 
 }

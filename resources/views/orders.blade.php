@@ -20,7 +20,11 @@
                         </nav>
                     </div> -->
                 </div>
-                <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>					
+                @if (Auth::user()->role==='serveur')
+                    <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                @else
+                    <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                @endif
             </div>
         </div>
 
@@ -55,9 +59,10 @@
                                             <td>												
                                                 <span class="badge badge-pill" :class="{'badge-warning-light':data.statut==='en_attente', 'badge-success-light':data.statut==='payée', 'badge-danger-light':data.statut==='annulée'}">@{{ data.statut.replaceAll('_', ' ') }}</span>
                                             </td>
-                                            <td>												
+                                            <td>
                                                 <div class="d-flex">
                                                     <button type="button" class="btn btn-success btn-xs me-1"><i class="mdi mdi-printer"></i></button>
+                                                    <button type="button" @click="selectedFacture=data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" v-if="data.statut==='en_attente'" class="btn btn-info btn-xs me-1"><span v-if="load_id===data.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi mdi-glass-tulip"></i></button>
                                                     <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
                                                     <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                                 </div>
@@ -135,6 +140,50 @@
                             </section>
                         </div>
                     
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+
+            <!-- Modal mode de paiement -->
+            <div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" v-if="selectedFacture">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel">Servir le bon de commande n°@{{ selectedFacture.id }}</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-danger">Sélectionnez un mode de paiement.</p>
+                            <div class="flexbox flex-justified text-center">
+                                <a href="#"
+                                    v-for="mode in modes" 
+                                    @click="selectedMode=mode.value; selectedModeRef=''"
+                                    class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
+                                    :class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
+                                >
+                                    <p class="mb-0 fa-3x">
+                                        <i :class="mode.icon"></i>
+                                    </p>
+                                    <p class="mb-2 fw-300">@{{ mode.label }}</p>
+                                </a>
+                            </div>
+                            <!-- Input de référence uniquement si le mode n'est pas CASH et qu'un mode est sélectionné -->
+                            <input 
+                                v-if="selectedMode && selectedMode !== 'cash'" 
+                                type="text" 
+                                v-model="selectedModeRef"
+                                placeholder="Réference du mode de paiement ..." 
+                                class="form-control mt-2 mb-2"
+                            >
+
+                            <div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
+                                <button class="btn btn-success mt-5" @click="triggerPayment">
+                                    Valider <i class="mdi mdi-check-all"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <!-- /.modal-content -->
                 </div>

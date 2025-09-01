@@ -13,7 +13,7 @@
                 <div class="col-md-3">
                     <form class="box" @submit.prevent="submitStockMvt">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
-                            <h4 class="box-title">Bon NO.14
+                            <h4 class="box-title">Création nouveau mouvement
                                 <small class="subtitle">Effectuez un mouvement stock</small>
                             </h4>
                         </div>
@@ -90,7 +90,7 @@
                         </div>
 
                         <div class="box-footer">
-                            <button type="submit" class="btn btn-primary me-1" :disabled="isLoading">
+                            <button v-if="formMvt.type_mouvement !== 'vente'" type="submit" class="btn btn-primary me-1" :disabled="isLoading">
                                 <i class="ti-save-alt"></i> Enregistrer <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span>
                             </button>
 
@@ -132,7 +132,7 @@
                                                 </h6>
                                             </td>
                                             <td>
-                                                 @{{ data.type_mouvement }}
+                                                @{{ data.type_mouvement }}
                                             </td>
                                             <td>
                                                 @{{ data.quantite }}
@@ -172,4 +172,12 @@
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/product.js") }}"></script>
+    <script>
+        $('#slimtest4').slimScroll({
+            color: '#0bb2d4'
+            ,size: '10px'
+            ,height: '400px',
+            alwaysVisible: true
+        });
+    </script>
 @endpush

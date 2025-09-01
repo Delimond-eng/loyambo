@@ -20,6 +20,7 @@ class Payments extends Model
         "table_id",
         "chambre_id",
         "caisse_id",
+        "sale_day_id",
         "user_id",
     ];
 

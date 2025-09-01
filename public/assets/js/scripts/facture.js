@@ -14,26 +14,116 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                 isLoading: false,
                 isDataLoading: false,
                 factures: [],
+                sells: [],
                 selectedFacture: null,
+                modes: [
+                    { value: "cash", label: "CASH", icon: "fa fa-money" },
+                    {
+                        value: "mobile",
+                        label: "MOBILE MONEY",
+                        icon: "fa fa-mobile-phone",
+                    },
+                    {
+                        value: "card",
+                        label: "BANQUE/CARTE",
+                        icon: "fa fa-credit-card",
+                    },
+                ],
+                selectedMode: null,
+                selectedModeRef: "",
                 store: Store,
                 search: "",
+                load_id: "",
             };
         },
 
         mounted() {
             this.viewAllFactures();
+            this.viewAllSells();
         },
 
         methods: {
             viewAllFactures() {
                 this.isDataLoading = true;
-                get("/factures.all")
+                const url =
+                    location.pathname == "/orders" || location.pathname == "/"
+                        ? "/factures.all?status=en_attente"
+                        : "/factures.all";
+                get(url)
                     .then(({ data, status }) => {
                         this.isDataLoading = false;
                         this.factures = data.factures;
                     })
                     .catch((err) => {
                         this.isDataLoading = false;
+                    });
+            },
+            viewAllSells() {
+                this.isDataLoading = true;
+                get("/sells.all")
+                    .then(({ data, status }) => {
+                        this.isDataLoading = false;
+                        this.sells = data.ventes;
+                    })
+                    .catch((err) => {
+                        this.isDataLoading = false;
+                    });
+            },
+
+            selectMode(mode) {
+                this.selectedMode = mode;
+                if (mode === "cash") {
+                    this.selectedModeRef = "";
+                }
+            },
+
+            triggerPayment() {
+                let facture = this.selectedFacture;
+                this.load_id = facture.id;
+                $(".modal-pay-trigger").modal("hide");
+                postJson(`/payment.create`, {
+                    facture_id: facture.id,
+                    mode: this.selectedMode,
+                    mode_ref: this.selectedModeRef,
+                })
+                    .then(({ data, status }) => {
+                        this.load_id = "";
+                        if (data.errors !== undefined) {
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: data.errors,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            return;
+                        }
+                        if (data.status === "success") {
+                            $.toast({
+                                heading: "Commande servie.",
+                                text: "Commande servie et payée avec succès!",
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            this.viewAllFactures();
+                        }
+                    })
+                    .catch((err) => {
+                        this.load_id = "";
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
                     });
             },
 
@@ -171,6 +261,25 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
             },
             allFactures() {
                 return this.factures;
+            },
+
+            allSells() {
+                return this.sells;
+            },
+
+            totalQuantite() {
+                return this.allSells.reduce(
+                    (sum, item) => sum + parseInt(item.total_vendu),
+                    0
+                );
+            },
+            totalMontant() {
+                return this.allSells.reduce(
+                    (sum, item) =>
+                        sum +
+                        parseInt(item.total_vendu) * item.produit.prix_unitaire,
+                    0
+                );
             },
 
             formateDate() {

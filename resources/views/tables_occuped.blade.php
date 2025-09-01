@@ -33,7 +33,7 @@
                         <hr class="my-15">
                         <div class="row" v-if="data.tables">
                             <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in data.tables">
-                                <a href="#" class="box">
+                                <a href="#" class="box b-3 box-shadowed border-primary">
                                     <div class="box-body ribbon-box">
                                         <div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
                                         <img v-if="data.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid">
