@@ -133,7 +133,7 @@
             </div>
             <div class="modal-footer modal-footer-uniform" v-if="selectedTable">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-success float-end"><i class="mdi mdi-check-all me-1"></i> Valider & continuer</button>
+                <button type="button" class="btn btn-success float-end" @click="createFacture" :disabled="isLoading"> <i class="mdi mdi-check-all me-1"></i> Valider la commande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button>
             </div>
         </div>
     </div>

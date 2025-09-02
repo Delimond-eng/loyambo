@@ -258,8 +258,8 @@ class AdminController extends Controller
             }
         ])->where("ets_id", $user->ets_id);
 
-        if ($placeId && $user->role !== 'admin') {
-            $query->where("emplacement_id", $user->emplacement_id);
+        if ($placeId) {
+            $query->where("emplacement_id", $placeId);
         } 
         $tables = $query->orderBy("numero")->get();
 

@@ -351,7 +351,7 @@ class HomeController extends Controller
 
 
     private function padLeft($str){
-        return  str_pad((string)$str,2,  "0", STR_PAD_LEFT);
+        return $str;  /* str_pad((string)$str,2,  "0", STR_PAD_LEFT); */
     }
 
 

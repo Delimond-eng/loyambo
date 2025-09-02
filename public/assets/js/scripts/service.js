@@ -237,8 +237,9 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 this.refreshUserOrderSession();
                 const validPath = true;
                 if (validPath) {
-                    let url = this.session
-                        ? `/tables.all?place=${this.session.emplacement_id}`
+                    const session = JSON.parse(localStorage.getItem("user"));
+                    let url = session
+                        ? `/tables.all?place=${session.emplacement_id}`
                         : "/tables.all";
                     this.isDataLoading = true;
                     get(url)
