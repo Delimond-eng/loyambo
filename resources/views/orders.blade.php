@@ -21,7 +21,7 @@
                     </div> -->
                 </div>
                 @if (Auth::user()->role==='serveur')
-                    <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                    <a @click="removeCachedUser" href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
                 @else
                     <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
                 @endif

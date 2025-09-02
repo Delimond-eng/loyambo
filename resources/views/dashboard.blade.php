@@ -106,7 +106,7 @@
                         <div class="box-header p-4 d-sm-table d-lg-flex align-items-lg-center justify-content-between">
 							<h4 class="box-title"><span class="text-primary fw-600">Liste des commandes en attente</span></h4>
                             @if (Auth::user()->role==='serveur')
-                                <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-primary text-center btn-rounded">+ Nouvelle commande</a>
+                                <a @click="removeCachedUser" href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-primary text-center btn-rounded">+ Nouvelle commande</a>
                             @else
                                 <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-primary text-center btn-rounded">+ Nouvelle commande</a>
                             @endif

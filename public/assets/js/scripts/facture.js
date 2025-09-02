@@ -284,6 +284,10 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                 printWindow.print();
                 printWindow.close();
             },
+
+            removeCachedUser() {
+                localStorage.removeItem("user");
+            },
         },
 
         computed: {

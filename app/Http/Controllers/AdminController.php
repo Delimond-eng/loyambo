@@ -490,14 +490,14 @@ class AdminController extends Controller
             $user = Auth::user();
 
             $facture = Facture::find((int)$data["facture_id"]);
-            if($facture->user_id !== Auth::user()->id && Auth::user()->role==="serveur"){
+
+            if (Auth::user()->role === "serveur" && $facture->user_id !== Auth::id()) {
                 return response()->json([
-                    "errors"=>"Vous ne pouvez pas servir cette commande !"
+                    "errors" => "Vous ne pouvez pas servir cette commande !"
                 ]);
             }
             $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
             $userId = $data["user_id"] ?? Auth::id();
-
 
             if($facture){
                 $payment = Payments::create([

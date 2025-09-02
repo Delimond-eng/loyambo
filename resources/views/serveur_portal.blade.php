@@ -9,7 +9,11 @@
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a>
                 <div class="me-auto">
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> <span class="fw-800 text-primary" v-else>{{ Auth::user()->name }}</span></h3>
+					@if (Auth::user()->role !== "serveur")
+                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
+					@else
+                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
+					@endif
                 </div>
 
 				<div class="clearfix">

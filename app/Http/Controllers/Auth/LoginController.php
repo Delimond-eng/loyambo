@@ -9,6 +9,7 @@ use App\Services\UserLogService;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -54,14 +55,14 @@ class LoginController extends Controller
         ]);
 
         // 2️⃣ Vérifier si la journée est autorisée
-        $access = AccessAllow::latest()->first();
-        $isAllowed = $access ? $access->allowed : false;
-
         $user = User::where('name', $request->name)->first();
 
-        if (!$user) {
-            return response()->json(['errors' => 'Utilisateur introuvable']);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['errors' => 'Identifiants invalides']);
         }
+
+        $access = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
+        $isAllowed = $access ? $access->allowed : false;
 
         // 3️⃣ Bloquer la connexion si journée non autorisée et non admin
         if (!$isAllowed && !$user->hasRole('admin')) {
