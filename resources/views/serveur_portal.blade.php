@@ -7,13 +7,21 @@
 	<!-- Content Header (Page header) -->
 	 	<div class="content-header">
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
-				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a>
+
+<!-- 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
                 <div class="me-auto">
-					@if (Auth::user()->role !== "serveur")
+					@if (Auth::user()->role === "serveur")
                     <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
 					@else
                     <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
 					@endif
+					<div class="d-inline-block align-items-center">
+						<nav>
+							<ol class="breadcrumb">
+								<li class="breadcrumb-item active" aria-current="page">Vous êtes au portail de vente du serveur.</li>
+							</ol>
+						</nav>
+					</div>
                 </div>
 
 				<div class="clearfix">
