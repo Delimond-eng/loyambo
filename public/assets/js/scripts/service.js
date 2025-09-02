@@ -155,6 +155,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                         });
                     });
             },
+
             //ADD TO CART
             addToCart(product) {
                 product.qte = 1;
@@ -368,7 +369,6 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     user_id: user ? user.id : null,
                     details: details,
                 };
-
                 this.isLoading = true;
                 postJson("/facture.create", form)
                     .then(({ data, status }) => {

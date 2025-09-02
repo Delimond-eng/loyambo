@@ -66,14 +66,13 @@ class HomeController extends Controller
                     $facture = new Facture();
                     $facture->numero_facture = 'FAC-' . time(); 
                 }
-                
                 // Mise à jour des infos
                 $facture->user_id = $serveur->id ?? Auth::id();
                 $facture->table_id = $data['table_id'] ?? null;
                 $facture->sale_day_id = $saleDay->id;
                 $facture->remise = $data['remise'] ?? 0;
                 $facture->statut = "en_attente";
-                $facture->emplacement_id = $serveur->id;
+                $facture->emplacement_id = $serveur->emplacement_id;
                 $facture->ets_id = Auth::user()->ets_id;
                 // Calcul total HT
                 $total_ht = 0;
