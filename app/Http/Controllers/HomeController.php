@@ -281,6 +281,7 @@ class HomeController extends Controller
         $user = Auth::user();
         $isServeur = $user->role === "serveur"; 
         $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
+        $emplacementId = $user->emplacement_id ?? null;
 
         // Factures en attente
         $pendingInvoice = Facture::where("statut", "en_attente")
@@ -288,7 +289,7 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })
-            ->when($user->emplacement_id, function ($query) use ($user) {
+            ->when($emplacementId, function ($query) use ($user) {
                 $query->where("emplacement_id", $user->emplacement_id);
             })
             ->where("ets_id", $user->ets_id)
@@ -299,7 +300,7 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })
-            ->when($user->emplacement_id, function ($query) use ($user) {
+            ->when($emplacementId, function ($query) use ($user) {
                 $query->where("emplacement_id", $user->emplacement_id);
             })
             ->where("ets_id", $user->ets_id)
@@ -308,7 +309,7 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })->where("statut", "annulée")
-            ->when($user->emplacement_id, function ($query) use ($user) {
+            ->when($emplacementId, function ($query) use ($user) {
                 $query->where("emplacement_id", $user->emplacement_id);
             })
             ->where("ets_id", $user->ets_id)
@@ -317,7 +318,7 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })->where("type_mouvement", "vente")
-            ->when($user->emplacement_id, function ($query) use ($user) {
+            ->when($emplacementId, function ($query) use ($user) {
                 $query->where("emplacement_id", $user->emplacement_id);
             })
             ->where("ets_id", $user->ets_id)
@@ -327,7 +328,7 @@ class HomeController extends Controller
         $connectedUsers = User::whereHas('lastLog', function ($query) {
                 $query->where('status', 'online');
             })
-            ->when($user->emplacement_id, function ($query) use ($user) {
+            ->when($emplacementId, function ($query) use ($user) {
                 $query->where("emplacement_id", $user->emplacement_id);
             })
             ->where("ets_id", $user->ets_id)

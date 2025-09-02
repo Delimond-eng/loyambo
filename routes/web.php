@@ -81,7 +81,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     
     ///==========PAYMENT & INVOICE=============//
     Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
-    Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.global");
+    Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.all");
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");

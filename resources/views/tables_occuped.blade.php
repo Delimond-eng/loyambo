@@ -13,7 +13,7 @@
                     <div class="d-inline-block align-items-center">
                         <nav>
                             <ol class="breadcrumb">
-                               <li class="breadcrumb-item ms-1" aria-current="page">Les occupations des tables pour les emplacements restaurant,Lounge bar & chambres pour les hôtels</span></li>
+                               <li class="breadcrumb-item ms-1" aria-current="page">Les occupations des tables pour les emplacements restaurant & Lounge bar</span></li>
                             </ol>
                         </nav>
                     </div>
