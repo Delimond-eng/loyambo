@@ -82,6 +82,7 @@ class ProductController extends Controller
             $user = Auth::user();
 
             $data["ets_id"] = $user->ets_id;
+            $data["quantified"] = $request->quantified ?? false;
 
             $produit = Produit::updateOrCreate(["id"=>$request->id ?? null], $data);
 

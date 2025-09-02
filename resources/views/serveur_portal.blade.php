@@ -24,7 +24,7 @@
 					</div>
                 </div>
 
-				<div class="clearfix">
+				<div class="clearfix mt-3 mt-lg-0 mt-xl-0">
 					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
 					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
 					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
