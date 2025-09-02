@@ -42,4 +42,17 @@ class SaleDay extends Model
         'end_time',
     ];
 
+
+    public function factures(){
+        return $this->hasMany(Facture::class, "sale_day_id", "id");
+    }
+    
+    public function sales(){
+        return $this->hasMany(MouvementStock::class, "sale_day_id", "id");
+    }
+
+    public function logs(){
+        return $this->hasMany(UserLog::class, "sale_day_id", "id");
+    }
+
 }

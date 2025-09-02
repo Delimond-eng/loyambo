@@ -47,7 +47,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
         mounted() {
             this.refreshUserOrderSession();
             this.refreshTableData();
-            this.getAllServeurs();
+            this.getAllServeursServices();
             this.viewAllTables();
             this.viewAllCategories();
         },
@@ -209,12 +209,12 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             //GET ALL AGENTS SERVEUR
-            getAllServeurs() {
+            getAllServeursServices() {
                 this.isDataLoading = true;
-                get("/users.all")
+                get("/serveurs.services")
                     .then(({ data, status }) => {
                         this.isDataLoading = false;
-                        this.serveurs = data.users;
+                        this.serveurs = data.serveurs;
                     })
                     .catch((err) => {
                         this.isDataLoading = false;
@@ -318,6 +318,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 const data = localStorage.getItem("user");
                 this.session = JSON.parse(data);
             },
+
             refreshTableData() {
                 if (location.pathname === "/orders.interface") {
                     const data = localStorage.getItem("table");

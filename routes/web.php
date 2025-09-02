@@ -9,6 +9,8 @@ use App\Http\Controllers\UserController;
 use App\Models\Categorie;
 use App\Models\Emplacement;
 use App\Models\Produit;
+use App\Models\SaleDay;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +31,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "dashboard")->name("home");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
     Route::view('/orders', "orders")->name("orders");
-    Route::view('/sells', "sells")->name("sells");
+    Route::get('/sells', fn()=>view("sells",["serveurs"=>User::all(), "saleDay"=>SaleDay::whereNull("end_time")->latest()->first()]))->name("sells");
     Route::view('/factures', "factures")->name("factures");
     Route::view('/serveurs', "serveurs")->name("serveurs");
     Route::view('/serveurs.activities', "serveurs_activities")->name("serveurs.activities");
@@ -53,6 +55,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     })->name("users");
     //GET ALL USER WITH LATEST LOGS
     Route::get("users.all", [AdminController::class, "getAllUsersWithLatestLog"])->name("users.all")->middleware("can:voir-utilisateurs");
+    Route::get("/serveurs.services", [AdminController::class, "getAllServeursServices"])->name("users.services");
 
     //GET ALL PERMISSIONS
     Route::get("/permissions", [AdminController::class, "getAllPermissions"])->name("users.all");
@@ -78,9 +81,11 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     
     ///==========PAYMENT & INVOICE=============//
     Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
+    Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.global");
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
+    
 });
 

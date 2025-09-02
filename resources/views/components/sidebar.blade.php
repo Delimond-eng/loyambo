@@ -98,7 +98,7 @@
                 <li class="@active('serveurs.activities')">
                     <a href="{{ route('serveurs.activities') }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Serveurs en service <span class="label label-warning ms-1">5</span>
+                        Serveurs en service<!--  <span class="label label-warning ms-1">5</span> -->
                     </a>
                 </li>
                 @endcan
@@ -106,7 +106,7 @@
                 <li>
                     <a href="{{ route('sells') }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Produits vendus <span class="label label-success ms-1">5</span>
+                        Produits vendus <!-- <span class="label label-success ms-1">5</span> -->
                     </a>
                 </li>
                 @endcan

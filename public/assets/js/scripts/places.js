@@ -16,6 +16,7 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                 },
                 formTable: [{ numero: "", emplacement_id: "", id: "" }],
                 selectedEmplacement: null,
+                operation: null,
             };
         },
 
@@ -40,6 +41,10 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                             this.isDataLoading = false;
                         });
                 }
+            },
+
+            setOperation(op) {
+                this.operation = op;
             },
 
             //AFFICHE LA LISTE DES EMPLACEMENTS

@@ -49,5 +49,7 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive("lastRate", function(){
             return "<?php echo \\App\\Models\\Currencie::latest()->value('currencie_value') ?? 0; ?>";
         });
+
+        \Carbon\Carbon::setLocale("fr");
     }
 }

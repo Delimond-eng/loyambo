@@ -19,9 +19,9 @@ document.querySelectorAll(".AppDashboard").forEach((el) => {
         },
 
         mounted() {
-            this.loadCounter();
-            /* setInterval(() => {
-            }, 3000); */
+            setInterval(() => {
+                this.loadCounter();
+            }, 3000);
         },
 
         methods: {

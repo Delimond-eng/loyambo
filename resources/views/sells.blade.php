@@ -2,30 +2,58 @@
 
 @section("content")
 <div class="content-wrapper">
-    <div class="container-full">
+    <div class="container-full AppFacture">
         <!-- Content Header (Page header) -->	  
         <div class="content-header">
-            <div class="d-flex align-items-center">
+            <div class="d-lg-flex d-sm-grid d-grid align-items-start justify-content-between">
                 <div class="me-auto">
                     <h3 class="page-title">Liste des produits vendus</h3>
-                    <!-- <div class="d-inline-block align-items-center">
+                    <div class="d-inline-block align-items-center">
                         <nav>
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="mdi mdi-home-outline"></i></a></li>
-                                <li class="breadcrumb-item" aria-current="page">Ventes</li>
-                                <li class="breadcrumb-item active" aria-current="page">Listes des ventes</li>
+                               <li class="breadcrumb-item ms-1" aria-current="page">Journée de vente du {{ $saleDay->sale_date->locale('fr')->translatedFormat('d M Y') }}</span></li>
                             </ol>
                         </nav>
-                    </div> -->
+                    </div>
                 </div>
-                
+                <div class="form-group me-2">
+					<label class="form-label">Filtrez par dates:</label>
+					<div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <input type="text" class="form-control pull-right" id="reservation">
+                        <button onclick="location.reload()" class="btn btn-outline btn-info btn-sm">
+                            <i class="mdi mdi-refresh"></i>
+                        </button>
+					</div>
+					<!-- /.input group -->
+				</div>
+                <div class="form-group">
+					<label class="form-label">Filtrez par serveur:</label>
+					<div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <select v-model="filterByServeur" @change="viewAllSells" class="form-control select2" id="servSelect">
+                            <option value="" label="Sélectionnez un serveur" selected hidden></option>
+                            @foreach ($serveurs as $serv)
+                            <option value="{{ $serv->id }}">{{ $serv->name }}</option>
+                            @endforeach
+                        </select>
+                        <button onclick="location.reload()" class="btn btn-outline btn-info btn-sm">
+                            <i class="mdi mdi-refresh"></i>
+                        </button>
+					</div>
+					<!-- /.input group -->
+				</div>
             </div>
         </div>
 
         <!-- Main content -->
-        <section class="content AppFacture" v-cloak>
+        <section class="content" v-cloak>
             <div class="row">
-                <div class="col-lg-8">
+                <div class="col-12">
                     <div class="box">
                         <div class="box-body">
                             <div class="table-responsive rounded card-table">
@@ -44,13 +72,7 @@
                                             <td>@{{ data.total_vendu }}</td>
                                             <td>@{{ data.total_vendu * data.produit.prix_unitaire }}</td>
                                             <td>												
-                                                <div class="btn-group">
-                                                <a class="hover-primary dropdown-toggle no-caret" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></a>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="#">Accept Order</a>
-                                                    <a class="dropdown-item" href="#">Reject Order</a>
-                                                </div>
-                                                </div>
+                                                <button @click="viewSellDetails(data)" class="btn btn-xs btn-outline btn-primary">Voir détails</button>
                                             </td>
                                         </tr>
                                         <tr class="fs-20 fw-800">
@@ -70,6 +92,53 @@
             </div>
         </section>
         <!-- /.content -->
+
+        <div class="modal fade modal-sell-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">Details ventes</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <section v-if="selectedProduct" class="invoice border-0 p-0 printableArea">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="page-header mt-1">
+                                        <h2 class="d-inline"><span class="fs-30 text-primary">@{{ selectedProduct.produit.libelle }}</span></h2>
+                                    </div>
+                                </div>
+                            <!-- /.col -->
+                            </div>
+                        
+                            <div class="row" v-if="selectedProduct && selectedProduct.byUsers">
+                                <div class="col-12 table-responsive">
+                                    <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Serveur</th>
+                                        <th class="text-end">Quantité</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                    <tr v-for="(detail, index) in selectedProduct.byUsers" :key="index">
+                                        <td>@{{ index+1 }}</td>
+                                        <td>@{{ detail.nom }}</td>
+                                        <td class="text-end">@{{ detail.quantite }}</td>
+                                        <td class="text-end">@{{ detail.montant }}</td>
+                                    </tr>
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
     
     </div>
 </div>

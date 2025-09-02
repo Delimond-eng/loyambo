@@ -31,18 +31,17 @@
 										<div class="d-flex align-items-center">
 											<img src="assets/images/service.jpg" class="me-2" alt="" width="80">
 											<div>
-												<h5 class="fw-500">@{{ data.name }}</h5>
-												<p v-if="data.last_log">@{{ formateDate(data.last_log.logged_in_at) }},<span class="fs-12"> @{{ formateTime(data.last_log.logged_in_at) }}</span></p>
+												<h5 class="fw-500">@{{ data.user.name }}</h5>
+												<p v-if="data.user.last_log"><span class="badge badge-dot me-2" :class="data.user.last_log.status ==='offline' ? 'badge-danger' : 'badge-success'"></span>@{{ formateDate(data.user.last_log.logged_in_at) }},<span class="fs-12"> @{{ formateTime(data.user.last_log.logged_in_at) }}</span></p>
 												<p v-else>Aucune activité</p>
 											</div>
 										</div>
 									</td>
-									<td align="center" class="fw-900">$270</td>
-									<td align="center"><a href="javascript:void(0)" class="btn btn-circle btn-danger btn-xs" title="" data-bs-toggle="tooltip" data-bs-original-title="Delete"><i class="fa fa-sign-out"></i></a></td>
+									<td align="center" class="fw-900">@{{  data.total_encaisse}}</td>
+									<td align="center"><a href="javascript:void(0)" class="btn btn-circle btn-danger btn-xs" title="Clôturer"><i class="fa fa-sign-out"></i></a></td>
 								</tr>
 							</tbody>
 						</table>
-						<a href="{{ route('home') }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Retour</a>
 					</div>
 
 				  </div>

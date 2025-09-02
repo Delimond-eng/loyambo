@@ -16,6 +16,7 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                 factures: [],
                 sells: [],
                 selectedFacture: null,
+                selectedProduct: null,
                 modes: [
                     { value: "cash", label: "CASH", icon: "fa fa-money" },
                     {
@@ -33,13 +34,35 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                 selectedModeRef: "",
                 store: Store,
                 search: "",
+                filterByDate: "",
+                filterByServeur: "",
                 load_id: "",
             };
         },
 
         mounted() {
+            const self = this;
+
+            $("#reservation").daterangepicker();
+            // Récupérer la valeur quand l’utilisateur applique une sélection
+            $("#reservation").on(
+                "apply.daterangepicker",
+                function (ev, picker) {
+                    let start = picker.startDate.format("YYYY-MM-DD");
+                    let end = picker.endDate.format("YYYY-MM-DD");
+
+                    self.filterByDate = `${start};${end}`;
+                    self.viewAllSells();
+                }
+            );
+
             this.viewAllFactures();
             this.viewAllSells();
+            if (location.pathname == "/") {
+                setInterval(() => {
+                    this.viewAllFactures();
+                }, 3000);
+            }
         },
 
         methods: {
@@ -58,9 +81,12 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                         this.isDataLoading = false;
                     });
             },
+
             viewAllSells() {
                 this.isDataLoading = true;
-                get("/sells.all")
+                get(
+                    `/sells.all?dateRange=${this.filterByDate}&serveur=${this.filterByServeur}`
+                )
                     .then(({ data, status }) => {
                         this.isDataLoading = false;
                         this.sells = data.ventes;
@@ -68,6 +94,11 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                     .catch((err) => {
                         this.isDataLoading = false;
                     });
+            },
+
+            viewSellDetails(data) {
+                this.selectedProduct = data;
+                $(".modal-sell-detail").modal("show");
             },
 
             selectMode(mode) {

@@ -83,7 +83,25 @@ class AdminController extends Controller
             "users"=>$users
         ]);
     }
+    //GET ALL SERVEURS SERVICES
+    public function getAllServeursServices(Request $request)
+    {
+        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
 
+        $serveurs = Facture::with("user.lastLog")
+            ->selectRaw("user_id, SUM(total_ttc) as total_encaisse")
+            ->where("sale_day_id", $saleDay->id)
+            ->whereHas("user", function ($q) {
+                $q->where("role", "serveur"); // filtrer uniquement les serveurs
+            })->where("statut", "payée")
+            ->groupBy("user_id")
+            ->get();
+
+        return response()->json([
+            "status" => "success",
+            "serveurs" => $serveurs
+        ]);
+    }
 
     //GET ALL USER PERMISSION
     public function getAllPermissions(){
@@ -493,7 +511,7 @@ class AdminController extends Controller
                     $facture->update(["statut"=>"payée"]);
                 }
             }
-            
+
             return response()->json([
                 'status'=>'success',
                 'message' => 'Nouvelle table créée avec succès !',
@@ -507,5 +525,68 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+
+
+    //GLOBAL REPORT GROUPED BY USER
+    public function viewGlobalReports(Request $request)
+    {
+        $saleDays = SaleDay::with([
+            "sales" => function ($query) {
+                $query->where("type_mouvement", "vente")
+                    ->with([
+                        "produit",
+                        "user" => function($q){
+                            $q->whereNotIn("role", ["serveur", "cuisinier"]);
+                        }
+                    ]);
+            },
+            "factures" => function ($query) {
+                $query->where("statut", "payée")->with("details");
+            }
+        ])
+        ->orderByDesc("sale_date")
+        ->get();
+
+        $reports = collect();
+
+        foreach ($saleDays as $saleDay) {
+            // Grouper les ventes par utilisateur
+            $groupedSales = $saleDay->sales
+                ->filter(fn($s) => $s->user) // retirer les ventes sans user ou filtrés
+                ->groupBy("user_id");
+            foreach ($groupedSales as $userId => $sales) {
+                $user = $sales->first()->user;
+
+                // Calcul du total_factures à partir des ventes
+                $totalFactures = $sales->reduce(function($carry, $sale) {
+                    return $carry + ($sale->produit->prix_unitaire ?? 0) * $sale->quantite;
+                }, 0);
+                // Mouvements de vente
+                $userSales = $sales
+                    ->map(fn($s) => [
+                        "numdoc" => $s->numdoc,
+                        "produit" => $s->produit->name ?? null,
+                        "quantite" => $s->quantite,
+                        "prix_unitaire" => $s->produit->prix_unitaire ?? 0,
+                        "total" => ($s->produit->prix_unitaire ?? 0) * $s->quantite,
+                        "date_mouvement" => optional($s->date_mouvement)->format("d/m/Y H:i")
+                    ]);
+
+                $reports->push([
+                    "sale_day"       => $saleDay,
+                    "user"           =>$user,
+                    "total_factures" => $totalFactures,
+                    "sales"          => $userSales,
+                ]);
+            }
+        }
+
+        return response()->json([
+            "status" => "success",
+            "reports" => $reports->values()
+        ]);
+    }
+
+
 
 }

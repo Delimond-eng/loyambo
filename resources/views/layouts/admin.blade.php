@@ -71,7 +71,15 @@
     <script src="{{ asset('assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js') }}"></script>
     <script src="{{ asset('assets/js/template.js') }}"></script>
     <script src="{{ asset('assets/js/pages/dashboard.js') }}"></script>
-    <script src="{{ asset("assets/vendors/plugins/moment/moment.js") }}"></script>
+    
+    <script src="{{ asset("assets/vendors/plugins/input-mask/jquery.inputmask.js")}}"></script>
+	<script src="{{ asset("assets/vendors/plugins/input-mask/jquery.inputmask.date.extensions.js") }}"></script>
+	<script src="{{ asset("assets/vendors/plugins/input-mask/jquery.inputmask.extensions.js") }}"></script>
+	<script src="{{ asset("assets/vendors/plugins/moment/moment.js") }}"></script>
+	<script src="{{ asset("assets/vendors/components/bootstrap-daterangepicker/daterangepicker.js") }}"></script>
+	<script src="{{ asset("assets/vendors/components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js") }}"></script>
+	<script src="{{ asset("assets/vendors/components/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js") }}"></script>
+	<script src="{{ asset("assets/vendors/plugins/timepicker/bootstrap-timepicker.min.js") }}"></script>
 
     <script>
         const startBtn = document.querySelectorAll('.btn-start-day');
