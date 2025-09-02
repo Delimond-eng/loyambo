@@ -31,11 +31,14 @@ class AdminController extends Controller
                 "currencie_value"=>"required|numeric"
             ]);
 
+            $user = Auth::user();
+
             $currencie = Currencie::updateOrCreate(
                 ["currencie_date"=>Carbon::now()->toDateString(),],
             [
                 "currencie_date"=>Carbon::now()->toDateString(),
                 "currencie_value"=>$data["currencie_value"],
+                "ets_id"=>$user->ets_id
             ]);
 
             $saleDay = SaleDay::updateOrCreate(
@@ -43,9 +46,10 @@ class AdminController extends Controller
                 [
                 "sale_date"=>Carbon::now()->toDateString(),
                 "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa"),
+                "ets_id"=>$user->ets_id,
                 "end_time"=>null
             ]);
-            $accessAllow = AccessAllow::latest()->first();
+            $accessAllow = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
             $accessAllow->update([
                 "allowed"=>true
             ]);
@@ -72,8 +76,9 @@ class AdminController extends Controller
     //GET ALL USERS 
     public function getAllUsersWithLatestLog(Request $request){
         $role = $request->query("role") ?? null;
+        $user = Auth::user();
         $query = User::with(["lastLog", "emplacement","permissions", "roles.permissions"])
-                ->orderBy("name");
+                ->orderBy("name")->where("ets_id", $user->ets_id);
         if($role){
             $query->where("role", $role);
         }
@@ -86,17 +91,20 @@ class AdminController extends Controller
     //GET ALL SERVEURS SERVICES
     public function getAllServeursServices(Request $request)
     {
-        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+        $user = Auth::user();
+        $saleDay = SaleDay::where("ets_id", $user->ets_id)->whereNull("end_time")->latest()->first();
 
-        $serveurs = Facture::with("user.lastLog")
+        $req = Facture::with("user.lastLog")
             ->selectRaw("user_id, SUM(total_ttc) as total_encaisse")
             ->where("sale_day_id", $saleDay->id)
             ->whereHas("user", function ($q) {
-                $q->where("role", "serveur"); // filtrer uniquement les serveurs
+                $q->where("role", "serveur"); 
             })->where("statut", "payée")
-            ->groupBy("user_id")
-            ->get();
-
+            ->where("ets_id", $user->ets_id);
+        if($user->role !== "admin" && $user->emplacement_id){
+            $req->where("emplacement_id", $user->emplacement_id);
+        }
+        $serveurs = $req->groupBy("user_id")->get();
         return response()->json([
             "status" => "success",
             "serveurs" => $serveurs
@@ -180,7 +188,8 @@ class AdminController extends Controller
 
     //GET ALL Emplacements with tables
     public function getAllEmplacements(){
-        $emplacements = Emplacement::with(["tables", "beds"])->orderBy("libelle")->get();
+        $user = Auth::user();
+        $emplacements = Emplacement::with(["tables", "beds"])->where("ets_id", $user->ets_id)->orderBy("libelle")->get();
         return response()->json([
             "status"=>"success",
             "emplacements"=>$emplacements
@@ -201,6 +210,7 @@ class AdminController extends Controller
                 "tables.*.id"=>"nullable|int",
             ]);
             $tables = $data["tables"];
+            $user = Auth::user();
             foreach ($tables as $table) {
                 if(isset($table["id"])){
                     $cdts["id"] = $table["id"];
@@ -211,8 +221,11 @@ class AdminController extends Controller
                         "emplacement_id"=>$table["emplacement_id"]
                     ];
                 }
-                Log::info($cdts);
-                RestaurantTable::updateOrCreate($cdts,["numero"=>$table["numero"], "emplacement_id"=>$table["emplacement_id"]]);
+                RestaurantTable::updateOrCreate($cdts,[
+                    "numero"=>$table["numero"], 
+                    "emplacement_id"=>$table["emplacement_id"],
+                    "ets_id"=>$user->ets_id
+                ]);
             }
             return response()->json([
                 'status'=>'success',
@@ -232,6 +245,7 @@ class AdminController extends Controller
     public function getAllTables(Request $request)
     {
         $placeId = $request->query("place") ?? null;
+        $user = Auth::user();
 
         $query = RestaurantTable::with([
             "emplacement",
@@ -239,12 +253,12 @@ class AdminController extends Controller
                 $query->where("statut", "!=", "payée")
                     ->with(["details.produit"]);
             }
-        ])->orderBy("numero");
+        ])->where("ets_id", $user->ets_id)->orderBy("numero");
 
         if ($placeId) {
             $query->where("emplacement_id", $placeId);
         } else {
-            $query->where("emplacement_id", Auth::user()->emplacement_id);
+            $query->where("emplacement_id", $user->emplacement_id);
         }
 
         $tables = $query->get();
@@ -473,6 +487,7 @@ class AdminController extends Controller
                 "mode"=>"nullable|string",
                 "mode_ref"=>"nullable|string",
             ]);
+            $user = Auth::user();
 
             $facture = Facture::find((int)$data["facture_id"]);
             if($facture->user_id !== Auth::user()->id && Auth::user()->role==="serveur"){
@@ -480,7 +495,7 @@ class AdminController extends Controller
                     "errors"=>"Vous ne pouvez pas servir cette commande !"
                 ]);
             }
-            $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+            $saleDay = SaleDay::whereNull("end_time")->where()->latest()->first();
             $userId = $data["user_id"] ?? Auth::id();
 
             if($facture){
@@ -494,7 +509,8 @@ class AdminController extends Controller
                     "facture_id"=>$facture->id,
                     "table_id"=>$facture->table_id,
                     "user_id"=>$userId,
-                    "sale_day_id"=>$saleDay->id
+                    "sale_day_id"=>$saleDay->id,
+                    "ets_id"=>$user->ets_id,
                 ]);
                 if($payment){
                     foreach($facture->details as $detail){
@@ -505,7 +521,9 @@ class AdminController extends Controller
                             "quantite"=>$detail->quantite,
                             "sale_day_id"=>$saleDay->id,
                             "date_mouvement"=>Carbon::now(tz:"Africa/Kinshasa"),
-                            "user_id"=>$userId
+                            "user_id"=>$userId,
+                            "ets_id"=>$user->ets_id,
+                            "emplacement_id"=>$facture->emplacement_id,
                         ]);
                     }
                     $facture->update(["statut"=>"payée"]);
@@ -543,7 +561,7 @@ class AdminController extends Controller
             "factures" => function ($query) {
                 $query->where("statut", "payée")->with("details");
             }
-        ])
+        ])->where("ets_id", Auth::user()->ets_id)
         ->orderByDesc("sale_date")
         ->get();
 

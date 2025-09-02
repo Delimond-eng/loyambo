@@ -97,8 +97,6 @@ class UserController extends Controller
             $data["ets_id"] = Auth::user()->ets_id;
             $data["password"] = bcrypt($data["password"]);
 
-            Log::info($data["password"]);
-
             // Création ou mise à jour
             $user = User::updateOrCreate(
                 ["id" => $request->id ?? null],

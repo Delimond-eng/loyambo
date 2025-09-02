@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('action', 255);
             $table->timestamp('date_action')->useCurrent();
             $table->text('description')->nullable();
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

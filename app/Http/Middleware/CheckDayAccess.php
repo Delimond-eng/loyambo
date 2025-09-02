@@ -18,7 +18,8 @@ class CheckDayAccess
      */
     public function handle(Request $request, Closure $next)
     {
-        $access = AccessAllow::latest()->first();
+        $user = Auth::user();
+        $access = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
 
         // Si la journée n'est pas lancée et que l'utilisateur n'est pas admin
         if ($access && !$access->allowed && Auth::check() && !Auth::user()->hasRole('admin')) {

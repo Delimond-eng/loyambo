@@ -13,7 +13,8 @@ class SaleDay extends Model
     protected $fillable = [
         "sale_date",
         "start_time",
-        "end_time"
+        "end_time",
+        "ets_id"
     ];
       
     /**

@@ -27,6 +27,7 @@ class ProductController extends Controller
                 "couleur"=>"required|string"
             ]);
 
+            $data["ets_id"] = Auth::user()->ets_id;
             $categorie = Categorie::updateOrCreate(["id"=>$request->id], $data);
 
             return response()->json([
@@ -44,7 +45,10 @@ class ProductController extends Controller
 
     //GET CATEGORIES
      public function getAllCategories(){
-        $categories = Categorie::with("produits.stocks", "produits.categorie")->orderBy("libelle")->get();
+        $user = Auth::user();
+        $categories = Categorie::with("produits.stocks", "produits.categorie")
+            ->where("ets_id", $user->ets_id)
+            ->orderBy("libelle")->get();
         return response()->json(["categories"=>$categories]);
     }
 
@@ -56,7 +60,6 @@ class ProductController extends Controller
     */
     public function createProduct(Request $request){
         try{
-
             $data = $request->validate([
                 "code_barre"=>"required|string",
                 "reference"=>"required|string",
@@ -76,6 +79,9 @@ class ProductController extends Controller
                 // Générer un lien complet sans utiliser storage
                 $data['image'] = url('uploads/products/' . $filename);
             }
+            $user = Auth::user();
+
+            $data["ets_id"] = $user->ets_id;
 
             $produit = Produit::updateOrCreate(["id"=>$request->id ?? null], $data);
 
@@ -86,7 +92,9 @@ class ProductController extends Controller
                     "type_mouvement"=>"entrée",
                     "destination"=>$request->emplacement_id,
                     "date_mouvement"=> Carbon::now()->setTimezone("Africa/Kinshasa"),
-                    "user_id"=>Auth::id()
+                    "user_id"=>Auth::id(),
+                    "ets_id"=>$user->ets_id,
+                    "emplacement_id"=>$user->emplacement_id ?? null
                 ]);
             }
             return response()->json([
@@ -116,7 +124,10 @@ class ProductController extends Controller
 
     //ALL PRODUCT
     public function getAllProducts(){
-        $products = Produit::with(["categorie", "stocks"])->orderBy("libelle")->get();
+        $user = Auth::user();
+        $products = Produit::with(["categorie", "stocks"])
+            ->where("ets_id", $user->ets_id)
+            ->orderBy("libelle")->get();
         return response()->json(["produits"=>$products]);
     }
 
@@ -137,12 +148,12 @@ class ProductController extends Controller
                 "destination"=>"required|int",
                 "date_mouvement"=>"nullable|date",
             ]);
-
+            $user = Auth::user();
             $data["date_mouvement"] = !isset($data["date_mouvement"]) ? Carbon::now()->setTimezone("Africa/Kinshasa") : $data["date_mouvement"];
-            $data["user_id"] = Auth::id();
+            $data["user_id"] =$user->id;
 
             if(!$data["numdoc"]){
-                $lastMvt = MouvementStock::latest()->first();
+                $lastMvt = MouvementStock::where("ets_id", $user->ets_id)->latest()->first();
                 if($lastMvt){
                     $data["numdoc"]= (int)$lastMvt->numdoc + 1;
                 }
@@ -151,6 +162,8 @@ class ProductController extends Controller
                 }
             }
 
+            $data["ets_id"] = $user->ets_id;
+            $data["emplacement_id"] = $user->emplacement_id;
             $mvt = MouvementStock::updateOrCreate(["id"=>$request->id ?? null],$data);
 
             return response()->json([
@@ -168,7 +181,13 @@ class ProductController extends Controller
 
     //Get all mouvement
     public function getStockMvts(){
-        $mvts = MouvementStock::with(["produit","prov", "dest", "user"])->orderByDesc("id")->get();
+        $user = Auth::user();
+        $reqs = MouvementStock::with(["produit","prov", "dest", "user"]);
+        $reqs->where("ets_id",$user->ets_id);
+        if($user->role !=="admin" && $user->emplacement_id){
+            $reqs->where("emplacement_id", $user->emplacement_id);
+        }
+        $mvts = $reqs->orderByDesc("id")->get();
         return response()->json([
             "status"=>"success",
             "mouvements"=>$mvts

@@ -18,7 +18,9 @@ class MouvementStock extends Model
         "destination",
         "sale_day_id", 
         "date_mouvement",
-        "user_id"
+        "user_id",
+        "ets_id",
+        "emplacement_id",
     ];
 
 

@@ -19,17 +19,17 @@ class UserLogService{
             ->first();
 
         // Jour de vente actif
-        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+        $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
 
         $route = $request->route()->getName();
 
         if (!$log) {
-            // 👉 Premier log du jour → on crée
             $log = UserLog::create([
                 "user_id"      => $user->id,
                 "sale_day_id"  => $saleDay->id ?? null,
                 "log_date"     => $now->toDateString(),
                 "logged_in_at" => $now,
+                "ets_id"       => $user->ets_id,
                 "status"       => "online",
             ]);
         } else {
@@ -46,7 +46,6 @@ class UserLogService{
                 ]);
             }
         }
-
         return $log;
     }
 }

@@ -13,7 +13,8 @@ class Categorie extends Model
         "libelle",
         "code",
         "type_service",
-        "couleur"
+        "couleur",
+        "ets_id"
     ];
 
     public function produits(){

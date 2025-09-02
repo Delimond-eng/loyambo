@@ -26,7 +26,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'actif' => 'boolean',
-        'salaire' => 'decimal:2'    ,
+        'salaire' => 'decimal:2',
     ];
 
     public function etablissement()

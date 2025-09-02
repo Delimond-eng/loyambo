@@ -24,6 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('sale_day_id')->nullable();
             $table->dateTime('date_mouvement');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

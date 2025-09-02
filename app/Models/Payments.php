@@ -22,6 +22,7 @@ class Payments extends Model
         "caisse_id",
         "sale_day_id",
         "user_id",
+        "ets_id",
     ];
 
     public function facture(){

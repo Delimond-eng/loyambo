@@ -13,6 +13,7 @@ class AccessAllow extends Model
 
     protected $fillable = [
         "allowed",
+        "ets_id"
     ];
       
     /**

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('numero', 10);
             $table->foreignId('emplacement_id')->constrained('emplacements')->cascadeOnDelete();
             $table->enum('statut', ['libre', 'occupée', 'réservée'])->default('libre');
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

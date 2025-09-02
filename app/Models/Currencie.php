@@ -14,6 +14,7 @@ class Currencie extends Model
         "currencie_date",
         "currencie_value",
         "currencie_exchange",
+        "ets_id"
     ];
       
     /**

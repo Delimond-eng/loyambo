@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->float("amount");
             $table->string("devise")->default("CDF");
-            $table->enum("mode",["cash", "mobile", "cheque","virement"]);
+            $table->enum("mode",["cash", "mobile", "cheque","virement","card"]);
             $table->string("mode_ref")->nullable();
             $table->dateTime("pay_date");
             $table->unsignedBigInteger("emplacement_id")->nullable();
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->unsignedBigInteger("caisse_id")->nullable();
             $table->unsignedBigInteger("sale_day_id")->nullable();
             $table->unsignedBigInteger("user_id");
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

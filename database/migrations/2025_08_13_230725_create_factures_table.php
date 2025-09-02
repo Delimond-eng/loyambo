@@ -24,6 +24,8 @@ return new class extends Migration
             $table->decimal('remise', 15, 2)->default(0);
             $table->decimal('total_ttc', 15, 2);
             $table->enum('statut', ['en_attente', 'payée', 'annulée'])->default('en_attente');
+            $table->unsignedBigInteger("ets_id");
+            $table->unsignedBigInteger("emplacement_id");
             $table->timestamps();
         });
     }

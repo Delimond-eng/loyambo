@@ -11,7 +11,8 @@ class UserLog extends Model
 
     protected $fillable = [
         'user_id', 'sale_day_id', 
-        'log_date', 'logged_in_at', 'logged_out_at', 'status'
+        'log_date', 'logged_in_at', 'logged_out_at', 'status',
+        'ets_id', 'emplacement_id'
     ];
 
     public function user()

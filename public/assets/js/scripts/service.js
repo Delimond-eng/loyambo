@@ -211,14 +211,25 @@ document.querySelectorAll(".AppService").forEach((el) => {
             //GET ALL AGENTS SERVEUR
             getAllServeursServices() {
                 this.isDataLoading = true;
-                get("/serveurs.services")
-                    .then(({ data, status }) => {
-                        this.isDataLoading = false;
-                        this.serveurs = data.serveurs;
-                    })
-                    .catch((err) => {
-                        this.isDataLoading = false;
-                    });
+                if (location.pathname === "/serveurs") {
+                    get("/users.all")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.serveurs = data.users;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                } else {
+                    get("/serveurs.services")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.serveurs = data.serveurs;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
             },
 
             viewAllTables() {

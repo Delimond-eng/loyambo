@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('access_allows', function (Blueprint $table) {
             $table->id();
             $table->boolean("allowed")->default(false);
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('code', 10)->unique();
             $table->enum('type_service', ['cuisine', 'boisson']);
             $table->string('couleur', 20)->nullable();
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

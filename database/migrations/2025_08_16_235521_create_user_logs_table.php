@@ -21,6 +21,8 @@ return new class extends Migration
             $table->dateTime("logged_in_at")->useCurrent();
             $table->dateTime("logged_out_at")->nullable();
             $table->string("status")->default("online");
+            $table->unsignedBigInteger("ets_id");
+            $table->unsignedBigInteger("emplacement_id");
             $table->timestamps();
         });
     }

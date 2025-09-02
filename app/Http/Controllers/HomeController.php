@@ -47,7 +47,8 @@ class HomeController extends Controller
             ]);
 
             $factureId = null;
-            $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+            $user = Auth::user();
+            $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
             if(!$saleDay){
                 return response()->json([
                     "errors"=>"La journée de vente non ouverte !"
@@ -123,8 +124,6 @@ class HomeController extends Controller
         $isServeur = $user->role === "serveur";
         $status = $request->query("status");
 
-        Log::info("status $status");
-
         $req = Facture::with([
             "details.produit",
             "table.emplacement",
@@ -137,10 +136,14 @@ class HomeController extends Controller
         })
         ->when($isServeur, function ($query) use ($user) {
             $query->where("user_id", $user->id);
-        });
+        })->where("ets_id", $user->ets_id);
 
         if($status){
             $req->where("statut", "en_attente");
+        }
+
+        if($user->role !== "admin" && $user->emplacement_id){
+            $req->where("emplacement_id", $user->emplacement_id);
         }
 
         $factures = $req->orderByDesc("id")->get();
@@ -193,7 +196,8 @@ class HomeController extends Controller
     {
         $dateRange = $request->query("dateRange");
         $serveurId = $request->query("serveur");
-        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+        $user = Auth::user();
+        $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
 
         $req = MouvementStock::with("produit")
             ->selectRaw("produit_id, SUM(quantite) as total_vendu")
@@ -213,12 +217,16 @@ class HomeController extends Controller
 
         $req->when(!$dateRange, function ($q) use ($saleDay) {
             $q->where("sale_day_id", $saleDay->id);
-        });
+        })->where("ets_id", $user->ets_id);
+
+        if($user->role !== 'admin' && $user->emplacement_id){
+            $req->where("emplacement_id", $user->emplacement_id);
+        }
 
         $sells = $req->groupBy("produit_id")->get();
 
         // 🔥 Ajouter regroupement par utilisateur pour chaque produit
-        $sells->map(function ($item) use ($dateRange, $serveurId, $saleDay) {
+        $sells->map(function ($item) use ($dateRange, $serveurId, $saleDay, $user) {
             $query = MouvementStock::with("user")
                 ->selectRaw("user_id, SUM(quantite) as quantite")
                 ->where("type_mouvement", "vente")
@@ -240,6 +248,10 @@ class HomeController extends Controller
             $query->when(!$dateRange, function ($q) use ($saleDay) {
                 $q->where("sale_day_id", $saleDay->id);
             });
+
+            if($user->role !== 'admin' && $user->emplacement_id){
+                $query->where("emplacement_id", $user->emplacement_id);
+            }
 
             $users = $query->groupBy("user_id")->get();
 
@@ -268,7 +280,7 @@ class HomeController extends Controller
     {
         $user = Auth::user();
         $isServeur = $user->role === "serveur"; 
-        $saleDay = SaleDay::whereNull("end_time")->latest()->first();
+        $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
 
         // Factures en attente
         $pendingInvoice = Facture::where("statut", "en_attente")
@@ -276,6 +288,10 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })
+            ->when($user->emplacement_id, function ($query) use ($user) {
+                $query->where("emplacement_id", $user->emplacement_id);
+            })
+            ->where("ets_id", $user->ets_id)
             ->count();
 
         // Toutes les factures du jour
@@ -283,22 +299,38 @@ class HomeController extends Controller
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })
+            ->when($user->emplacement_id, function ($query) use ($user) {
+                $query->where("emplacement_id", $user->emplacement_id);
+            })
+            ->where("ets_id", $user->ets_id)
             ->count();
         $cancelledFactures = Facture::where("sale_day_id", $saleDay->id)
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })->where("statut", "annulée")
+            ->when($user->emplacement_id, function ($query) use ($user) {
+                $query->where("emplacement_id", $user->emplacement_id);
+            })
+            ->where("ets_id", $user->ets_id)
             ->count();
         $daySells = MouvementStock::where("sale_day_id", $saleDay->id)
             ->when($isServeur, function ($query) use ($user) {
                 $query->where("user_id", $user->id);
             })->where("type_mouvement", "vente")
+            ->when($user->emplacement_id, function ($query) use ($user) {
+                $query->where("emplacement_id", $user->emplacement_id);
+            })
+            ->where("ets_id", $user->ets_id)
             ->count();
 
         // Utilisateurs connectés
         $connectedUsers = User::whereHas('lastLog', function ($query) {
                 $query->where('status', 'online');
             })
+            ->when($user->emplacement_id, function ($query) use ($user) {
+                $query->where("emplacement_id", $user->emplacement_id);
+            })
+            ->where("ets_id", $user->ets_id)
             ->count();
 
         return response()->json([

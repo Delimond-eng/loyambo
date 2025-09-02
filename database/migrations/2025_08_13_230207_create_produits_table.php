@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('seuil_reappro')->default(0);
             $table->boolean('quantified')->default(true);
             $table->string('image', 255)->nullable();
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

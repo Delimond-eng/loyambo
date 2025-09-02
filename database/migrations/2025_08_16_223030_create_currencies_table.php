@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date("currencie_date");
             $table->float("currencie_value");
             $table->string("currencie_exchange")->default("USD");
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

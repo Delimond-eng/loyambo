@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('devise', 3)->default('USD'); // ex: USD, EUR
             $table->decimal('taux_change', 15, 6)->nullable();
             $table->decimal('total_encaisse', 15, 2)->default(0);
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

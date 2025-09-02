@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date("sale_date");
             $table->dateTime("start_time");
             $table->dateTime("end_time")->nullable();
+            $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });
     }

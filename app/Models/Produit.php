@@ -18,7 +18,7 @@ class Produit extends Model
         "qte_init",
         "unite",
         "seuil_reappro",
-        "image","quantified"
+        "image","quantified","ets_id"
     ];
 
     public function categorie(){

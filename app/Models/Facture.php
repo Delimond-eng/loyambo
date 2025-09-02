@@ -20,6 +20,8 @@ class Facture extends Model
         'total_ttc',
         'date_facture',
         'statut',
+        'ets_id',
+        'emplacement_id',
     ];
 
     // Relations
