@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\AccessAllow;
 use App\Models\SaleDay;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
@@ -40,9 +41,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Blade::if('canCloseDay', function () {
-            $todaySale = SaleDay::whereNull('end_time')->latest('start_time')->first();
+            $todaySale = SaleDay::whereNull('end_time')->where("ets_id", Auth::user()->ets_id)->latest('start_time')->first();
             $accessAllowed = AccessAllow::first()?->allowed ?? false;
-
             return $todaySale && $accessAllowed;
         });
 

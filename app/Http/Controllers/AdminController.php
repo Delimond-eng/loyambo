@@ -99,7 +99,8 @@ class AdminController extends Controller
             ->where("sale_day_id", $saleDay->id)
             ->whereHas("user", function ($q) {
                 $q->where("role", "serveur"); 
-            })->where("statut", "payée")
+            })
+            ->where("statut", "payée")
             ->where("ets_id", $user->ets_id);
         if($user->role !== "admin" && $user->emplacement_id){
             $req->where("emplacement_id", $user->emplacement_id);
@@ -189,7 +190,9 @@ class AdminController extends Controller
     //GET ALL Emplacements with tables
     public function getAllEmplacements(){
         $user = Auth::user();
-        $emplacements = Emplacement::with(["tables", "beds"])->where("ets_id", $user->ets_id)->orderBy("libelle")->get();
+        $emplacements = Emplacement::with(["tables", "beds"])
+            ->where("ets_id", $user->ets_id)
+            ->orderBy("libelle")->get();
         return response()->json([
             "status"=>"success",
             "emplacements"=>$emplacements
@@ -253,15 +256,12 @@ class AdminController extends Controller
                 $query->where("statut", "!=", "payée")
                     ->with(["details.produit"]);
             }
-        ])->where("ets_id", $user->ets_id)->orderBy("numero");
+        ])->where("ets_id", $user->ets_id);
 
-        if ($placeId) {
-            $query->where("emplacement_id", $placeId);
-        } else {
+        if ($placeId && $user->role !== 'admin') {
             $query->where("emplacement_id", $user->emplacement_id);
-        }
-
-        $tables = $query->get();
+        } 
+        $tables = $query->orderBy("numero")->get();
 
         return response()->json([
             "status" => "success",
@@ -495,8 +495,9 @@ class AdminController extends Controller
                     "errors"=>"Vous ne pouvez pas servir cette commande !"
                 ]);
             }
-            $saleDay = SaleDay::whereNull("end_time")->where()->latest()->first();
+            $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
             $userId = $data["user_id"] ?? Auth::id();
+
 
             if($facture){
                 $payment = Payments::create([

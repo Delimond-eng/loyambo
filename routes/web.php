@@ -31,15 +31,15 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "dashboard")->name("home");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
     Route::view('/orders', "orders")->name("orders");
-    Route::get('/sells', fn()=>view("sells",["serveurs"=>User::all(), "saleDay"=>SaleDay::whereNull("end_time")->latest()->first()]))->name("sells");
+    Route::get('/sells', fn()=>view("sells",["serveurs"=>User::where("ets_id", Auth::user()->ets_id)->get(), "saleDay"=>SaleDay::whereNull("end_time")->where("ets_id", Auth::user()->ets_id)->latest()->first()]))->name("sells");
     Route::view('/factures', "factures")->name("factures");
     Route::view('/serveurs', "serveurs")->name("serveurs");
     Route::view('/serveurs.activities', "serveurs_activities")->name("serveurs.activities");
     Route::view('/orders.portal', "serveur_portal")->name("orders.portal");
     Route::view('/orders.interface', "orders_interface")->name("orders.interface");
     Route::view('/products.categories', "product_categories")->name("products.categories");
-    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->get(), "emplacements" => Emplacement::all()]))->name("products.mvts");
-    Route::get('/products', fn()=>view("products", ["categories"=>Categorie::all()]))->name("products");
+    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->where("ets_id", Auth::user()->ets_id)->get(), "emplacements" => Emplacement::where("ets_id", Auth::user()->ets_id)->get()]))->name("products.mvts");
+    Route::get('/products', fn()=>view("products", ["categories"=>Categorie::where("ets_id", Auth::user()->ets_id)->get()]))->name("products");
 
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");
     Route::view('/beds.occuped', "bedroom_occuped")->name("beds.occuped");
@@ -50,7 +50,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
 
      Route::get('/users', function(){
-        $places = Emplacement::all();
+        $places = Emplacement::where("ets_id", Auth::user()->ets_id)->get();
         return view("users", ["emplacements"=>$places]);
     })->name("users");
     //GET ALL USER WITH LATEST LOGS

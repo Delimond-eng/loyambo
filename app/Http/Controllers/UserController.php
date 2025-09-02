@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccessAllow;
 use App\Models\Etablissement;
 use App\Models\User;
 use App\Models\UserPermission;
@@ -44,6 +45,11 @@ class UserController extends Controller
                 'actif' => true,
                 'role' => 'admin',
                 'ets_id' => $etablissement->id,
+            ]);
+
+            AccessAllow::create([
+                "allowed"=>false,
+                "ets_id"=>$user->ets_id
             ]);
 
             // 3️⃣ Assigner le rôle admin via Spatie
