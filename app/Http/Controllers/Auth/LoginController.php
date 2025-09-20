@@ -63,7 +63,7 @@ class LoginController extends Controller
         $isAllowed = $access ? $access->allowed : false;
 
         // 3️⃣ Bloquer la connexion si journée non autorisée et non admin
-        if (!$isAllowed && !$user->hasRole('admin')) {
+        if (!$isAllowed && !$user->hasRole('admin') && !$user->hasRole('caissier')) {
             return response()->json([
                 'alerts' => 'La journée n\'est pas ouverte.'
             ]);

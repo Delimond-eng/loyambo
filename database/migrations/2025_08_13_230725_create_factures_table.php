@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('numero_facture', 20)->unique();
             $table->timestamp('date_facture')->useCurrent();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('table_id')->nullable()->constrained('restaurant_tables')->nullOnDelete();
-            $table->unsignedBigInteger('sale_day_id')->nullable();
+            $table->unsignedBigInteger('table_id')->nullable();
+            $table->unsignedBigInteger('chambre_id')->nullable();
+            $table->unsignedBigInteger('sale_day_id');
             $table->decimal('total_ht', 15, 2);
             $table->decimal('remise', 15, 2)->default(0);
             $table->decimal('total_ttc', 15, 2);

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\AccessAllow;
+use App\Models\Chambre;
+use App\Models\Client;
 use App\Models\Currencie;
 use App\Models\Emplacement;
 use App\Models\Facture;
 use App\Models\MouvementStock;
 use App\Models\Payments;
+use App\Models\Reservation;
 use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
@@ -305,6 +308,96 @@ class AdminController extends Controller
     }
 
 
+    public function reserver(Request $request)
+    {
+
+        try{
+            $data = $request->validate([
+                'client.nom'  => 'required|string',
+                'client.telephone'  => 'nullable|string',
+                'client.email'  => 'nullable|string',
+                'client.identite'  => 'required|string',
+                'client.identite_type'  => 'required|string',
+                'chambre_id' => 'nullable|exists:chambres,id',
+                'table_id'   => 'nullable|exists:restaurant_tables,id',
+                'date_debut' => 'required|date|after_or_equal:today',
+                'date_fin'   => 'required|date|after:date_debut',
+            ]);
+
+            $clientData = $data["client"];
+
+            $client = Client::where("identite", $clientData["identite"])->first();
+
+            if(!$client){
+                $client = Client::create([
+                    "nom"=>$clientData["nom"],
+                    "telephone"=>$clientData["telephone"],
+                    "email"=>$clientData["email"],
+                    "identite"=>$clientData["identite"],
+                    "identite_type"=>$clientData["identite_type"],
+                ]);
+            }
+
+            if (!$data['chambre_id'] && !$data['table_id']) {
+                return response()->json(['message' => 'Veuillez sélectionner une chambre ou une table.'], 422);
+            }
+
+            return DB::transaction(function () use ($data, $client) {
+                // Vérifier la disponibilité
+                $query = Reservation::where('statut', 'confirmée')
+                    ->where(function ($q) use ($data) {
+                        $q->whereBetween('date_debut', [$data['date_debut'], $data['date_fin']])
+                        ->orWhereBetween('date_fin', [$data['date_debut'], $data['date_fin']])
+                        ->orWhere(function ($q2) use ($data) {
+                            $q2->where('date_debut', '<=', $data['date_debut'])
+                                ->where('date_fin', '>=', $data['date_fin']);
+                        });
+                    });
+
+                if ($data['chambre_id']) {
+                    $query->where('chambre_id', $data['chambre_id']);
+                } else {
+                    $query->where('table_id', $data['table_id']);
+                }
+
+                if ($query->exists()) {
+                    return response()->json(['message' => 'Cette ressource est déjà réservée sur cette période.'], 422);
+                }
+                // Créer la réservation
+                $reservation = Reservation::create([
+                    'chambre_id' => $data['chambre_id'] ?? null,
+                    'table_id'   => $data['table_id'] ?? null,
+                    'client_id'  => $client->id,
+                    'date_debut' => $data['date_debut'],
+                    'date_fin'   => $data['date_fin'],
+                    'statut'     => 'confirmée',
+                    'ets_id'     => auth()->user()->ets_id ?? null,
+                ]);
+                // Mettre à jour le statut de la ressource
+                if ($data['chambre_id']) {
+                    Chambre::where('id', $data['chambre_id'])->update(['statut' => 'réservée']);
+                } else {
+                    RestaurantTable::where('id', $data['table_id'])->update(['statut' => 'réservée']);
+                }
+                return response()->json([
+                    'message' => 'Réservation créée avec succès.',
+                    'reservation' => $reservation
+                ], 201);
+            });
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+        
+    }
+
+
     public function triggerTableOperation(Request $request)
     {
         $operation = $request->op;
@@ -391,127 +484,6 @@ class AdminController extends Controller
             "result" => "Table liberée avec succès !"
         ]);
     }
-
-
-
-    /* public function triggerTableOperation(Request $request)
-    {
-        $operation = $request->op;
-
-        // 🔹 Transfert (inchangé)
-        if ($operation === 'transfert') {
-            $request->validate([
-                'source_id' => 'required|integer|exists:restaurant_tables,id',
-                'cible_id'  => 'required|integer|exists:restaurant_tables,id',
-            ]);
-
-            $tableSource = RestaurantTable::find($request->source_id);
-            $tableCible  = RestaurantTable::find($request->cible_id);
-
-            if ($tableSource->id === $tableCible->id) {
-                return response()->json([
-                    "errors" => "Impossible de transférer vers la même table."
-                ]);
-            }
-
-            DB::transaction(function () use ($tableSource, $tableCible) {
-                $tableSource->update(["statut" => "libre"]);
-                $tableCible->update(["statut" => "occupée"]);
-
-                $tableSource->commandes()->update([
-                    "table_id" => $tableCible->id
-                ]);
-            });
-
-            return response()->json([
-                "status" => "success",
-                "result" => "Transfert effectué avec succès !"
-            ]);
-        }
-
-        // 🔹 Combinaison
-        if ($operation === 'combiner') {
-            $request->validate([
-                'table1_id' => 'required|integer|exists:restaurant_tables,id',
-                'table2_id' => 'required|integer|exists:restaurant_tables,id',
-            ]);
-
-            $table1 = RestaurantTable::find($request->table1_id);
-            $table2 = RestaurantTable::find($request->table2_id);
-
-            if ($table1->id === $table2->id) {
-                return response()->json([
-                    "errors" => "Impossible de combiner une table avec elle-même."
-                ]);
-            }
-            $facturePrincipale = null;
-            DB::transaction(function () use ($table1, $table2, &$facturePrincipale) {
-                // Toutes les factures de table1 et table2
-                $factures1 = $table1->commandes()->get();
-                $factures2 = $table2->commandes()->get();
-
-                if ($factures1->isEmpty() && $factures2->isEmpty()) {
-                    return; // rien à combiner
-                }
-
-                // On choisit la facture "principale" = la plus récente de table2
-                $facturePrincipale = $factures2->sortByDesc("created_at")->first();
-
-                // Si table2 n’a pas de facture, on prend celle de table1 comme principale
-                if (!$facturePrincipale && $factures1->isNotEmpty()) {
-                    $facturePrincipale = $factures1->sortByDesc("created_at")->first();
-                    $facturePrincipale->update(["table_id" => $table2->id]);
-                }
-
-                // Fusionner toutes les autres factures dans la principale
-                $facturesAFusionner = $factures1->merge($factures2)->filter(fn($f) => $f->id !== $facturePrincipale->id);
-
-                foreach ($facturesAFusionner as $facture) {
-                    foreach ($facture->details as $detail) {
-                        $existingDetail = $facturePrincipale->details()
-                            ->where("produit_id", $detail->produit_id)
-                            ->first();
-
-                        if ($existingDetail) {
-                            $newQuantite = $existingDetail->quantite + $detail->quantite;
-                            $existingDetail->update([
-                                "quantite"    => $newQuantite,
-                                "total_ligne" => $newQuantite * $existingDetail->prix_unitaire,
-                            ]);
-                        } else {
-                            $facturePrincipale->details()->create([
-                                "produit_id"    => $detail->produit_id,
-                                "quantite"      => $detail->quantite,
-                                "prix_unitaire" => $detail->prix_unitaire,
-                                "total_ligne"   => $detail->total_ligne,
-                            ]);
-                        }
-                    }
-                    // Supprimer facture fusionnée
-                    $facture->delete();
-                }
-
-                // 🔹 Recalculer le montant de la facture principale
-                $nouveauMontant = $facturePrincipale->details()->sum(DB::raw('quantite * prix_unitaire'));
-                $facturePrincipale->update(["montant_total" => $nouveauMontant]);
-
-                // Libérer table1
-                $table1->update(["statut" => "libre"]);
-                // Table2 reste occupée
-                $table2->update(["statut" => "occupée"]);
-            });
-
-            return response()->json([
-                "status" => "success",
-                "result" => "Tables combinées avec succès !",
-                "facture" => $facturePrincipale->load("details")
-            ]);
-        }
-
-        return response()->json([
-            "errors" => "Opération inconnue ou non supportée."
-        ]);
-    } */
 
     public function createPayment(Request $request){
         try{
