@@ -67,14 +67,46 @@ class PermissionSeeder extends Seeder
 
         // Attribution des permissions par rôle
         $roleCaissier->givePermissionTo([
+            'voir-dashboard',
+            'voir-activites-serveurs',
+            'voir-produits-vendus',
+            'voir-occupations-tables',
+            'voir-mouvements-stock',
             'voir-ventes',
-            'creer-ventes',
-            'voir-factures',
-            'creer-factures',
             'voir-paiements',
-            'creer-paiements',
             'voir-rapports',
+            'voir-commandes',
+            'voir-factures',
+            'voir-categories',
+            'voir-serveurs',
+            'voir-utilisateurs',
+            'voir-tables',
+            'voir-chambres',
+            'voir-produits',
+            'voir-emplacements',
+            'creer-produits',
+            'supprimer-produits',
+            'modifier-produits',
+            'creer-mouvements-stock',
+            'modifier-mouvements-stock',
+            'supprimer-mouvements-stock',
+            'creer-ventes',
+            'supprimer-ventes',
+            'modifier-ventes',
+            'creer-factures',
+            'supprimer-factures',
+            'modifier-factures',
+            'creer-paiements',
+            'modifier-paiements',
+            'supprimer-paiements',
+            'creer-categories',
+            'supprimer-categories',
+            'modifier-categories',
             'cloturer-journee',
+            'ouvrir-journee',
+            'passer-commandes',
+            'modifier-commandes',
+            'supprimer-commandes',
         ]);
 
         $roleServeur->givePermissionTo([
@@ -82,6 +114,7 @@ class PermissionSeeder extends Seeder
             'passer-commandes',
             'creer-commandes',
             'voir-tables',
+            'voir-chambres',
         ]);
 
         $roleCuisinier->givePermissionTo([

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Models\Categorie;
 use App\Models\Emplacement;
 use App\Models\Produit;
+use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,9 @@ Auth::routes();
 Route::post("/create.account", [UserController::class, "createEtsAccount"])->name("create.account");
 Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "dashboard")->name("home");
+    Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
+
     Route::view('/orders', "orders")->name("orders");
     Route::get('/sells', fn()=>view("sells",["serveurs"=>User::where("ets_id", Auth::user()->ets_id)->get(), "saleDay"=>SaleDay::whereNull("end_time")->where("ets_id", Auth::user()->ets_id)->latest()->first()]))->name("sells");
     Route::view('/factures', "factures")->name("factures");
@@ -45,7 +48,6 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/tables', "tables")->name("tables");
     Route::view('/reports.global', "reports_global")->name("reports.global");
 
-    Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
 
      Route::get('/users', function(){
         $places = Emplacement::where("ets_id", Auth::user()->ets_id)->get();
@@ -53,6 +55,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     })->name("users");
     //GET ALL USER WITH LATEST LOGS
     Route::get("users.all", [AdminController::class, "getAllUsersWithLatestLog"])->name("users.all")->middleware("can:voir-utilisateurs");
+    Route::get("serveurs.all", [AdminController::class, "getAllServeurs"])->name("serveurs.all")->middleware("can:voir-serveurs");
     Route::get("/serveurs.services", [AdminController::class, "getAllServeursServices"])->name("users.services");
 
     //GET ALL PERMISSIONS
@@ -84,6 +87,11 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
+
+
+    //============Module pour les hotel===================//
+    Route::view("/bedroom.reserve", "hotel_reservation")->name("bedroom.reserve")->can("voir-chambres");
+    Route::get("/chambres.all", [AdminController::class, "getAllChambres"])->name("chambres.all")->can("voir-chambres");
     
 });
 

@@ -23,7 +23,9 @@
                 @if (Auth::user()->role==='serveur')
                     <a @click="removeCachedUser" href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
                 @else
+                    @canCloseDay
                     <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                    @endif
                 @endif
             </div>
         </div>

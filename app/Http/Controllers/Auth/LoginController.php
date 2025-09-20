@@ -5,12 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AccessAllow;
 use App\Models\User;
-use App\Services\UserLogService;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -76,7 +74,7 @@ class LoginController extends Controller
             // 5️⃣ Redirection selon rôle
             return response()->json([
                 "user"=>$user,
-                "redirect"=>route("home")
+                "redirect"=>$user->role === 'serveur' ? route('orders.portal') : "/"
             ]);
         }
         return response()->json(['errors' => 'Identifiants invalides']);

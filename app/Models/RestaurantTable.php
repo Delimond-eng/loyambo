@@ -14,6 +14,8 @@ class RestaurantTable extends Model
     protected $fillable = [
         "numero",
         "emplacement_id",
+        "prix",
+        "prix_devise",
         "statut",
         "ets_id"
     ];

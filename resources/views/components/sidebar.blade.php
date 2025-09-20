@@ -19,63 +19,54 @@
 
         <!-- Menu Ventes -->
         @can('voir-ventes')
-        <li class="@active('sells')">
-            <a href="{{ route('sells') }}">
-                <i class="icon-Dollar"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                Ventes
-            </a>
-        </li>
+            @canCloseDay
+            <li class="@active('sells')">
+                <a href="{{ route('sells') }}">
+                    <i class="icon-Dollar"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    Ventes
+                </a>
+            </li>
+            @endif
         @endcan
         <!-- End Ventes -->
 
         <!-- Menu Commandes -->
         @can('voir-commandes')
-        <li class="@active('orders')">
-            <a href="{{ route('orders') }}">
-                <i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
-                Commandes
-                <span class="label label-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
-            </a>
-        </li>
+            @canCloseDay
+            <li class="@active('orders')">
+                <a href="{{ route('orders') }}">
+                    <i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
+                    Commandes
+                    <span class="label label-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
+                </a>
+            </li>
+            @endif
+        @endcan
+        <!-- End Commandes -->
+        @can('voir-chambres')
+            @canCloseDay
+                @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
+                <li @active(["bedroom.reserve"])>
+                    <a href="{{ route("bedroom.reserve") }}">
+                        <i class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
+                        Chambres & reservation
+                    </a>
+                </li>
+                @endif
+            @endif
         @endcan
         <!-- End Commandes -->
 
-        <!-- Menu users -->
-        @can("manage-users")
-        <li class="@active(['users.*', 'users'])">
-            <a href="#">
-                <i class="icon-Add-user"><span class="path1"></span><span class="path2"></span></i>Utilisateurs
-            </a>
-            <ul>
-                @can('voir-utilisateurs')
-                <li class="@active('users')">
-                    <a href="{{ route('users') }}">
-                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Comptes Utilisateurs
-                    </a>
-                </li>
-                @endcan
-                <!-- @can('gerer-roles') {{-- ou permission personnalisée si nécessaire --}}
-                <li>
-                    <a href="#">
-                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Rôles & attribution accès
-                    </a>
-                </li>
-                @endcan -->
-            </ul>
-        </li>
-        @endcan
-        <!-- End users -->
-
         <!-- Menu factures -->
         @can('voir-factures')
-        <li class="@active('factures')">
-            <a href="{{ route('factures') }}">
-                <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>
-                Factures <span class="label label-primary ms-1 AppDashboard">@{{ counts.facs ?? 0 }}</span>
-            </a>
-        </li>
+            @canCloseDay
+            <li class="@active('factures')">
+                <a href="{{ route('factures') }}">
+                    <i class="icon-Selected-file"><span class="path1"></span><span class="path2"></span></i>
+                    Factures <span class="label label-primary ms-1 AppDashboard">@{{ counts.facs ?? 0 }}</span>
+                </a>
+            </li>
+            @endif
         @endcan
         <!-- end Factures -->
 
@@ -103,12 +94,14 @@
                 </li>
                 @endcan
                 @can('voir-produits-vendus')
-                <li>
-                    <a href="{{ route('sells') }}">
-                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Produits vendus <!-- <span class="label label-success ms-1">5</span> -->
-                    </a>
-                </li>
+                    @canCloseDay
+                    <li>
+                        <a href="{{ route('sells') }}">
+                            <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                            Produits vendus <!-- <span class="label label-success ms-1">5</span> -->
+                        </a>
+                    </li>
+                    @endif
                 @endcan
             </ul>
         </li>
@@ -184,19 +177,49 @@
 
         <!-- Menu rapports -->
         @can('voir-rapports')
-        <li class="@active(['reports.*'])">
+            @canCloseDay
+            <li class="@active(['reports.*'])">
+                <a href="#">
+                    <i class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                    Rapports
+                </a>
+                <ul>
+                    <li class="@active('reports.global')">
+                        <a href="{{ route('reports.global') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
+                    </li>
+                </ul>
+            </li>
+            @endif
+        @endcan
+        <!-- end rapports -->
+
+        <!-- Menu users -->
+        @can("manage-users")
+        <li class="@active(['users.*', 'users'])">
             <a href="#">
-                <i class="icon-Equalizer"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-                Rapports
+                <i class="icon-Add-user"><span class="path1"></span><span class="path2"></span></i>Utilisateurs
             </a>
             <ul>
-                <li class="@active('reports.global')">
-                    <a href="{{ route('reports.global') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
+                @can('voir-utilisateurs')
+                <li class="@active('users')">
+                    <a href="{{ route('users') }}">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Comptes Utilisateurs
+                    </a>
                 </li>
+                @endcan
+                <!-- @can('gerer-roles') {{-- ou permission personnalisée si nécessaire --}}
+                <li>
+                    <a href="#">
+                        <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
+                        Rôles & attribution accès
+                    </a>
+                </li>
+                @endcan -->
             </ul>
         </li>
         @endcan
-        <!-- end rapports -->
+        <!-- End users -->
     </ul>
 </nav>
 @endif

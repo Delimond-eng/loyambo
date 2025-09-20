@@ -5,13 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\AccessAllow;
 use App\Models\Etablissement;
 use App\Models\User;
-use App\Models\UserPermission;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -67,6 +64,9 @@ class UserController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 
@@ -127,6 +127,9 @@ class UserController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 

@@ -78,7 +78,7 @@
 										<tr v-for="(data, index) in cart">
 											<td style="width:65%">@{{ data.libelle }}</td>
 											<td style="width:20%">
-												<input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
+												<input type="text" style="width:40px" v-model="data.qte" class="form-control" placeholder="1" min="1">
 											</td>
 											<td style="width:15%" class="text-end fw-700">
 												<div class="d-flex">

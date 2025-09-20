@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger("facture_id");
             $table->unsignedBigInteger("table_id");
             $table->unsignedBigInteger("chambre_id")->nullable();
-            $table->unsignedBigInteger("caisse_id")->nullable();
+            $table->unsignedBigInteger("caissier_id")->nullable();
             $table->unsignedBigInteger("sale_day_id")->nullable();
             $table->unsignedBigInteger("user_id");
             $table->unsignedBigInteger("ets_id");

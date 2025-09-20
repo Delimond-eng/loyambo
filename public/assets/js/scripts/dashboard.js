@@ -19,9 +19,10 @@ document.querySelectorAll(".AppDashboard").forEach((el) => {
         },
 
         mounted() {
-            setInterval(() => {
+            /* setInterval(() => {
                 this.loadCounter();
-            }, 3000);
+            }, 3000); */
+            this.loadCounter();
         },
 
         methods: {

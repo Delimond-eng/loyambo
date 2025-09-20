@@ -213,7 +213,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             getAllServeursServices() {
                 this.isDataLoading = true;
                 if (location.pathname === "/serveurs") {
-                    get("/users.all")
+                    get("/serveurs.all")
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
                             this.serveurs = data.users;

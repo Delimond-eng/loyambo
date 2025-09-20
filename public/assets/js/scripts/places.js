@@ -14,7 +14,13 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                     libelle: "",
                     type: "",
                 },
-                formTable: [{ numero: "", emplacement_id: "", id: "" }],
+                formTable: {
+                    numero: "",
+                    emplacement_id: "",
+                    id: "",
+                    prix: "",
+                    prix_devise: "CDF",
+                },
                 selectedEmplacement: null,
                 operation: null,
             };
@@ -113,7 +119,9 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
             //CREATE PRODUCT
             submitTables() {
                 this.isLoading = true;
-                postJson("/table.create", { tables: this.formTable })
+                console.log(JSON.stringify(this.formTable));
+
+                postJson("/table.create", this.formTable)
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
@@ -172,7 +180,12 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                     type: "",
                 };
 
-                this.formTable = [{ numero: "", emplacement_id: "" }];
+                this.formTable = {
+                    numero: "",
+                    emplacement_id: "",
+                    prix: "",
+                    prix_devise: "CDF",
+                };
             },
 
             whenModalHidden() {

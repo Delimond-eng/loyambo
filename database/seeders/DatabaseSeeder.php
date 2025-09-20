@@ -3,13 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
-use App\Models\Department;
-use App\Models\ProfType;
 use App\Models\SaleDay;
-use App\Models\UserPermission;
-use App\Models\VisitorType;
-use App\Models\VisitPurpose;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

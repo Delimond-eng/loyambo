@@ -66,9 +66,9 @@ class ProductController extends Controller
                 "categorie_id"=>"required|int|exists:categories,id",
                 "libelle"=>"required|string",
                 "prix_unitaire"=>"required|string",
-                "unite"=>"required|string",
-                "seuil_reappro"=>"required|int",
-                "qte_init"=>"required|int"
+                "unite"=>"nullable|string",
+                "seuil_reappro"=>"nullable|int",
+                "qte_init"=>"nullable|int"
             ]);
 
             if ($request->hasFile('image')) {
@@ -83,6 +83,8 @@ class ProductController extends Controller
 
             $data["ets_id"] = $user->ets_id;
             $data["quantified"] = $request->quantified ?? false;
+            $data["seuil_reappro"] = $data["seuil_reappro"] ?? 0;
+            $data["qte_init"] = $data["qte_init"] ?? 0;
 
             $produit = Produit::updateOrCreate(["id"=>$request->id ?? null], $data);
 
@@ -177,6 +179,9 @@ class ProductController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 

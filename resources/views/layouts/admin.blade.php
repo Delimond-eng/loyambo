@@ -30,7 +30,9 @@
 
         @include("components.header")
 
-        @include("components.sidebar")
+       @if (Auth::user()->role !== 'serveur')
+            @include("components.sidebar")
+       @endif
 
         @yield("content")
 

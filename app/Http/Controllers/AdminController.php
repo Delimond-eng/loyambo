@@ -30,7 +30,6 @@ class AdminController extends Controller
             $data = $request->validate([
                 "currencie_value"=>"required|numeric"
             ]);
-
             $user = Auth::user();
 
             $currencie = Currencie::updateOrCreate(
@@ -70,6 +69,9 @@ class AdminController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
     }
 
 
@@ -82,6 +84,18 @@ class AdminController extends Controller
         if($role){
             $query->where("role", $role);
         }
+        $users = $query->get();
+        return response()->json([
+            "status"=>"success",
+            "users"=>$users
+        ]);
+    }
+
+    //Voir tous les serveurs
+    public function getAllServeurs(Request $request){
+        $user = Auth::user();
+        $query = User::with(["lastLog", "emplacement","permissions", "roles.permissions"])
+                ->orderBy("name")->where("ets_id", $user->ets_id)->where("role", "serveur");
         $users = $query->get();
         return response()->json([
             "status"=>"success",
@@ -152,6 +166,9 @@ class AdminController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
         
     }
 
@@ -184,6 +201,9 @@ class AdminController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
     }
 
 
@@ -208,28 +228,30 @@ class AdminController extends Controller
         try{
             // Validation
             $data = $request->validate([
-                "tables.*.numero"=>"required|string",
-                "tables.*.emplacement_id"=>"required|int|exists:emplacements,id",
-                "tables.*.id"=>"nullable|int",
+                "numero"=>"required|string",
+                "emplacement_id"=>"required|int|exists:emplacements,id",
+                "prix"=>"nullable|numeric",
+                "prix_devise"=>"nullable|string",
+                "id"=>"nullable|int",
             ]);
-            $tables = $data["tables"];
+
             $user = Auth::user();
-            foreach ($tables as $table) {
-                if(isset($table["id"])){
-                    $cdts["id"] = $table["id"];
-                }
-                else{
-                    $cdts = [
-                        "numero"=>$table["numero"],
-                        "emplacement_id"=>$table["emplacement_id"]
-                    ];
-                }
-                RestaurantTable::updateOrCreate($cdts,[
-                    "numero"=>$table["numero"], 
-                    "emplacement_id"=>$table["emplacement_id"],
-                    "ets_id"=>$user->ets_id
-                ]);
+            if(isset($data["id"])){
+                $cdts["id"] = $data["id"];
             }
+            else{
+                $cdts = [
+                    "numero"=>$data["numero"],
+                    "emplacement_id"=>$data["emplacement_id"]
+                ];
+            }
+            RestaurantTable::updateOrCreate($cdts,[
+                "numero"=>$data["numero"], 
+                "emplacement_id"=>$data["emplacement_id"],
+                "prix"=>$data["prix"] ?? null,
+                "prix_devise"=>$data["prix_devise"] ?? null,
+                "ets_id"=>$user->ets_id
+            ]);
             return response()->json([
                 'status'=>'success',
                 'message' => 'Nouvelle table créée avec succès !',
@@ -241,6 +263,8 @@ class AdminController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        } catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 
@@ -261,11 +285,22 @@ class AdminController extends Controller
         if ($placeId) {
             $query->where("emplacement_id", $placeId);
         } 
-        $tables = $query->orderBy("numero")->get();
+        $tables = $query->orderByDesc("emplacement_id")->get();
 
         return response()->json([
             "status" => "success",
             "tables" => $tables
+        ]);
+    }
+    public function getAllChambres(Request $request)
+    {
+        $user = Auth::user();
+
+        $emplacement = Emplacement::with("beds")->where("id", $user->emplacement_id)
+        ->whereHas("beds")->first();
+        return response()->json([
+            "status" => "success",
+            "chambres" => $emplacement->beds ?? []
         ]);
     }
 
@@ -542,6 +577,9 @@ class AdminController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 

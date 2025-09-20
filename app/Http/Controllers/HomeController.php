@@ -49,6 +49,7 @@ class HomeController extends Controller
             $factureId = null;
             $user = Auth::user();
             $serveur = User::find($data["user_id"]);
+            $serveur = $serveur ?? $user;
             $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
             if(!$saleDay){
                 return response()->json([
@@ -67,13 +68,13 @@ class HomeController extends Controller
                     $facture->numero_facture = 'FAC-' . time(); 
                 }
                 // Mise à jour des infos
-                $facture->user_id = $serveur->id ?? Auth::id();
+                $facture->user_id = $serveur->id;
                 $facture->table_id = $data['table_id'] ?? null;
                 $facture->sale_day_id = $saleDay->id;
                 $facture->remise = $data['remise'] ?? 0;
                 $facture->statut = "en_attente";
                 $facture->emplacement_id = $serveur->emplacement_id;
-                $facture->ets_id = Auth::user()->ets_id;
+                $facture->ets_id =$serveur->ets_id;
                 // Calcul total HT
                 $total_ht = 0;
                 foreach ($data['details'] as $detail) {
@@ -113,6 +114,9 @@ class HomeController extends Controller
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
         }
     }
 

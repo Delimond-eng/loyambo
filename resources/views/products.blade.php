@@ -56,7 +56,7 @@
                                                 <h6 class="mb-0 fw-bold">@{{ data.qte_init }}</h6>
                                             </td>
                                             <td>
-                                                <h6 class="mb-0 fw-bold">@{{ data.unite }}</h6>
+                                                <h6 class="mb-0 fw-bold">@{{ data.unite ?? "----" }}</h6>
                                             </td>
                                             <td>
                                                 <div class="demo-checkbox m-0 p-0">

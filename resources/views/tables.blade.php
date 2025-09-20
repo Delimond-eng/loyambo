@@ -40,7 +40,7 @@
 												</td>
 
 												<td class="d-flex align-items-center justify-content-end">
-													<a href="#"  data-bs-toggle="modal" data-bs-target="#tableModal" @click="formTable = [{id:data.id, numero:data.numero, emplacement_id:data.emplacement_id}]" class="btn btn-primary-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+													<a href="#"  data-bs-toggle="modal" data-bs-target="#tableModal" @click="formTable = {id:data.id, numero:data.numero, emplacement_id:data.emplacement_id, prix:data.prix, prix_devise:data.prix_devise}" class="btn btn-primary-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
 													<a href="#" class="btn btn-danger-light btn-sm"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
 												</td>
 											</tr>
@@ -66,7 +66,7 @@
 										<div class="input-group mb-3">
 											<span class="input-group-text bg-transparent"><i
 													class="ti-write text-primary"></i></span>
-											<input v-model="formTable[0].numero" type="text" class="form-control ps-15 bg-transparent"
+											<input v-model="formTable.numero" type="text" class="form-control ps-15 bg-transparent"
 												placeholder="Numéro...ex: 01">
 										</div>
 									</div>
@@ -74,9 +74,21 @@
 										<div class="input-group mb-3">
 											<span class="input-group-text bg-transparent"><i
 													class="ti-location-pin text-primary"></i></span>
-											<select class="form-control ps-15 bg-transparent" v-model="formTable[0].emplacement_id">
+											<select class="form-control ps-15 bg-transparent" v-model="formTable.emplacement_id">
 												<option value="" hidden selected>Sélectionnez un emplacement</option>
 												<option v-for="(emp, index) in allEmplacements" :value="emp.id">@{{ emp.libelle }}</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<span class="input-group-text bg-transparent"><i
+													class="ti-money text-primary"></i></span>
+											<input v-model="formTable.prix" type="number" class="form-control ps-15 bg-transparent"
+												placeholder="Prix de la chambre.">
+											<select v-model="formTable.prix_devise" class="form-control ps-15 bg-transparent">
+												<option value="CDF" selected>CDF</option>
+												<option value="USD">USD</option>
 											</select>
 										</div>
 									</div>

@@ -3,30 +3,24 @@
 @section("content")
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-	<div class="container-full AppService" v-cloak>
+	<div class="container-full AppHotel" v-cloak>
 	<!-- Content Header (Page header) -->
 	 	<div class="content-header">
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
-
-<!-- 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
                 <div class="me-auto">
-					@if (Auth::user()->role === "serveur")
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
-					@else
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
-					@endif
+					<h3 class="page-title">Reservation chambre</h3>
 					<div class="d-inline-block align-items-center">
 						<nav>
 							<ol class="breadcrumb">
-								<li class="breadcrumb-item active" aria-current="page">Vous êtes au portail de vente du serveur.</li>
+								<li class="breadcrumb-item active" aria-current="page">Reservez en toute sécurité les chambres d'hôtel pour vos clients.</li>
 							</ol>
 						</nav>
 					</div>
                 </div>
 
 				<div class="clearfix mt-3 mt-lg-0 mt-xl-0">
-					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
-					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn-sm btn btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
+					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2">Transferer chambre <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
+					<!-- <button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button> -->
 					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
 					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
 				</div>
@@ -39,14 +33,13 @@
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">
 						<div class="row">
-							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in allTables">
-								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
+							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(chambre, i) in allChambres">
+								<a href="#" @click="reserverChambreView(chambre)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
-										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
-                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
+										<div class="ribbon-two" :class="{'ribbon-two-danger': chambre.statut==='occupée', 'ribbon-two-success':chambre.statut==='libre','ribbon-two-warning':chambre.statut==='réservée' }"><span>@{{ chambre.statut }}</span></div>
+                                        <img :src="chambre.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
-											@{{ table.numero }}
+											@{{ chambre.numero }}
 										</div>
 									</div> <!-- end box-body-->
 								</a>
@@ -57,11 +50,69 @@
 			<!-- /.box-body -->
 		  </div>
 		  <!-- /.box -->
-
 		</section>
 
+		<!-- Modal mode de paiement -->
+		<div class="modal fade modal-reservation" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content" v-if="selectedBed">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Reservation chambre n°@{{ selectedBed.numero }}</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<div class="input-group mb-3">
+								<span class="input-group-text bg-transparent"><i
+										class="ti-money text-primary"></i></span>
+								<input :value="selectedBed.prix" type="text" class="form-control ps-15 bg-transparent">
+								<input :value="selectedBed.prix_devise" type="text" class="form-control ps-15 bg-transparent">
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group mb-3">
+								<span class="input-group-text bg-transparent"><i
+									class="ti-calendar text-primary"></i></span>
+								<input type="number" placeholder="nombre de jours... ex:2" class="form-control ps-15 bg-transparent">
+							</div>
+						</div>
+						<p class="text-danger">Sélectionnez un mode de paiement.</p>
+						<div class="flexbox flex-justified text-center">
+							<a href="#"
+								v-for="mode in modes" 
+								@click="selectedMode=mode.value; selectedModeRef=''"
+								class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
+								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
+							>
+								<p class="mb-0 fa-3x">
+									<i :class="mode.icon"></i>
+								</p>
+								<p class="mb-2 fw-300">@{{ mode.label }}</p>
+							</a>
+						</div>
+						<input 
+							v-if="selectedMode && selectedMode !== 'cash'" 
+							type="text" 
+							v-model="selectedModeRef"
+							placeholder="Réference du mode de paiement ..." 
+							class="form-control mt-2 mb-2"
+						>
+
+						
+					</div>
+					<div class="modal-footer" v-if="selectedMode">
+						<button class="btn btn-success mt-5" @click="triggerPayment">
+							Valider <i class="mdi mdi-check-all"></i>
+						</button>
+						<button class="btn btn-danger-light">
+							Annuler et fermer
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 		<!-- Modal Commandes -->
-		<div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+		<!-- <div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<div class="modal-content" v-if="selectedPendingTable">
 					<div class="modal-header">
@@ -85,13 +136,11 @@
 						</div>
 					</div>
 				</div>
-				<!-- /.modal-content -->
 			</div>
-			<!-- /.modal-dialog -->
-		</div>
+		</div> -->
 
 		<!-- Modal mode de paiement -->
-		<div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+		<!-- <div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-dialog-centered">
 				<div class="modal-content" v-if="selectedFacture">
 					<div class="modal-header">
@@ -113,7 +162,6 @@
 								<p class="mb-2 fw-300">@{{ mode.label }}</p>
 							</a>
 						</div>
-						<!-- Input de référence uniquement si le mode n'est pas CASH et qu'un mode est sélectionné -->
 						<input 
 							v-if="selectedMode && selectedMode !== 'cash'" 
 							type="text" 
@@ -129,13 +177,11 @@
 						</div>
 					</div>
 				</div>
-				<!-- /.modal-content -->
 			</div>
-			<!-- /.modal-dialog -->
-		</div>
+		</div> -->
 
 		<!-- Modal Facture Details -->
-		<div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+		<!-- <div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -155,9 +201,7 @@
 										</div>
 									</div>
 								</div>
-							<!-- /.col -->
 							</div>
-						
 							<div class="row" v-if="selectedFacture.details">
 								<div class="col-12 table-responsive">
 									<table class="table table-bordered">
@@ -179,7 +223,6 @@
 									</tbody>
 									</table>
 								</div>
-								<!-- /.col -->
 							</div>
 							<div class="row">
 								<div class="col-12 text-end">
@@ -194,30 +237,19 @@
 										<h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>
 									</div>
 								</div>
-								<!-- /.col -->
 							</div>
 						</section>
 					</div>
-				
 				</div>
-				<!-- /.modal-content -->
 			</div>
-			<!-- /.modal-dialog -->
-		</div>
+		</div> -->
 
 	</div>
 </div>
 
-@if (Auth::user()->role === 'serveur')
-	<a class="btn btn-app btn-primary" style="position: fixed; right: 20px; bottom: 10px;" href="#">
-		<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
-		<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
-	</a>
-@endif
 
 
 @endsection
 @push("scripts")
-    <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
-	<script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>	
+    <script type="module" src="{{ asset("assets/js/scripts/hotel.js") }}"></script>	
 @endpush
