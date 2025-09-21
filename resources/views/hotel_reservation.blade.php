@@ -41,6 +41,7 @@
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
 											@{{ chambre.numero }}
 										</div>
+										<span style="position:absolute; right: 20px; top: 20px;" class="badge badge-pill badge-primary-light">@{{ chambre.type }}</span>
 									</div> <!-- end box-body-->
 								</a>
 							</div>
@@ -62,18 +63,35 @@
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<div class="input-group mb-3">
-								<span class="input-group-text bg-transparent"><i
-										class="ti-money text-primary"></i></span>
-								<input :value="selectedBed.prix" type="text" class="form-control ps-15 bg-transparent">
-								<input :value="selectedBed.prix_devise" type="text" class="form-control ps-15 bg-transparent">
+							<label class="form-label">Prix de la chambre</label>
+							<div class="d-flex">
+								<input v-model="selectedBed.prix" type="number" class="form-control me-2"
+									 readonly>
+								<input style="width: 100px;" v-model="selectedBed.prix_devise" type="text" class="form-control"
+									 readonly>
 							</div>
 						</div>
 						<div class="form-group">
-							<div class="input-group mb-3">
-								<span class="input-group-text bg-transparent"><i
-									class="ti-calendar text-primary"></i></span>
-								<input type="number" placeholder="nombre de jours... ex:2" class="form-control ps-15 bg-transparent">
+							<label class="form-label">Type de chambre & capacité</label>
+							<div class="d-flex">
+								<input v-model="selectedBed.type" type="text" class="form-control me-2"
+									 readonly>
+								<input v-model="selectedBed.capacite" type="text" class="form-control"
+									 readonly>
+							</div>
+						</div>
+						<div class="row g-2">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Date début sejour <sup class="text-danger">*</sup></label>
+									<input  type="date" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Date Fin <sup class="text-danger">*</sup></label>
+									<input  type="date" class="form-control me-2" required>
+								</div>
 							</div>
 						</div>
 						<p class="text-danger">Sélectionnez un mode de paiement.</p>
@@ -81,7 +99,7 @@
 							<a href="#"
 								v-for="mode in modes" 
 								@click="selectedMode=mode.value; selectedModeRef=''"
-								class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
+								class="b-1 border-primary text-decoration-none rounded py-10 cursor-pointer"
 								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
 							>
 								<p class="mb-0 fa-3x">
@@ -90,18 +108,17 @@
 								<p class="mb-2 fw-300">@{{ mode.label }}</p>
 							</a>
 						</div>
-						<input 
-							v-if="selectedMode && selectedMode !== 'cash'" 
-							type="text" 
-							v-model="selectedModeRef"
-							placeholder="Réference du mode de paiement ..." 
-							class="form-control mt-2 mb-2"
-						>
-
-						
+						<div class="form-group mt-2" v-if="selectedMode && selectedMode !== 'cash'">
+							<input  
+								type="text" 
+								v-model="selectedModeRef"
+								placeholder="Réference du mode de paiement ..." 
+								class="form-control mt-2 mb-2"
+							>
+						</div>
 					</div>
-					<div class="modal-footer" v-if="selectedMode">
-						<button class="btn btn-success mt-5" @click="triggerPayment">
+					<div class="modal-footer justify-content-end" v-if="selectedMode">
+						<button class="btn btn-success mt-5">
 							Valider <i class="mdi mdi-check-all"></i>
 						</button>
 						<button class="btn btn-danger-light">

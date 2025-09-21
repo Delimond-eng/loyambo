@@ -22,7 +22,7 @@ return new class extends Migration
             $table->dateTime("logged_out_at")->nullable();
             $table->string("status")->default("online");
             $table->unsignedBigInteger("ets_id");
-            $table->unsignedBigInteger("emplacement_id");
+            $table->unsignedBigInteger("emplacement_id")->nullable();
             $table->timestamps();
         });
     }

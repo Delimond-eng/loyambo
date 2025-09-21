@@ -16,8 +16,6 @@ return new class extends Migration
         Schema::create('restaurant_tables', function (Blueprint $table) {
             $table->id();
             $table->string('numero', 10);
-            $table->float("prix")->nullable();
-            $table->string("prix_devise")->default("CDF");
             $table->foreignId('emplacement_id')->constrained('emplacements')->cascadeOnDelete();
             $table->enum('statut', ['libre', 'occupée', 'réservée'])->default('libre');
             $table->unsignedBigInteger("ets_id");

@@ -9,7 +9,7 @@
 		</div>
 		<!-- Main content -->
 		<section class="content AppPlace" v-cloak>
-			<div class="row">
+			<div class="row d-flex justify-content-center align-items-center">
 				<div class="col-xl-6">
 					<div class="box">
 						<div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">

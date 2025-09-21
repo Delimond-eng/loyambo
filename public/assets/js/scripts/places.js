@@ -10,6 +10,7 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                 isDataLoading: false,
                 emplacements: [],
                 tables: [],
+                chambres: [],
                 formEmplacement: {
                     libelle: "",
                     type: "",
@@ -20,13 +21,29 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                     id: "",
                     prix: "",
                     prix_devise: "CDF",
+                    capacite: "",
+                    type: "simple",
                 },
                 selectedEmplacement: null,
                 operation: null,
+                isHotel: false,
             };
         },
 
         mounted() {
+            const modal = document.getElementById("tableModal");
+            modal.addEventListener("hidden.bs.modal", () => {
+                // Reset form ou autres actions
+                this.formTable = {
+                    numero: "",
+                    emplacement_id: "",
+                    id: "",
+                    prix: "",
+                    prix_devise: "CDF",
+                    capacite: "",
+                };
+                this.isHotel = false;
+            });
             this.viewAllEmplacements();
             this.viewAllTables();
             this.whenModalHidden();
@@ -41,7 +58,10 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                     get("/tables.all")
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
+                            console.log(JSON.stringify(data.chambres));
+
                             this.tables = data.tables;
+                            this.chambres = data.chambres;
                         })
                         .catch((err) => {
                             this.isDataLoading = false;
@@ -200,9 +220,19 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
             },
         },
 
+        watch: {
+            "formTable.emplacement_id"(val) {
+                var emp = this.allEmplacements.find((e) => e.id === val);
+                this.isHotel = emp.type === "hôtel";
+            },
+        },
         computed: {
             allTables() {
                 return this.tables;
+            },
+
+            allChambres() {
+                return this.chambres;
             },
 
             allEmplacements() {

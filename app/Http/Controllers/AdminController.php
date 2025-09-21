@@ -235,6 +235,8 @@ class AdminController extends Controller
                 "emplacement_id"=>"required|int|exists:emplacements,id",
                 "prix"=>"nullable|numeric",
                 "prix_devise"=>"nullable|string",
+                "type"=>"nullable|string",
+                "capacite"=>"nullable|string",
                 "id"=>"nullable|int",
             ]);
 
@@ -248,17 +250,34 @@ class AdminController extends Controller
                     "emplacement_id"=>$data["emplacement_id"]
                 ];
             }
-            RestaurantTable::updateOrCreate($cdts,[
-                "numero"=>$data["numero"], 
-                "emplacement_id"=>$data["emplacement_id"],
-                "prix"=>$data["prix"] ?? null,
-                "prix_devise"=>$data["prix_devise"] ?? null,
-                "ets_id"=>$user->ets_id
-            ]);
+
+            $emplacement = Emplacement::find($data["emplacement_id"]);
+
+
+            if($emplacement->type === 'hôtel'){
+                $result = Chambre::updateOrCreate(["numero"=>$data["numero"]],[
+                    "numero"=>$data["numero"], 
+                    "prix"=>$data["prix"],
+                    "prix_devise"=>$data["prix_devise"],
+                    "type"=>$data["type"],
+                    "capacite"=>$data["capacite"],
+                    "emplacement_id"=>$data["emplacement_id"],
+                    "ets_id"=>$user->ets_id
+                ]);
+            }else{
+                $result = RestaurantTable::updateOrCreate($cdts,[
+                    "numero"=>$data["numero"], 
+                    "emplacement_id"=>$data["emplacement_id"],
+                    "ets_id"=>$user->ets_id
+                ]);
+            }
+
+
+            
             return response()->json([
                 'status'=>'success',
                 'message' => 'Nouvelle table créée avec succès !',
-                'result' => 'Nouvelle table créée avec succès !',
+                'result' => $result,
             ]);
         }
         catch (\Illuminate\Validation\ValidationException $e) {
@@ -288,61 +307,68 @@ class AdminController extends Controller
         if ($placeId) {
             $query->where("emplacement_id", $placeId);
         } 
-        $tables = $query->orderByDesc("emplacement_id")->get();
+        $tables = $query->orderByDesc("id")->get();
+
+        $query1 =Chambre::with("emplacement")->where("ets_id", $user->ets_id);
+        if ($placeId) {
+            $query1->where("emplacement_id", $placeId);
+        } 
+        $chambres = $query1->orderByDesc("id")->get();
 
         return response()->json([
             "status" => "success",
-            "tables" => $tables
+            "tables" => $tables,
+            "chambres"=> $chambres,
         ]);
     }
     public function getAllChambres(Request $request)
     {
         $user = Auth::user();
+        $chambres = Chambre::with("emplacement")->where("emplacement_id", $user->emplacement_id)->get();
 
-        $emplacement = Emplacement::with("beds")->where("id", $user->emplacement_id)
-        ->whereHas("beds")->first();
         return response()->json([
             "status" => "success",
-            "chambres" => $emplacement->beds ?? []
+            "chambres" => $chambres
         ]);
     }
 
 
-    public function reserver(Request $request)
+    public function reserverChambreOrTable(Request $request)
     {
-
-        try{
+        try {
             $data = $request->validate([
-                'client.nom'  => 'required|string',
-                'client.telephone'  => 'nullable|string',
-                'client.email'  => 'nullable|string',
-                'client.identite'  => 'required|string',
-                'client.identite_type'  => 'required|string',
-                'chambre_id' => 'nullable|exists:chambres,id',
-                'table_id'   => 'nullable|exists:restaurant_tables,id',
-                'date_debut' => 'required|date|after_or_equal:today',
-                'date_fin'   => 'required|date|after:date_debut',
+                'client.nom'          => 'required|string|max:255',
+                'client.telephone'    => 'nullable|string|max:20',
+                'client.email'        => 'nullable|email|max:255',
+                'client.identite'     => 'required|string|max:50',
+                'client.identite_type'=> 'required|string|max:50',
+                'chambre_id'          => 'nullable|exists:chambres,id',
+                'table_id'            => 'nullable|exists:restaurant_tables,id',
+                'date_debut'          => 'required|date|after_or_equal:today',
+                'date_fin'            => 'required|date|after:date_debut',
             ]);
 
-            $clientData = $data["client"];
-
-            $client = Client::where("identite", $clientData["identite"])->first();
-
-            if(!$client){
-                $client = Client::create([
-                    "nom"=>$clientData["nom"],
-                    "telephone"=>$clientData["telephone"],
-                    "email"=>$clientData["email"],
-                    "identite"=>$clientData["identite"],
-                    "identite_type"=>$clientData["identite_type"],
+            if (!$data['chambre_id'] && !$data['table_id']) {
+                return response()->json([
+                    'message' => 'Veuillez sélectionner une chambre ou une table.'
                 ]);
             }
+            $clientData = $data['client'];
 
-            if (!$data['chambre_id'] && !$data['table_id']) {
-                return response()->json(['message' => 'Veuillez sélectionner une chambre ou une table.'], 422);
-            }
+            $client = Client::firstOrCreate(
+                ['identite' => $clientData['identite']],
+                [
+                    'nom'           => $clientData['nom'],
+                    'telephone'     => $clientData['telephone'] ?? null,
+                    'email'         => $clientData['email'] ?? null,
+                    'identite_type' => $clientData['identite_type'],
+                ]
+            );
+            $reservation = DB::transaction(function () use ($data, $client) {
 
-            return DB::transaction(function () use ($data, $client) {
+                $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
+                $table   = $data['table_id']   ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null;
+
                 // Vérifier la disponibilité
                 $query = Reservation::where('statut', 'confirmée')
                     ->where(function ($q) use ($data) {
@@ -354,48 +380,48 @@ class AdminController extends Controller
                         });
                     });
 
-                if ($data['chambre_id']) {
-                    $query->where('chambre_id', $data['chambre_id']);
-                } else {
-                    $query->where('table_id', $data['table_id']);
-                }
+                if ($chambre) $query->where('chambre_id', $chambre->id);
+                if ($table)   $query->where('table_id', $table->id);
 
                 if ($query->exists()) {
-                    return response()->json(['message' => 'Cette ressource est déjà réservée sur cette période.'], 422);
+                    throw new \Exception('Cette ressource est déjà réservée sur cette période.');
                 }
+
                 // Créer la réservation
                 $reservation = Reservation::create([
-                    'chambre_id' => $data['chambre_id'] ?? null,
-                    'table_id'   => $data['table_id'] ?? null,
+                    'chambre_id' => $chambre->id ?? null,
+                    'table_id'   => $table->id ?? null,
                     'client_id'  => $client->id,
                     'date_debut' => $data['date_debut'],
                     'date_fin'   => $data['date_fin'],
                     'statut'     => 'confirmée',
                     'ets_id'     => auth()->user()->ets_id ?? null,
                 ]);
+
                 // Mettre à jour le statut de la ressource
-                if ($data['chambre_id']) {
-                    Chambre::where('id', $data['chambre_id'])->update(['statut' => 'réservée']);
-                } else {
-                    RestaurantTable::where('id', $data['table_id'])->update(['statut' => 'réservée']);
-                }
-                return response()->json([
-                    'message' => 'Réservation créée avec succès.',
-                    'reservation' => $reservation
-                ], 201);
+                if ($chambre) $chambre->update(['statut' => 'réservée']);
+                if ($table)   $table->update(['statut' => 'réservée']);
+
+                return $reservation;
             });
+            return response()->json([
+                'message' => 'Réservation créée avec succès.',
+                'reservation' => $reservation
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'errors' => $e->validator->errors()->all()
+            ]);
+        } catch (\Exception $e) {
+            // Log interne pour debugging
+            \Log::error('Erreur réservation : '.$e->getMessage());
+            return response()->json([
+                'errors' => 'Une erreur est survenue lors de la réservation.'
+            ]);
         }
-        catch (\Illuminate\Validation\ValidationException $e) {
-            $errors = $e->validator->errors()->all();
-            return response()->json(['errors' => $errors]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(['errors' => $e->getMessage()]);
-        }
-        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
-        }
-        
     }
+
 
 
     public function triggerTableOperation(Request $request)
