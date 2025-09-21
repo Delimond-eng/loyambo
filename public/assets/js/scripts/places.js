@@ -32,18 +32,20 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
 
         mounted() {
             const modal = document.getElementById("tableModal");
-            modal.addEventListener("hidden.bs.modal", () => {
-                // Reset form ou autres actions
-                this.formTable = {
-                    numero: "",
-                    emplacement_id: "",
-                    id: "",
-                    prix: "",
-                    prix_devise: "CDF",
-                    capacite: "",
-                };
-                this.isHotel = false;
-            });
+            if (modal) {
+                modal.addEventListener("hidden.bs.modal", () => {
+                    // Reset form ou autres actions
+                    this.formTable = {
+                        numero: "",
+                        emplacement_id: "",
+                        id: "",
+                        prix: "",
+                        prix_devise: "CDF",
+                        capacite: "",
+                    };
+                    this.isHotel = false;
+                });
+            }
             this.viewAllEmplacements();
             this.viewAllTables();
             this.whenModalHidden();

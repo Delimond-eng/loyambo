@@ -1,3 +1,4 @@
+import { identity } from "lodash";
 import { post, postJson, get } from "../modules/http.js";
 document.querySelectorAll(".AppHotel").forEach((el) => {
     new Vue({
@@ -26,6 +27,17 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                 selectedMode: null,
                 selectedModeRef: "",
                 operation: "",
+                form: {
+                    client: {
+                        nom: "",
+                        telephone: "",
+                        email: "",
+                        identite: "",
+                        identite_type: "",
+                    },
+                    date_debut: "",
+                    date_fin: "",
+                },
             };
         },
 
@@ -51,24 +63,12 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                     });
             },
 
-            createFacture() {
-                const user = JSON.parse(localStorage.getItem("user"));
-                const table = JSON.parse(localStorage.getItem("table"));
-                let details = [];
-                this.store.cart.forEach((el) => {
-                    details.push({
-                        produit_id: el.id,
-                        quantite: el.qte,
-                        prix_unitaire: el.prix_unitaire,
-                    });
-                });
-                const form = {
-                    table_id: table.id,
-                    user_id: user ? user.id : null,
-                    details: details,
-                };
+            //===========Reservation de la chambre=============//
+            makeReservation() {
+                this.form.chambre_id = this.selectedBed.id;
+                const form = this.form;
                 this.isLoading = true;
-                postJson("/facture.create", form)
+                postJson("/reservation.action", form)
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
@@ -96,10 +96,7 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                                 hideAfter: 3000,
                                 stack: 6,
                             });
-
-                            setTimeout(() => {
-                                location.href = "/orders.portal";
-                            }, 1000);
+                            this.viewAllChambres();
                         }
                     })
                     .catch((err) => {

@@ -14,14 +14,17 @@ class Facture extends Model
         'numero_facture',
         'user_id',
         'table_id',
+        'chambre_id',
         'sale_day_id',
         'total_ht',
         'remise',
         'total_ttc',
+        'devise',
         'date_facture',
         'statut',
         'ets_id',
         'emplacement_id',
+        'client_id'
     ];
 
     // Relations
@@ -52,5 +55,10 @@ class Facture extends Model
 
     public function payments(){
         return $this->hasMany(Payments::class, "facture_id", "id");
+    }
+
+
+    public function client(){
+        return $this->belongsTo(Client::class, "client_id");
     }
 }

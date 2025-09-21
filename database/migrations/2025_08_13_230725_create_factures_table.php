@@ -24,9 +24,11 @@ return new class extends Migration
             $table->decimal('total_ht', 15, 2);
             $table->decimal('remise', 15, 2)->default(0);
             $table->decimal('total_ttc', 15, 2);
+            $table->string('devise')->default("CDF");
             $table->enum('statut', ['en_attente', 'payée', 'annulée'])->default('en_attente');
             $table->unsignedBigInteger("ets_id");
             $table->unsignedBigInteger("emplacement_id");
+            $table->unsignedBigInteger("client_id")->nullable();
             $table->timestamps();
         });
     }

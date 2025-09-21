@@ -20,6 +20,13 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/skin_color.css') }}">
 
+    <style>
+    @media (min-width: 768px) {
+        .layout-top-nav.fixed .content-wrapper {
+            padding-top: {{ Auth::user()->role === 'serveur' ? '60px' : '130px' }};
+        }
+    }
+    </style>
     @stack("styles")
 </head>
 

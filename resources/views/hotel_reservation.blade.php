@@ -56,7 +56,7 @@
 		<!-- Modal mode de paiement -->
 		<div class="modal fade modal-reservation" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content" v-if="selectedBed">
+				<form @submit.prevent="makeReservation" class="modal-content" v-if="selectedBed">
 					<div class="modal-header">
 						<h4 class="modal-title" id="myModalLabel">Reservation chambre n°@{{ selectedBed.numero }}</h4>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -80,52 +80,62 @@
 									 readonly>
 							</div>
 						</div>
-						<div class="row g-2">
+						<div class="row g-1">
+							<div class="col-md-12">
+								<div class="form-group">
+									<label class="form-label">Client Nom <sup class="text-danger">*</sup></label>
+									<input  type="text" v-model="form.client.nom" placeholder="nom complet...ex: Gaston" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Email<sup class="text-danger">(optionnel)</sup></label>
+									<input  type="text" v-model="form.client.email" placeholder="client@domain" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Téléphone<sup class="text-danger">(optionnel)</sup></label>
+									<input  type="text" v-model="form.client.telephone" placeholder="+(243)........" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Pièce d'identité<sup class="text-danger">*</sup></label>
+									<select v-model="form.client.identite" class="form-select" required>
+										<option value="passeport">Passeport</option>
+										<option value="carte d'électeur">Carte d'électeur</option>
+										<option value="permis de conduire">Permis de conduire</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">N° Pièce d'identité<sup class="text-danger">*</sup></label>
+									<input  type="text" v-model="form.client.identite_type" placeholder="CNIxxxxxx" class="form-control me-2" required>
+								</div>
+							</div>
 							<div class="col-md-6">
 								<div class="form-group">
 									<label class="form-label">Date début sejour <sup class="text-danger">*</sup></label>
-									<input  type="date" class="form-control me-2" required>
+									<input  type="date" v-model="form.date_debut" class="form-control me-2" required>
 								</div>
 							</div>
 							<div class="col-md-6">
 								<div class="form-group">
 									<label class="form-label">Date Fin <sup class="text-danger">*</sup></label>
-									<input  type="date" class="form-control me-2" required>
+									<input  type="date" v-model="form.date_fin" class="form-control me-2" required>
 								</div>
 							</div>
 						</div>
-						<p class="text-danger">Sélectionnez un mode de paiement.</p>
-						<div class="flexbox flex-justified text-center">
-							<a href="#"
-								v-for="mode in modes" 
-								@click="selectedMode=mode.value; selectedModeRef=''"
-								class="b-1 border-primary text-decoration-none rounded py-10 cursor-pointer"
-								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
-							>
-								<p class="mb-0 fa-3x">
-									<i :class="mode.icon"></i>
-								</p>
-								<p class="mb-2 fw-300">@{{ mode.label }}</p>
-							</a>
-						</div>
-						<div class="form-group mt-2" v-if="selectedMode && selectedMode !== 'cash'">
-							<input  
-								type="text" 
-								v-model="selectedModeRef"
-								placeholder="Réference du mode de paiement ..." 
-								class="form-control mt-2 mb-2"
-							>
+					</div>
+					<div class="modal-footer d-flex justify-content-end">
+						<div class="form-actions">
+							<button type="button" class="btn btn-danger">Annuler</button>
+							<button type="submit":disabled="isLoading"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> <i v-else class="fa fa-check"></i> Reserver</button>
 						</div>
 					</div>
-					<div class="modal-footer justify-content-end" v-if="selectedMode">
-						<button class="btn btn-success mt-5">
-							Valider <i class="mdi mdi-check-all"></i>
-						</button>
-						<button class="btn btn-danger-light">
-							Annuler et fermer
-						</button>
-					</div>
-				</div>
+				</form>
 			</div>
 		</div>
 		<!-- Modal Commandes -->

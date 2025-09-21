@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger("chambre_id")->nullable();
             $table->unsignedBigInteger("table_id")->nullable();
             $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('sale_day_id')->nullable();
             $table->date('date_debut');
             $table->date('date_fin');
             $table->enum('statut', ['en_attente', 'confirmée', 'annulée'])->default('en_attente');

@@ -213,7 +213,7 @@ class AdminController extends Controller
     //GET ALL Emplacements with tables
     public function getAllEmplacements(){
         $user = Auth::user();
-        $emplacements = Emplacement::with(["tables", "beds"])
+        $emplacements = Emplacement::with(["tables", "chambres"])
             ->where("ets_id", $user->ets_id)
             ->orderBy("libelle")->get();
         return response()->json([
@@ -348,9 +348,11 @@ class AdminController extends Controller
                 'date_fin'            => 'required|date|after:date_debut',
             ]);
 
+            $saleDay = SaleDay::whereNull("end_time")->where("ets_id", Auth::user()->ets_id)->latest()->first();
+
             if (!$data['chambre_id'] && !$data['table_id']) {
                 return response()->json([
-                    'message' => 'Veuillez sélectionner une chambre ou une table.'
+                    'errors' => 'Veuillez sélectionner une chambre ou une table.'
                 ]);
             }
             $clientData = $data['client'];
@@ -364,7 +366,7 @@ class AdminController extends Controller
                     'identite_type' => $clientData['identite_type'],
                 ]
             );
-            $reservation = DB::transaction(function () use ($data, $client) {
+            $reservation = DB::transaction(function () use ($data, $client, $saleDay) {
 
                 $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
                 $table   = $data['table_id']   ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null;
@@ -386,7 +388,6 @@ class AdminController extends Controller
                 if ($query->exists()) {
                     throw new \Exception('Cette ressource est déjà réservée sur cette période.');
                 }
-
                 // Créer la réservation
                 $reservation = Reservation::create([
                     'chambre_id' => $chambre->id ?? null,
@@ -394,6 +395,7 @@ class AdminController extends Controller
                     'client_id'  => $client->id,
                     'date_debut' => $data['date_debut'],
                     'date_fin'   => $data['date_fin'],
+                    'sale_day_id'=> $saleDay->id,
                     'statut'     => 'confirmée',
                     'ets_id'     => auth()->user()->ets_id ?? null,
                 ]);
@@ -402,11 +404,26 @@ class AdminController extends Controller
                 if ($chambre) $chambre->update(['statut' => 'réservée']);
                 if ($table)   $table->update(['statut' => 'réservée']);
 
+                if($reservation){
+                    Facture::create([
+                        'facture_numero'=>'FAC-' . time(),
+                        'user_id'=>Auth::id(),
+                        'chambre_id'=> $reservation->chambre_id,
+                        'sale_day_id'=> $saleDay->id,
+                        'total_ht'=>$chambre->prix,
+                        'remise'=>0,
+                        'total_ttc'=>$chambre->prix,
+                        'devise'=>$chambre->prix_devise,
+                        'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
+                        'ets_id'=>Auth::user()->ets_id,
+                        'emplacement_id'=>Auth::user()->emplacement_id,
+                    ]);
+                }
                 return $reservation;
             });
             return response()->json([
                 'message' => 'Réservation créée avec succès.',
-                'reservation' => $reservation
+                'result' => $reservation
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {

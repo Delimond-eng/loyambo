@@ -17,9 +17,7 @@ File: horizontal menu scss
     margin: 0 auto;
   }
 
-  .layout-top-nav.fixed .content-wrapper {
-    padding-top: 130px;
-  }
+
 
   .layout-top-nav.fixed .main-header {
     background: #f3f2f7;

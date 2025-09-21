@@ -80,6 +80,8 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("/table.operation", [AdminController::class, "triggerTableOperation"])->name("table.operation")->middleware("can:voir-tables");
     Route::post("/table.liberer", [AdminController::class, "libererTable"])->name("table.liberer");
     
+    Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
+    
     ///==========PAYMENT & INVOICE=============//
     Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
     Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.all");
