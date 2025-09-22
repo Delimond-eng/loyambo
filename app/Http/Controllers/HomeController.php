@@ -38,6 +38,7 @@ class HomeController extends Controller
             $data = $request->validate([
                 'facture_id' => 'nullable|exists:factures,id',
                 'table_id' => 'nullable|exists:restaurant_tables,id',
+                'chambre_id' => 'nullable|exists:restaurant_tables,id',
                 'user_id' => 'nullable|exists:users,id',
                 'remise' => 'nullable|numeric',
                 'details' => 'required|array|min:1',
@@ -69,7 +70,12 @@ class HomeController extends Controller
                 }
                 // Mise à jour des infos
                 $facture->user_id = $serveur->id;
-                $facture->table_id = $data['table_id'] ?? null;
+                if(isset($data["table_id"])){
+                    $facture->table_id = $data['table_id'] ?? null;
+                }
+                if(isset($data["chambre_id"])){
+                    $facture->chambre_id = $data['chambre_id'] ?? null;
+                }
                 $facture->sale_day_id = $saleDay->id;
                 $facture->remise = $data['remise'] ?? 0;
                 $facture->statut = "en_attente";
@@ -99,11 +105,12 @@ class HomeController extends Controller
 
                 $factureId = $facture->id;
 
-                $table = RestaurantTable::find($data["table_id"]);
-
-                $table->update([
-                    "statut"=>"occupée"
-                ]);
+                if(isset($data["table_id"])){
+                    $table = RestaurantTable::find($data["table_id"]);
+                    $table->update([
+                        "statut"=>"occupée"
+                    ]);
+                }
             });
             $facture = Facture::with('details')->find($factureId);
             return response()->json([
@@ -133,6 +140,7 @@ class HomeController extends Controller
         $req = Facture::with([
             "details.produit",
             "table.emplacement",
+            "chambre.emplacement",
             "payments",
             "saleDay",
             "user"

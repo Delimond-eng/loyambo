@@ -1,6 +1,6 @@
 <header class="main-header">
     <div class="inside-header bg-transparent">
-        <div class="d-flex align-items-center logo-box justify-content-start">
+        <div class="d-lg-flex logo-box justify-content-start d-none">
             <!-- Logo -->
             <a href="{{ route("home") }}" class="logo">
                 <!-- logo-->
@@ -18,16 +18,7 @@
                     <li class="btn-group nav-item d-none d-xl-inline-block">
                         <div class="app-menu">
                             <div class="search-bx mx-5">
-                                <!-- <form>
-                                    <div class="input-group">
-                                        <input type="search" class="form-control" placeholder="Search"
-                                            aria-label="Search" aria-describedby="button-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn" type="submit" id="button-addon3"><i
-                                                    class="ti-search"></i></button>
-                                        </div>
-                                    </div>
-                                </form> -->
+                                
                             </div>
                         </div>
                     </li>

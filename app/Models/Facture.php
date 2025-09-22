@@ -40,6 +40,10 @@ class Facture extends Model
     {
         return $this->belongsTo(RestaurantTable::class, 'table_id');
     }
+    public function chambre()
+    {
+        return $this->belongsTo(Chambre::class, 'chambre_id');
+    }
 
     // Facture peut être liée à un sale day
     public function saleDay()

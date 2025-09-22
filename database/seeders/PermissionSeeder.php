@@ -115,6 +115,10 @@ class PermissionSeeder extends Seeder
             'creer-commandes',
             'voir-tables',
             'voir-chambres',
+            'voir-factures',
+            'voir-produits',
+            'creer-factures',
+            'voir-categories',
         ]);
 
         $roleCuisinier->givePermissionTo([

@@ -7,8 +7,7 @@
 		<!-- Content Header (Page header) -->
 
 		<section class="content AppService" v-cloak>
-
-		  <div class="row">
+		  	<div class="row">
 			  <div class="col-12 col-lg-8">
 				<div class="box">
 				  <div class="box-header" style="padding:1.5rem">

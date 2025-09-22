@@ -21,10 +21,10 @@
                     </div> -->
                 </div>
                 @if (Auth::user()->role==='serveur')
-                    <a @click="removeCachedUser" href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                    <a @click="removeCachedUser" href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger btn-sm text-center btn-rounded">+ Nouvelle commande</a>
                 @else
                     @canCloseDay
-                    <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded">+ Nouvelle commande</a>
+                    <a href="{{ route("serveurs") }}" class="waves-effect waves-light btn btn-danger btn-sm text-center btn-rounded">+ Nouvelle commande</a>
                     @endif
                 @endif
             </div>
@@ -42,7 +42,7 @@
                                         <tr>
                                             <th>N° Cmde</th>
                                             <th>N° FACTURE</th>
-                                            <th>N° Table</th>
+                                            <th>N° Table/Chambre</th>
                                             <th>Montant</th>
                                             <th>Emplacement</th>
                                             <th>Serveur</th>
@@ -54,9 +54,15 @@
                                         <tr v-for="(data, index) in allFactures" class="hover-primary">
                                             <td>N°@{{ data.id }}</td>
                                             <td>@{{ data.numero_facture }}</td>
-                                            <td>@{{ data.table.numero}}</td>
+                                            <td>
+                                                <span v-if="data.table">@{{ data.table.numero}}</span>
+                                                <span v-if="data.chambre">@{{ data.chambre.numero}}</span>
+                                            </td>
                                             <td>@{{ data.total_ttc }}</td>
-                                            <td>@{{ data.table.emplacement.libelle}}</td>
+                                            <td>
+                                                <span v-if="data.table">@{{ data.table.emplacement.libelle}}</span>
+                                                <span v-if="data.chambre">@{{ data.chambre.emplacement.libelle}}</span>
+                                            </td>
                                             <td><span class="fw-600">@{{ data.user.name}}</span></td>
                                             <td>												
                                                 <span class="badge badge-pill" :class="{'badge-warning-light':data.statut==='en_attente', 'badge-success-light':data.statut==='payée', 'badge-danger-light':data.statut==='annulée'}">@{{ data.statut.replaceAll('_', ' ') }}</span>
@@ -64,7 +70,7 @@
                                             <td>
                                                 <div class="d-flex">
                                                     <button type="button" class="btn btn-success btn-xs me-1"><i class="mdi mdi-printer"></i></button>
-                                                    <button type="button" @click="selectedFacture=data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" v-if="data.statut==='en_attente'" class="btn btn-info btn-xs me-1"><span v-if="load_id===data.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi mdi-glass-tulip"></i></button>
+                                                    <button type="button" @click="selectedFacture=data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" v-if="data.statut==='en_attente'" class="btn btn-info btn-xs me-1"><span v-if="load_id===data.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi" :class="data.table ? ' mdi-glass-tulip' : 'mdi-wallet'"></i></button>
                                                     <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
                                                     <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                                 </div>
@@ -101,7 +107,7 @@
                                 <!-- /.col -->
                                 </div>
                             
-                                <div class="row" v-if="selectedFacture.details">
+                                <div class="row" v-if="selectedFacture.table">
                                     <div class="col-12 table-responsive">
                                         <table class="table table-bordered">
                                         <tbody>
@@ -118,6 +124,29 @@
                                             <td class="text-end">@{{ detail.quantite }}</td>
                                             <td class="text-end">@{{ detail.prix_unitaire }}</td>
                                             <td class="text-end">@{{ detail.total_ligne }}</td>
+                                        </tr>
+                                        </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- /.col -->
+                                </div>
+                                <div class="row" v-if="selectedFacture.chambre">
+                                    <div class="col-12 table-responsive">
+                                        <table class="table table-bordered">
+                                        <tbody>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Designation</th>
+                                            <th class="text-end">Capacité</th>
+                                            <th class="text-end">Type</th>
+                                            <th class="text-end">Prix</th>
+                                        </tr>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>Chambre n°@{{ selectedFacture.chambre.numero }}</td>
+                                            <td class="text-end">@{{ selectedFacture.chambre.capacite }}</td>
+                                            <td class="text-end">@{{ selectedFacture.chambre.type }}</td>
+                                            <td class="text-end">@{{ selectedFacture.chambre.prix }}</td>
                                         </tr>
                                         </tbody>
                                         </table>
@@ -181,7 +210,7 @@
                             >
 
                             <div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
-                                <button class="btn btn-success mt-5" @click="triggerPayment">
+                                <button class="btn btn-success mt-5" style="width: 100%;" @click="triggerPayment">
                                     Valider <i class="mdi mdi-check-all"></i>
                                 </button>
                             </div>

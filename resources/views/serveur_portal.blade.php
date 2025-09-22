@@ -7,13 +7,12 @@
 	<!-- Content Header (Page header) -->
 	 	<div class="content-header">
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
-
-<!-- 				<a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
+                <!-- <a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
                 <div class="me-auto">
 					@if (Auth::user()->role === "serveur")
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
+                    <h3 class="page-title">Bienvenue, <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
 					@else
-                    <h3 class="page-title">Bienvenu à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
+                    <h3 class="page-title">Bienvenue à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
 					@endif
 					<div class="d-inline-block align-items-center">
 						<nav>
@@ -35,7 +34,7 @@
 
 		<section class="content">
 		  	<div>
-			  <!-- Default box -->
+			<!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">
 						<div class="row">
@@ -43,8 +42,7 @@
 								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
 										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
-                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
+                                        <img :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
 											@{{ table.numero }}
 										</div>
@@ -55,9 +53,8 @@
 					</div>
 				</div>
 			<!-- /.box-body -->
-		  </div>
+		  	</div>
 		  <!-- /.box -->
-
 		</section>
 
 		<!-- Modal Commandes -->
@@ -70,8 +67,8 @@
 					</div>
 					<div class="modal-body">
 						<div class="d-flex">
-							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20 me-2">+ Nouveau bon de commande</button>
-							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
+							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
 						</div>
 						<div class="row g-3">
 							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
@@ -139,8 +136,8 @@
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button class="btn btn-success btn-sm me-2 rounded-3" @click="printInvoiceFromJson(selectedFacture, selectedPendingTable.emplacement)"> <i class="mdi mdi-printer"></i></button>
-						<button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
+						<!-- <button class="btn btn-success btn-sm me-2 rounded-3" @click="printInvoiceFromJson(selectedFacture, selectedPendingTable.emplacement)"> <i class="mdi mdi-printer"></i></button>
+						<button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button> -->
 						<h4 class="modal-title" id="myModalLabel">Facture détails</h4>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
@@ -184,7 +181,6 @@
 							<div class="row">
 								<div class="col-12 text-end">
 									<p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
-
 									<div>
 										<p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
 										<p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
@@ -198,7 +194,6 @@
 							</div>
 						</section>
 					</div>
-				
 				</div>
 				<!-- /.modal-content -->
 			</div>
@@ -209,12 +204,11 @@
 </div>
 
 @if (Auth::user()->role === 'serveur')
-	<a class="btn btn-app btn-primary" style="position: fixed; right: 20px; bottom: 10px;" href="#">
+	<a class="btn btn-app btn-primary" style="position: fixed; right: 20px; bottom: 30px;" href="{{ url("/orders") }}">
 		<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
 		<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
 	</a>
 @endif
-
 
 @endsection
 @push("scripts")

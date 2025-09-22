@@ -90,19 +90,20 @@
 							<div class="col-md-6">
 								<div class="form-group">
 									<label class="form-label">Email<sup class="text-danger">(optionnel)</sup></label>
-									<input  type="text" v-model="form.client.email" placeholder="client@domain" class="form-control me-2" required>
+									<input  type="text" v-model="form.client.email" placeholder="client@domain" class="form-control me-2">
 								</div>
 							</div>
 							<div class="col-md-6">
 								<div class="form-group">
 									<label class="form-label">Téléphone<sup class="text-danger">(optionnel)</sup></label>
-									<input  type="text" v-model="form.client.telephone" placeholder="+(243)........" class="form-control me-2" required>
+									<input  type="text" v-model="form.client.telephone" placeholder="+(243)........" class="form-control me-2">
 								</div>
 							</div>
 							<div class="col-md-6">
 								<div class="form-group">
 									<label class="form-label">Pièce d'identité<sup class="text-danger">*</sup></label>
 									<select v-model="form.client.identite" class="form-select" required>
+										<option value="" selected hidden>--Sélectionnez un type de pièce--</option>
 										<option value="passeport">Passeport</option>
 										<option value="carte d'électeur">Carte d'électeur</option>
 										<option value="permis de conduire">Permis de conduire</option>
@@ -132,39 +133,64 @@
 					<div class="modal-footer d-flex justify-content-end">
 						<div class="form-actions">
 							<button type="button" class="btn btn-danger">Annuler</button>
-							<button type="submit":disabled="isLoading"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> <i v-else class="fa fa-check"></i> Reserver</button>
+							<button type="submit" class="btn btn-primary" :disabled="isLoading"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> <i v-else class="fa fa-check"></i> Reserver</button>
 						</div>
 					</div>
 				</form>
 			</div>
 		</div>
+
 		<!-- Modal Commandes -->
-		<!-- <div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+		<div class="modal fade modal-chambre-infos" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
-				<div class="modal-content" v-if="selectedPendingTable">
+				<div class="modal-content" v-if="selectedBed">
 					<div class="modal-header">
-						<h4 class="modal-title" id="myModalLabel">Bons de commande Table @{{ selectedPendingTable.numero }}</h4>
+						<h4 class="modal-title" id="myModalLabel">Chambre @{{  selectedBed.type }} NO.@{{ selectedBed.numero }}</h4>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
 						<div class="d-flex">
-							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary mb-20 me-2">+ Nouveau bon de commande</button>
-							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button v-if="selectedBed.statut === 'occupée'" @click="libererEtOccuperChambre" class="btn btn-danger btn-xs mb-20  me-2">Liberer chambre <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button v-else class="btn btn-success btn-xs mb-20  me-2" @click="libererEtOccuperChambre">Occuper la chambre <i class="mdi mdi-check-all"></i></button>
+							<button @click="addCommande(selectedBed)" class="btn btn-primary btn-xs mb-20 me-2">+ Ajouter une commande</button>
+							<button @click="addNewReservation" class="btn btn-info mb-20 btn-xs">+ Ajouter une reservation</button>
 						</div>
 						<div class="row g-3">
-							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
-								<div class="btn-group">
-									<button class="btn btn-primary-light btn-block"><i class="mdi mdi-file-document me-2"></i> Bon de Commande N°@{{ cmd.id }}</button>
-									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
-									<button @click="selectedFacture=cmd" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-info"> <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi mdi-glass-tulip"></i> </button>	
-									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
+							<div class="col-sm-12 invoice-col mb-15 " v-for="(rv, index) in selectedBed.reservations">
+								<div class="invoice-details row no-margin">
+								<div class="col-md-6 col-lg-3"><b>Date début </b> <br> @{{ formateDate(rv.date_debut) }}</div>
+								<div class="col-md-6 col-lg-3"><b>Date Fin:</b> <br> @{{ formateDate(rv.date_fin) }}</div>
+								<div class="col-md-6 col-lg-3"><b>Nbre jours:</b> <br> +2 </div>
+								<div class="col-md-6 col-lg-3"><b>Statut:</b> <br> @{{ rv.statut }}</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div> -->
+		</div>
+
+		<div class="modal fade modal-serveurs-list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Sélectionnez un serveur.</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6 col-sm-4 col-lg-4 col-6" v-for="(data, index) in allServeurs" :key="index">
+								<a href="#" @click="goToUserOrderSession(data)" class="box box-body d-flex flex-column justify-content-center align-items-center py-30 box-inverse bg-indigo-500">
+									<img class="avatar avatar-xxl" src="assets/images/serveur.png" alt="">
+									<h5 class="mt-10 mb-1"><span class="text-white hover-danger fw-700">@{{ data.name }}</span></h5>
+									<p class="text-white">--- @{{ data.role }} ---</p>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<!-- Modal mode de paiement -->
 		<!-- <div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
@@ -270,11 +296,8 @@
 				</div>
 			</div>
 		</div> -->
-
 	</div>
 </div>
-
-
 
 @endsection
 @push("scripts")

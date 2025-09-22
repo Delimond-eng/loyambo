@@ -19,6 +19,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 products: [],
                 session: null,
                 table: null,
+                chambre: null,
                 selectedPendingTable: null,
                 selectedFacture: null,
                 modes: [
@@ -323,6 +324,8 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     $(".modal-commande").modal("show");
                     return;
                 }
+                localStorage.removeItem("table");
+                localStorage.removeItem("chambre");
                 localStorage.setItem("table", JSON.stringify(table));
                 location.href = "/orders.interface";
             },
@@ -334,8 +337,14 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             refreshTableData() {
                 if (location.pathname === "/orders.interface") {
-                    const data = localStorage.getItem("table");
-                    this.table = JSON.parse(data);
+                    if (localStorage.getItem("table")) {
+                        const data = localStorage.getItem("table");
+                        this.table = JSON.parse(data);
+                    }
+                    if (localStorage.getItem("chambre")) {
+                        const data = localStorage.getItem("chambre");
+                        this.chambre = JSON.parse(data);
+                    }
                 }
             },
 
@@ -357,6 +366,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             createFacture() {
                 const user = JSON.parse(localStorage.getItem("user"));
                 const table = JSON.parse(localStorage.getItem("table"));
+                const chambre = JSON.parse(localStorage.getItem("chambre"));
                 let details = [];
                 this.store.cart.forEach((el) => {
                     details.push({
@@ -366,10 +376,14 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     });
                 });
                 const form = {
-                    table_id: table.id,
                     user_id: user ? user.id : null,
                     details: details,
                 };
+                if (chambre) {
+                    form.chambre_id = chambre.id;
+                } else {
+                    form.table_id = table.id;
+                }
                 this.isLoading = true;
                 postJson("/facture.create", form)
                     .then(({ data, status }) => {
@@ -535,6 +549,10 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             selectedTable() {
                 return this.table;
+            },
+
+            selectedChambre() {
+                return this.chambre;
             },
 
             totalGlobal() {

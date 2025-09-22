@@ -52,8 +52,14 @@
                                         <td>@{{ data.numero_facture }}</td>
                                         <td>@{{ formateDate(data.sale_day.sale_date) }}</td>
                                         <td>@{{ formateDate(data.date_facture) }},<span class="fs-12">@{{ formateTime(data.date_facture) }}</span></td>
-                                        <td>@{{ data.table.numero}}</td>
-                                        <td>@{{ data.table.emplacement.libelle}}</td>
+                                        <td>
+                                            <span v-if="data.table">Table n°@{{ data.table.numero}}</span>
+                                            <span v-if="data.chambre">Chambre n°@{{ data.chambre.numero}}</span>
+                                        </td>
+                                        <td>
+                                            <span v-if="data.table">@{{ data.table.emplacement.libelle}}</span>
+                                            <span v-if="data.chambre">@{{ data.chambre.emplacement.libelle}}</span>
+                                        </td>
                                         <td>@{{ data.total_ttc }}</td>
                                         <td>@{{ data.user.name }}</td>
                                         <td>												
@@ -61,7 +67,7 @@
                                         </td>
                                         <td>												
                                             <div class="d-flex">
-                                                <button type="button" class="btn btn-success btn-xs me-1" @click="printInvoice(data, data.table.emplacement)"><i class="mdi mdi-printer"></i></button>
+                                                <button type="button" class="btn btn-success btn-xs me-1" @click="printInvoice(data, data.table ? data.table.emplacement : data.chambre.emplacement)"><i class="mdi mdi-printer"></i></button>
                                                 <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
                                                 <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                             </div>
@@ -79,8 +85,8 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button class="btn btn-success btn-sm me-2 rounded-3"> <i class="mdi mdi-printer"></i></button>
-                        <button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
+                        <!-- <button class="btn btn-success btn-sm me-2 rounded-3"> <i class="mdi mdi-printer"></i></button>
+                        <button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button> -->
                         <h4 class="modal-title" id="myModalLabel">Facture détails</h4>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -97,7 +103,8 @@
                                 </div>
                             <!-- /.col -->
                             </div>
-                            <div class="row" v-if="selectedFacture.details">
+                        
+                            <div class="row" v-if="selectedFacture.table">
                                 <div class="col-12 table-responsive">
                                     <table class="table table-bordered">
                                     <tbody>
@@ -114,6 +121,29 @@
                                         <td class="text-end">@{{ detail.quantite }}</td>
                                         <td class="text-end">@{{ detail.prix_unitaire }}</td>
                                         <td class="text-end">@{{ detail.total_ligne }}</td>
+                                    </tr>
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <div class="row" v-if="selectedFacture.chambre">
+                                <div class="col-12 table-responsive">
+                                    <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Designation</th>
+                                        <th class="text-end">Capacité</th>
+                                        <th class="text-end">Type</th>
+                                        <th class="text-end">Prix</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Chambre n°@{{ selectedFacture.chambre.numero }}</td>
+                                        <td class="text-end">@{{ selectedFacture.chambre.capacite }}</td>
+                                        <td class="text-end">@{{ selectedFacture.chambre.type }}</td>
+                                        <td class="text-end">@{{ selectedFacture.chambre.prix }}</td>
                                     </tr>
                                     </tbody>
                                     </table>

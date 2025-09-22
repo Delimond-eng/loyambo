@@ -8,7 +8,10 @@
 		<div class="content-header">
 			<div class="d-flex align-items-center">
 				<div class="me-auto">
-					<h3 class="page-title">Bon de commande <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span></h3>
+					<h3 class="page-title">Bon de commande 
+						<span v-if="selectedTable">Table @{{ selectedTable.numero }}</span>
+						<span v-if="selectedChambre">Chambre @{{ selectedChambre.numero }}</span>
+					</h3>
 					<div class="d-inline-block align-items-center">
 						<nav>
 							<ol class="breadcrumb">
@@ -68,7 +71,10 @@
 				<div class="col-12 col-lg-4">
 					<div class="box">
 						<div class="box-header p-3 bg-primary">
-							<h4 class="box-title fw-600">Bon de commande <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span></h4>
+							<h4 class="box-title fw-600">Bon de commande
+								 <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span>
+								 <span v-if="selectedChambre">Chambre @{{ selectedChambre.numero }}</span>
+							</h4>
 						</div>
 
 						<div class="box-body">
@@ -113,6 +119,13 @@
 		<!-- /.content -->
 	  </div>
   </div>
+
+	@if (Auth::user()->role === 'serveur')
+		<a class="btn btn-app btn-primary" style="position: fixed; right:30px; bottom: 30px;" href="{{ url("/orders") }}">
+			<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
+			<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
+		</a>
+	@endif
   <!-- /.content-wrapper -->
 @endsection
 @push("scripts")

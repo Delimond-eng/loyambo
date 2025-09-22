@@ -7,7 +7,6 @@ use App\Http\Controllers\UserController;
 use App\Models\Categorie;
 use App\Models\Emplacement;
 use App\Models\Produit;
-use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +47,6 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/tables', "tables")->name("tables");
     Route::view('/reports.global', "reports_global")->name("reports.global");
 
-
      Route::get('/users', function(){
         $places = Emplacement::where("ets_id", Auth::user()->ets_id)->get();
         return view("users", ["emplacements"=>$places]);
@@ -79,6 +77,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
     Route::post("/table.operation", [AdminController::class, "triggerTableOperation"])->name("table.operation")->middleware("can:voir-tables");
     Route::post("/table.liberer", [AdminController::class, "libererTable"])->name("table.liberer");
+    Route::post("/chambre.status", [AdminController::class, "updateBedRoomStatus"])->name("chambre.status");
     
     Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
     

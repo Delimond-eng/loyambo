@@ -242,25 +242,21 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
             },
 
             bedPendingsCount() {
-                return this.emplacements
-                    .filter((emp) => emp.type === "hôtel")
-                    .reduce((count, emp) => {
-                        return (
-                            count +
-                            emp.items.filter((i) => i.statut !== "libre").length
-                        );
-                    }, 0);
+                return this.emplacements.reduce((count, emp) => {
+                    return (
+                        count +
+                        emp.chambres.filter((i) => i.statut !== "libre").length
+                    );
+                }, 0);
             },
 
             tablePendingsCount() {
-                return this.emplacements
-                    .filter((emp) => emp.type !== "hôtel")
-                    .reduce((count, emp) => {
-                        return (
-                            count +
-                            emp.items.filter((i) => i.statut !== "libre").length
-                        );
-                    }, 0);
+                return this.emplacements.reduce((count, emp) => {
+                    return (
+                        count +
+                        emp.tables.filter((i) => i.statut !== "libre").length
+                    );
+                }, 0);
             },
         },
     });

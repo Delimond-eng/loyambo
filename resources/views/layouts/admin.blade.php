@@ -26,6 +26,13 @@
             padding-top: {{ Auth::user()->role === 'serveur' ? '60px' : '130px' }};
         }
     }
+
+    /* Téléphones (écrans < 768px) */
+    @media (max-width: 767.98px) {
+        .layout-top-nav.fixed .content-wrapper {
+            padding-top: {{ Auth::user()->role === 'serveur' ? '50px' : '90px' }};
+        }
+    }
     </style>
     @stack("styles")
 </head>

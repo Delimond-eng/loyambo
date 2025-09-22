@@ -167,7 +167,9 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                     facture.date_facture
                 )}</p>
                 <hr/>
-                <table>
+                ${
+                    facture.details.length > 0
+                        ? `<table>
                     <thead>
                         <tr>
                             <th>Désignation</th>
@@ -190,7 +192,27 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                             )
                             .join("")}
                     </tbody>
-                </table>
+                </table>`
+                        : `<table>
+                    <thead>
+                        <tr>
+                            <th>Chambre</th>
+                            <th>Capacité</th>
+                            <th class="right">Type</th>
+                            <th class="right">Prix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CH_N°${facture.chambre.numero}</td>
+                            <td>${facture.chambre.capacite}</td>
+                            <td class="right">${facture.chambre.type}</td>
+                            <td class="right">${facture.chambre.prix}</td>
+                        </tr>
+                    </tbody>
+                </table>`
+                }
+                
                 <hr/>
                 <p class="right">Total HT: ${facture.total_ht}</p>
                 <p class="right">Remise: ${facture.remise}%</p>

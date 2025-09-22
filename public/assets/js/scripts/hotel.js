@@ -1,4 +1,3 @@
-import { identity } from "lodash";
 import { post, postJson, get } from "../modules/http.js";
 document.querySelectorAll(".AppHotel").forEach((el) => {
     new Vue({
@@ -10,6 +9,7 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                 isLoading: false,
                 isDataLoading: false,
                 chambres: [],
+                serveurs: [],
                 selectedBed: null,
                 modes: [
                     { value: "cash", label: "CASH", icon: "fa fa-money" },
@@ -43,13 +43,80 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
 
         mounted() {
             this.viewAllChambres();
+            this.viewAllServeurs();
         },
 
         methods: {
+            viewAllServeurs() {
+                get("/serveurs.all")
+                    .then(({ data, status }) => {
+                        this.isDataLoading = false;
+                        this.serveurs = data.users;
+                    })
+                    .catch((err) => {
+                        this.isDataLoading = false;
+                    });
+            },
+
+            goToUserOrderSession(data) {
+                const chambre = this.selectedBed;
+                localStorage.removeItem("table");
+                localStorage.removeItem("chambre");
+                localStorage.setItem("chambre", JSON.stringify(chambre));
+                localStorage.setItem("user", JSON.stringify(data));
+                location.href = "/orders.interface";
+            },
+
             reserverChambreView(bed) {
                 this.selectedBed = bed;
+                if (bed.statut !== "libre") {
+                    $(".modal-chambre-infos").modal("show");
+                } else {
+                    $(".modal-reservation").modal("show");
+                }
+            },
+
+            libererEtOccuperChambre() {
+                const chambre = this.selectedBed;
+                postJson(`/chambre.status`, { chambre_id: chambre.id })
+                    .then(({ data, status }) => {
+                        $(".modal-chambre-infos").modal("hide");
+                        $.toast({
+                            heading: "Opération effectuée",
+                            text: data.message,
+                            position: "top-right",
+                            loaderBg: "#52ff49ff",
+                            icon: "success",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                        if (data.status === "success") {
+                            this.viewAllChambres();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            addNewReservation() {
+                $(".modal-chambre-infos").modal("hide");
                 $(".modal-reservation").modal("show");
             },
+
+            addCommande() {
+                $(".modal-serveurs-list").modal("show");
+            },
+
             viewAllChambres() {
                 let url = "/chambres.all";
                 this.isDataLoading = true;
@@ -133,8 +200,18 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                 }
                 return borderClass;
             },
+
+            allServeurs() {
+                return this.serveurs;
+            },
+
             allChambres() {
                 return this.chambres;
+            },
+            formateDate() {
+                return (date) =>
+                    moment(date).locale("fr").format("DD MMMM YYYY");
+                // ex: "14 avril 2021"
             },
         },
     });

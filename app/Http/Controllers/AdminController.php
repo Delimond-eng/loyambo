@@ -324,7 +324,7 @@ class AdminController extends Controller
     public function getAllChambres(Request $request)
     {
         $user = Auth::user();
-        $chambres = Chambre::with("emplacement")->where("emplacement_id", $user->emplacement_id)->get();
+        $chambres = Chambre::with(["emplacement", "reservations"])->where("emplacement_id", $user->emplacement_id)->get();
 
         return response()->json([
             "status" => "success",
@@ -337,13 +337,12 @@ class AdminController extends Controller
     {
         try {
             $data = $request->validate([
-                'client.nom'          => 'required|string|max:255',
+                'client.nom'          => 'required|string',
                 'client.telephone'    => 'nullable|string|max:20',
-                'client.email'        => 'nullable|email|max:255',
-                'client.identite'     => 'required|string|max:50',
-                'client.identite_type'=> 'required|string|max:50',
+                'client.email'        => 'nullable|email',
+                'client.identite'     => 'required|string',
+                'client.identite_type'=> 'required|string',
                 'chambre_id'          => 'nullable|exists:chambres,id',
-                'table_id'            => 'nullable|exists:restaurant_tables,id',
                 'date_debut'          => 'required|date|after_or_equal:today',
                 'date_fin'            => 'required|date|after:date_debut',
             ]);
@@ -369,7 +368,7 @@ class AdminController extends Controller
             $reservation = DB::transaction(function () use ($data, $client, $saleDay) {
 
                 $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
-                $table   = $data['table_id']   ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null;
+               /*  $table   = $data['table_id']  ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null; */
 
                 // Vérifier la disponibilité
                 $query = Reservation::where('statut', 'confirmée')
@@ -383,15 +382,14 @@ class AdminController extends Controller
                     });
 
                 if ($chambre) $query->where('chambre_id', $chambre->id);
-                if ($table)   $query->where('table_id', $table->id);
+                /* if ($table)   $query->where('table_id', $table->id); */
 
                 if ($query->exists()) {
                     throw new \Exception('Cette ressource est déjà réservée sur cette période.');
                 }
                 // Créer la réservation
                 $reservation = Reservation::create([
-                    'chambre_id' => $chambre->id ?? null,
-                    'table_id'   => $table->id ?? null,
+                    'chambre_id' => $chambre?->id ,
                     'client_id'  => $client->id,
                     'date_debut' => $data['date_debut'],
                     'date_fin'   => $data['date_fin'],
@@ -402,17 +400,17 @@ class AdminController extends Controller
 
                 // Mettre à jour le statut de la ressource
                 if ($chambre) $chambre->update(['statut' => 'réservée']);
-                if ($table)   $table->update(['statut' => 'réservée']);
+                /* if ($table)   $table->update(['statut' => 'réservée']); */
 
                 if($reservation){
                     Facture::create([
-                        'facture_numero'=>'FAC-' . time(),
+                        'numero_facture'=>'FAC-' . time(),
                         'user_id'=>Auth::id(),
-                        'chambre_id'=> $reservation->chambre_id,
+                        'chambre_id'=> $reservation?->chambre_id,
                         'sale_day_id'=> $saleDay->id,
-                        'total_ht'=>$chambre->prix,
+                        'total_ht'=>$chambre->prix ?? 0,
                         'remise'=>0,
-                        'total_ttc'=>$chambre->prix,
+                        'total_ttc'=>$chambre->prix ?? 0,
                         'devise'=>$chambre->prix_devise,
                         'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
                         'ets_id'=>Auth::user()->ets_id,
@@ -423,6 +421,7 @@ class AdminController extends Controller
             });
             return response()->json([
                 'message' => 'Réservation créée avec succès.',
+                'status'=>"success",
                 'result' => $reservation
             ]);
 
@@ -434,7 +433,7 @@ class AdminController extends Controller
             // Log interne pour debugging
             \Log::error('Erreur réservation : '.$e->getMessage());
             return response()->json([
-                'errors' => 'Une erreur est survenue lors de la réservation.'
+                'errors' => $e->getMessage()
             ]);
         }
     }
@@ -525,6 +524,59 @@ class AdminController extends Controller
         return response()->json([
             "status"=>"success",
             "result" => "Table liberée avec succès !"
+        ]);
+    }
+
+
+    public function updateBedRoomStatus(Request $request)
+    {
+        $chambre = Chambre::find((int) $request->chambre_id);
+
+        if (!$chambre) {
+            return response()->json([
+                'errors' => 'Chambre introuvable.',
+            ]);
+        }
+
+        $today = Carbon::today();
+        // Vérifier s’il existe des réservations futures ou en cours pour cette chambre
+        $hasFutureReservations = Reservation::where('chambre_id', $chambre->id)
+            ->where('statut', '!=', 'annulée')
+            ->whereDate('date_fin', '>=', $today)
+            ->exists();
+
+        $newStatus = $chambre->statut;
+
+        switch ($chambre->statut) {
+            case 'occupée':
+                // Si aucune réservation future → libre, sinon réservée
+                $newStatus = $hasFutureReservations ? 'réservée' : 'libre';
+                break;
+
+            case 'réservée':
+                // Si le client vient d’arriver → occupée, sinon libre si plus de résa
+                if (!$hasFutureReservations) {
+                    $newStatus = 'libre';
+                } else {
+                    $newStatus = 'occupée';
+                }
+                break;
+
+            case 'libre':
+                // Si on déclenche l’action et qu’il y a une résa future → réservée
+                if ($hasFutureReservations) {
+                    $newStatus = 'réservée';
+                }
+                break;
+        }
+        // Mise à jour uniquement si changement réel
+        if ($newStatus !== $chambre->statut) {
+            $chambre->update(['statut' => $newStatus]);
+        }
+        return response()->json([
+            'status' => 'success',
+            'result' => "Statut mis à jour : {$newStatus}",
+            'message' => "Statut mis à jour : {$newStatus}",
         ]);
     }
 
