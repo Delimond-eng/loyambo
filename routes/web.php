@@ -79,7 +79,6 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("/table.liberer", [AdminController::class, "libererTable"])->name("table.liberer");
     Route::post("/chambre.status", [AdminController::class, "updateBedRoomStatus"])->name("chambre.status");
     
-    Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
     
     ///==========PAYMENT & INVOICE=============//
     Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
@@ -88,10 +87,11 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
-
-
+    
+    
     //============Module pour les hotel===================//
     Route::view("/bedroom.reserve", "hotel_reservation")->name("bedroom.reserve")->can("voir-chambres");
+    Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
     Route::get("/chambres.all", [AdminController::class, "getAllChambres"])->name("chambres.all")->can("voir-chambres");
     
 });

@@ -117,6 +117,23 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                 $(".modal-serveurs-list").modal("show");
             },
 
+            editReservation(data) {
+                this.form = {
+                    client: {
+                        nom: data.client.nom,
+                        telephone: data.client.telephone,
+                        email: data.client.email,
+                        identite: data.client.identite,
+                        identite_type: data.client.identite_type,
+                    },
+                    date_debut: data.date_debut,
+                    date_fin: data.date_fin,
+                    id: data.id,
+                };
+                $(".modal-chambre-infos").modal("hide");
+                $(".modal-reservation").modal("show");
+            },
+
             viewAllChambres() {
                 let url = "/chambres.all";
                 this.isDataLoading = true;
@@ -212,6 +229,24 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                 return (date) =>
                     moment(date).locale("fr").format("DD MMMM YYYY");
                 // ex: "14 avril 2021"
+            },
+
+            joursRestants() {
+                return (dateDebut, dateFin) => {
+                    const debut = moment(dateDebut, "YYYY-MM-DD");
+                    const fin = moment(dateFin, "YYYY-MM-DD");
+                    const aujourdHui = moment().startOf("day");
+                    // Si la fin est passée → 0
+                    if (fin.isBefore(aujourdHui)) {
+                        return 0;
+                    }
+                    // Si on est avant le début → on compte tout l'intervalle
+                    const pointDeDepart = aujourdHui.isBefore(debut)
+                        ? debut
+                        : aujourdHui;
+                    const diff = fin.diff(pointDeDepart, "days") + 1; // +1 si tu veux inclure le jour courant
+                    return diff > 0 ? "+" + diff : 0;
+                };
             },
         },
     });

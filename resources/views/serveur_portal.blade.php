@@ -34,7 +34,7 @@
 
 		<section class="content">
 		  	<div>
-			<!-- Default box -->
+			  <!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">
 						<div class="row">
@@ -42,7 +42,8 @@
 								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
 										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-                                        <img :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
+										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
+                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
 											@{{ table.numero }}
 										</div>
@@ -53,7 +54,7 @@
 					</div>
 				</div>
 			<!-- /.box-body -->
-		  	</div>
+		  </div>
 		  <!-- /.box -->
 		</section>
 

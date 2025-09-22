@@ -54,7 +54,7 @@
 		</section>
 
 		<!-- Modal mode de paiement -->
-		<div class="modal fade modal-reservation" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+		<div class="modal fade modal-reservation" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabelRes" aria-modal="true">
 			<div class="modal-dialog modal-dialog-centered">
 				<form @submit.prevent="makeReservation" class="modal-content" v-if="selectedBed">
 					<div class="modal-header">
@@ -160,8 +160,17 @@
 								<div class="invoice-details row no-margin">
 								<div class="col-md-6 col-lg-3"><b>Date début </b> <br> @{{ formateDate(rv.date_debut) }}</div>
 								<div class="col-md-6 col-lg-3"><b>Date Fin:</b> <br> @{{ formateDate(rv.date_fin) }}</div>
-								<div class="col-md-6 col-lg-3"><b>Nbre jours:</b> <br> +2 </div>
-								<div class="col-md-6 col-lg-3"><b>Statut:</b> <br> @{{ rv.statut }}</div>
+								<div class="col-md-6 col-lg-3"><b>Nbre jours:</b> <br> @{{ joursRestants(rv.date_debut, rv.date_fin)}} </div>
+								<div class="col-md-6 col-lg-3">
+									<div class="d-flex justify-content-between align-items-center">
+										<span><b>Statut:</b> <br> 
+										@{{ rv.statut }}</span>
+										<div class="d-flex">
+											<button type="button" class="btn btn-primary btn-xs ms-3 me-1" @click="editReservation(rv)"><i class="mdi mdi-pencil"></i></button>
+											<button type="button" class="btn btn-danger btn-xs"><i class="mdi mdi-delete"></i></button>
+										</div>
+									</div> 
+								</div>
 								</div>
 							</div>
 						</div>

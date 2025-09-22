@@ -69,7 +69,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <button type="button" class="btn btn-success btn-xs me-1"><i class="mdi mdi-printer"></i></button>
+                                                    <button type="button" class="btn btn-success btn-xs me-1" @click="printInvoice(data, data.table ? data.table.emplacement : data.chambre.emplacement)"><i class="mdi mdi-printer"></i></button>
                                                     <button type="button" @click="selectedFacture=data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" v-if="data.statut==='en_attente'" class="btn btn-info btn-xs me-1"><span v-if="load_id===data.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi" :class="data.table ? ' mdi-glass-tulip' : 'mdi-wallet'"></i></button>
                                                     <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
                                                     <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>

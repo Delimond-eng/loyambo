@@ -15,6 +15,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 isDataLoading: false,
                 serveurs: [],
                 tables: [],
+                chambres: [],
                 categories: [],
                 products: [],
                 session: null,
@@ -247,6 +248,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
                             this.tables = data.tables;
+                            this.chambres = data.chambres;
                         })
                         .catch((err) => {
                             this.isDataLoading = false;
@@ -564,6 +566,11 @@ document.querySelectorAll(".AppService").forEach((el) => {
             allTables() {
                 return this.tables;
             },
+
+            allChambres() {
+                return this.chambres;
+            },
+
             allServeurs() {
                 return this.serveurs;
             },

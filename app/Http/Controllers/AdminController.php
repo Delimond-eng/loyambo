@@ -309,7 +309,7 @@ class AdminController extends Controller
         } 
         $tables = $query->orderByDesc("id")->get();
 
-        $query1 =Chambre::with("emplacement")->where("ets_id", $user->ets_id);
+        $query1 = Chambre::with("emplacement")->where("ets_id", $user->ets_id);
         if ($placeId) {
             $query1->where("emplacement_id", $placeId);
         } 
@@ -324,7 +324,7 @@ class AdminController extends Controller
     public function getAllChambres(Request $request)
     {
         $user = Auth::user();
-        $chambres = Chambre::with(["emplacement", "reservations"])->where("emplacement_id", $user->emplacement_id)->get();
+        $chambres = Chambre::with(["emplacement", "reservations.client"])->where("emplacement_id", $user->emplacement_id)->get();
 
         return response()->json([
             "status" => "success",
