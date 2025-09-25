@@ -26,7 +26,8 @@ use Illuminate\Support\Facades\Route;
 Auth::routes();
 Route::post("/create.account", [UserController::class, "createEtsAccount"])->name("create.account");
 Route::middleware(["auth", "check.day.access"])->group(function(){
-    Route::view('/', "dashboard")->name("home");
+    Route::view('/', "home")->name("home");
+    Route::view('/dashboard', "dashboard")->name("dashboard");
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
 

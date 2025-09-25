@@ -33033,6 +33033,27 @@ Height property
   background-color: #4c95dd !important;
 }
 
+.main-header .inside-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* logo à gauche, user-menu à droite */
+  padding: 0 10px;
+}
+
+.main-header .logo {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  font-size: 1.2rem;
+  line-height: 60px;
+}
+
+.main-header .navbar-custom-menu {
+  display: flex;
+  align-items: center;
+}
+
 .main-header div.logo-box {
   width: 270px;
   float: left;
@@ -50421,4 +50442,87 @@ img.online {
 
 .avatar.status-warning::after {
   background-color: #4c95dd !important;
+}
+
+.menu-tabs-wrapper {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+  width: 100%;
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 10px;
+  background: #f3f4f6;
+  border-radius: 30px;
+  padding: 6px;
+  border: 2px solid #FFFFFF;
+  min-width: max-content;
+  /* nécessaire pour le scroll */
+  margin: 0 auto;
+  /* centre le menu dans le wrapper */
+  flex-shrink: 0;
+}
+
+/* Les boutons restent inchangés */
+.menu-tab {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.menu-tab:hover {
+  background: #e5e7eb;
+}
+
+.menu-tab.active {
+  background: #4c95dd;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(76, 149, 221, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+.menu-tab .btn-badge {
+  position: absolute;
+  top: 0px;
+  right: 4px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 500;
+  border: 2px solid #FFF;
+  font-size: 8px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }

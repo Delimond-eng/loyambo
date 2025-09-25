@@ -46,7 +46,7 @@ class AdminController extends Controller
             $saleDay = SaleDay::updateOrCreate(
                 ["sale_date"=>Carbon::now()->toDateString()],
                 [
-                "sale_date"=>Carbon::now()->toDateString(),
+                "sale_date"=>Carbon::now(tz: "Africa/Kinshasa")->toDateString(),
                 "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa"),
                 "ets_id"=>$user->ets_id,
                 "end_time"=>null
@@ -610,7 +610,7 @@ class AdminController extends Controller
                     "pay_date"=>Carbon::now(tz:'Africa/Kinshasa'),
                     "emplacement_id"=>$facture->emplacement_id,
                     "facture_id"=>$facture->id,
-                    "table_id"=>$facture->table_id,
+                    "table_id"=>isset($facture->table_id) ? $facture->table_id : $facture->chambre_id ,
                     "user_id"=>$userId,
                     "sale_day_id"=>$saleDay->id,
                     "ets_id"=>$user->ets_id,

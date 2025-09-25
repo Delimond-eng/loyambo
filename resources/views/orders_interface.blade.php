@@ -1,133 +1,50 @@
 @extends("layouts.admin")
 
 @section("content")
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-	  <div class="container-full AppService" v-cloak>
-		<!-- Content Header (Page header) -->
-		<div class="content-header">
-			<div class="d-flex align-items-center">
-				<div class="me-auto">
-					<h3 class="page-title">Bon de commande 
-						<span v-if="selectedTable">Table @{{ selectedTable.numero }}</span>
-						<span v-if="selectedChambre">Chambre @{{ selectedChambre.numero }}</span>
-					</h3>
-					<div class="d-inline-block align-items-center">
-						<nav>
-							<ol class="breadcrumb">
-								<li class="breadcrumb-item active" aria-current="page">Veuillez ajouter les éléments de la commande</li>
-							</ol>
-						</nav>
+
+<div class="content-wrapper">
+	<div class="container-full AppService" v-cloak>
+		<main class="main-content split-layout">
+            <div class="products-section">
+                <div class="controls">
+                    <div class="search-container">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Rechercher un produit..."  v-model="search">
+                    </div>
+
+                    <div class="category-filters">
+                        <button class="filter-btn active" @click="viewAllProducts">
+                            Tous
+                        </button>
+                        <button v-for="(data, index) in allCategories" :key="index" class="filter-btn" @click="products = data.produits">
+                            <i class="icon-Dinner1 me-2"><span class="path1"></span><span class="path2"></span></i>
+                            @{{ data.libelle}}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="products-grid" id="productsGrid">
+                    <div class="product-card" v-for="(data, i) in allProducts" :key="i" @click="addToCart(data)">
+						<span class="product-category">@{{ data.categorie.libelle }}</span>
+						<h3 class="product-name">@{{ data.libelle }}</h3>
+						<span class="product-price">@{{ data.prix_unitaire }}</span>
 					</div>
-				</div>
-			</div>
-		</div>
+                </div>
+            </div>
+        </main>
+	</div>
+</div>
 
-		<!-- Main content -->
-		<section class="content">
-			<div class="row">
-				<div class="col-12 col-lg-8">
-					<div class="box">
-						<div class="box-header bg-primary p-3">
-							<h4 class="box-title">Catégories</h4>
-						</div>
-						<div class="box-body">
-							<div class="row">
-								<div class="col-12">
-									<div class="d-inline-block">
-										<a href="#" @click="products = data.produits" :style="`background-color:${data.couleur}; color:${getTextColor(data.couleur)}`" class="waves-effect waves-light btn me-2 btn-rounded mb-2" v-for="(data, index) in allCategories" :key="index"><i class="icon-Dinner1 me-2"><span class="path1"></span><span class="path2"></span></i> @{{ data.libelle }}</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="box">
-						<div class="box-header d-flex justify-content-between p-3 align-items-center">
-							<h4 class="box-title">Produits</h4>
-							<div class="input-group" style="width: 300px">
-                                <span class="input-group-text bg-transparent"><i
-                                        class="ti-search text-primary"></i></span>
-                                <input type="text" v-model="search" name="name" class="form-control ps-15 bg-transparent"
-                                    placeholder="Recherche produit...">
-                            </div>
-						</div>
-						<div class="box-body">
-							<div class="row">
-								<div class="col-lg-4 col-6" v-for="(data, i) in allProducts" :key="i">
-									<a href="#" @click="addToCart(data)" class="box box-shadowed text-center">
-										<div class="box-body" :style="`background-color:${data.categorie.couleur}; color:${getTextColor(data.categorie.couleur)}`">
-											<h4 class="text-truncate fw-700">@{{ data.libelle }}</h4>
-											<h4>@{{ data.prix_unitaire }} F</h4>
-										</div>
-									</a>
-								</div>
-							</div>
-						</div>
-					</div>
-
-				</div>
-
-				<div class="col-12 col-lg-4">
-					<div class="box">
-						<div class="box-header p-3 bg-primary">
-							<h4 class="box-title fw-600">Bon de commande
-								 <span v-if="selectedTable">Table @{{ selectedTable.numero }}</span>
-								 <span v-if="selectedChambre">Chambre @{{ selectedChambre.numero }}</span>
-							</h4>
-						</div>
-
-						<div class="box-body">
-							<div class="table-responsive" v-if="cart.length">
-								<table class="table simple mb-0">
-									<tbody>
-										<tr v-for="(data, index) in cart">
-											<td style="width:65%">@{{ data.libelle }}</td>
-											<td style="width:20%">
-												<input type="text" style="width:40px" v-model="data.qte" class="form-control" placeholder="1" min="1">
-											</td>
-											<td style="width:15%" class="text-end fw-700">
-												<div class="d-flex">
-													<span>@{{ data.prix_unitaire * data.qte }}</span>
-													<a href="#" @click="removeFromCart(data)" class="btn btn-danger-light btn-xs ms-2" title=""><i class="ti-close fs-10"></i></a>
-												</div>
-											</td>
-										</tr>
-									
-										<tr v-if="cart.length">
-											<th class="bt-1">Total</th>
-											<th class="bt-1"></th>
-											<th class="bt-1 text-end fw-900 fs-18">@{{ totalGlobal }}</th>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-
-							<div v-else class="d-flex justify-content-center align-items-center flex-column">
-								<p class="mt-3 text-danger">Panier vide !</p>
-							</div>
-						</div>
-						<div class="box-footer" v-if="cart.length">
-							<button class="btn btn-danger" @click="cancelCart">Annuler</button>
-							<button class="btn btn-success pull-right" @click="createFacture" :disabled="isLoading"> <i class="mdi mdi-check-all me-1"></i> Valider la commande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button>
-						</div>
-					</div>
-				</div>
-
-			</div>
-		</section>
-		<!-- /.content -->
-	  </div>
-  </div>
-
-	@if (Auth::user()->role === 'serveur')
-		<a class="btn btn-app btn-primary" style="position: fixed; right:30px; bottom: 30px;" href="{{ url("/orders") }}">
-			<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
-			<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
-		</a>
-	@endif
-  <!-- /.content-wrapper -->
+@if (Auth::user()->role === 'serveur')
+	<a class="btn btn-app btn-primary" style="position: fixed; right:30px; bottom: 30px;" href="{{ url("/orders") }}">
+		<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
+		<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
+	</a>
+@endif
 @endsection
+@push("styles")
+	<link rel="stylesheet" href="{{ asset("assets/css/pos.css") }}">
+@endpush
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
 @endpush

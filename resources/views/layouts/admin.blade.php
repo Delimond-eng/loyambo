@@ -23,14 +23,14 @@
     <style>
     @media (min-width: 768px) {
         .layout-top-nav.fixed .content-wrapper {
-            padding-top: {{ Auth::user()->role === 'serveur' ? '60px' : '130px' }};
+            padding-top: {{ Auth::user()->role === 'serveur' ? '40px' : '60px' }};
         }
     }
 
     /* Téléphones (écrans < 768px) */
     @media (max-width: 767.98px) {
         .layout-top-nav.fixed .content-wrapper {
-            padding-top: {{ Auth::user()->role === 'serveur' ? '50px' : '90px' }};
+            padding-top: {{ Auth::user()->role === 'serveur' ? '40px' : '60px' }};
         }
     }
     </style>
@@ -43,10 +43,6 @@
         <!-- <div id="loader"></div> -->
 
         @include("components.header")
-
-       @if (Auth::user()->role !== 'serveur')
-            @include("components.sidebar")
-       @endif
 
         @yield("content")
 

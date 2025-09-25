@@ -88,8 +88,6 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button class="btn btn-success btn-sm me-2 rounded-3"> <i class="mdi mdi-printer"></i></button>
-                            <button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
                             <h4 class="modal-title" id="myModalLabel">Facture détails</h4>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -107,7 +105,7 @@
                                 <!-- /.col -->
                                 </div>
                             
-                                <div class="row" v-if="selectedFacture.table">
+                                <div class="row" v-if="selectedFacture.details.length > 0">
                                     <div class="col-12 table-responsive">
                                         <table class="table table-bordered">
                                         <tbody>
@@ -130,7 +128,7 @@
                                     </div>
                                     <!-- /.col -->
                                 </div>
-                                <div class="row" v-if="selectedFacture.chambre">
+                                <div class="row" v-else>
                                     <div class="col-12 table-responsive">
                                         <table class="table table-bordered">
                                         <tbody>
@@ -222,7 +220,6 @@
             </div>
         </section>
         <!-- /.content -->
-    
     </div>
 </div>
 @endsection

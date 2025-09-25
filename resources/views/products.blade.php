@@ -9,14 +9,17 @@
 		</div>
 		<!-- Main content -->
 		<section class="content" id="AppProduct" v-cloak>
-			<div class="row">
+			<div class="row g-4">
+                <div class="col-xl-12">
+                    @include("components.menus.products")
+                </div>
                 <div class="col-xl-12">
                     <div class="box">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
                             <h4 class="box-title">Les produits
                                 <small class="subtitle">Listes des produits</small>
                             </h4>
-                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#productModal" class="btn btn-primary text-center btn-rounded">+ Nouveau produit</a>					
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#productModal" class="btn btn-primary btn-sm text-center btn-rounded">+ Nouveau produit</a>					
                         </div>
                         <div class="box-body">
                             <div class="table-responsive">

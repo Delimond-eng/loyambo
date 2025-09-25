@@ -1,12 +1,23 @@
 <header class="main-header">
     <div class="inside-header bg-transparent">
-        <div class="d-lg-flex logo-box justify-content-start d-none">
+        <div class="d-lg-flex logo-box justify-content-start">
             <!-- Logo -->
             <a href="{{ route("home") }}" class="logo">
-                <!-- logo-->
+                @if (!Route::is("home"))
+                    <!-- Bouton retour -->
+                    <button onclick="window.history.back()" class="btn btn-sm text-white fs-20 shadow-sm">
+                        <i class="mdi mdi-arrow-left"></i>
+                    </button>
+                @endif
+
+                <!-- logo -->
                 <div class="logo-lg">
-                    <span class="light-logo"><img src="{{ asset("assets/images/logo-3.jpg") }}" alt="logo"></span>
-                    <span class="dark-logo"><img src="{{ asset("assets/images/logo-light-text.png") }}" alt="logo"></span>
+                    <span class="light-logo">
+                        <img src="{{ asset("assets/images/logo-3.jpg") }}" alt="logo">
+                    </span>
+                    <span class="dark-logo">
+                        <img src="{{ asset("assets/images/logo-light-text.png") }}" alt="logo">
+                    </span>
                 </div>
             </a>
         </div>

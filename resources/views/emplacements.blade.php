@@ -9,14 +9,17 @@
 		</div>
 		<!-- Main content -->
 		<section class="content AppPlace" v-cloak>
-			<div class="row d-flex justify-content-center align-items-center">
+			<div class="row d-flex justify-content-center align-items-center g-4">
+				<div class="col-xl-12">
+                    @include("components.menus.emplacements")
+                </div>
 				<div class="col-xl-6">
 					<div class="box">
 						<div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
 							<h4 class="box-title">Les emplacements
 								<small class="subtitle">Listes des emplacements</small>
 							</h4>
-							<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#emplacementModal" class="btn btn-primary btn-rounded text-center">+ Nouveau emplacement</a>					
+							<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#emplacementModal" class="btn btn-primary btn-rounded btn-sm text-center">+ Nouveau emplacement</a>					
 						</div>
 						<div class="box-body p-0">
 							<div class="table-responsive">

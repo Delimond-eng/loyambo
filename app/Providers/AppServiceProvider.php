@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
                 \$activeClasses = [];
                 foreach ((array) {$routes} as \$route) {
                     if (Route::is(\$route)) {
-                        \$activeClasses[] = 'current';
+                        \$activeClasses[] = 'active';
                     }
                 }
                 echo implode(' ', array_unique(\$activeClasses));

@@ -9,14 +9,17 @@
 		</div>
 		<!-- Main content -->
 		<section class="content" id="AppProduct" v-cloak>
-			<div class="row d-flex justify-content-center">
+			<div class="row d-flex justify-content-center g-4">
+				<div class="col-xl-12">
+                    @include("components.menus.products")
+                </div>
 			  	<div class="col-xl-6">
 					<div class="box">
 						<div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
 							<h4 class="box-title">Les catégories
 								<small class="subtitle">Listes des catégories de produit</small>
 							</h4>
-							<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#categoryModal" class="btn btn-primary text-center btn-rounded">+ Nouvelle catégorie</a>					
+							<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#categoryModal" class="btn btn-primary btn-sm text-center btn-rounded">+ Nouvelle catégorie</a>					
 						</div>
 						<div class="box-body p-0">
 							<div class="table-responsive">
@@ -63,7 +66,7 @@
 				<div class="modal-dialog">
 					<form class="modal-content" @submit.prevent="submitCategorie">
 						<div class="modal-header">
-							<h4 class="modal-title" id="myModalLabel">Add Contact</h4>
+							<h4 class="modal-title" id="myModalLabel">Création catégorie</h4>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
@@ -73,17 +76,17 @@
 										<span class="input-group-text bg-transparent"><i
 												class="ti-write text-primary"></i></span>
 										<input type="text" v-model="formCategory.libelle" class="form-control ps-15 bg-transparent"
-											placeholder="Libellé" required>
+											placeholder="Saisir la catégorie..." required>
 									</div>
 								</div>
-								<div class="form-group">
+								<!-- <div class="form-group">
 									<div class="input-group mb-3">
 										<span class="input-group-text bg-transparent"><i
 												class="ti-panel text-primary"></i></span>
 										<input type="text" class="form-control ps-15 bg-transparent"
 											placeholder="Code" v-model="formCategory.code" required>
 									</div>
-								</div>
+								</div> -->
 								<div class="form-group">
 									<div class="input-group mb-3">
 										<span class="input-group-text bg-transparent"><i

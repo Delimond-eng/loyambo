@@ -37,7 +37,7 @@
 			  <!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">
-						<div class="row">
+						<div class="row d-flex justify-content-center">
 							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in allTables">
 								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
@@ -47,7 +47,7 @@
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
 											@{{ table.numero }}
 										</div>
-									</div> <!-- end box-body-->
+									</div> 
 								</a>
 							</div>
 						</div>
@@ -200,7 +200,6 @@
 			</div>
 			<!-- /.modal-dialog -->
 		</div>
-
 	</div>
 </div>
 

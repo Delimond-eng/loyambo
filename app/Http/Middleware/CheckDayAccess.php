@@ -18,16 +18,19 @@ class CheckDayAccess
      */
     public function handle(Request $request, Closure $next)
     {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
         $user = Auth::user();
         $access = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
 
-        // Si la journée n'est pas lancée et que l'utilisateur n'est pas admin
-        if ($access && !$access->allowed && Auth::check() && !Auth::user()->hasRole('admin')) {
+        if ($access && !$access->allowed && !$user->hasRole('admin') && !$user->hasRole('caissier')) {
             Auth::logout();
             return redirect()->route('login')->withErrors([
                 'message' => 'La journée n\'est pas encore lancée.'
             ]);
         }
+
         return $next($request);
     }
 }

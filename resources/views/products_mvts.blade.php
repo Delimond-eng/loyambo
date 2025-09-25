@@ -9,7 +9,10 @@
 		</div>
 		<!-- Main content -->
 		<section class="content" id="AppProduct" v-cloak>
-			<div class="row">
+			<div class="row d-flex justify-content-center g-4">
+                <div class="col-xl-12">
+                    @include("components.menus.products")
+                </div>
                 <div class="col-md-3">
                     <form class="box" @submit.prevent="submitStockMvt">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">

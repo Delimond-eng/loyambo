@@ -52,6 +52,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             this.getAllServeursServices();
             this.viewAllTables();
             this.viewAllCategories();
+            this.viewAllProducts();
         },
 
         methods: {
@@ -358,6 +359,20 @@ document.querySelectorAll(".AppService").forEach((el) => {
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
                             this.categories = data.categories;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
+            },
+            viewAllProducts() {
+                const validPath = true;
+                if (validPath) {
+                    this.isDataLoading = true;
+                    get("/products.all")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.products = data.produits;
                         })
                         .catch((err) => {
                             this.isDataLoading = false;

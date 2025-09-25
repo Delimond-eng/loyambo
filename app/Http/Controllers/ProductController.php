@@ -22,13 +22,16 @@ class ProductController extends Controller
         try{
             $data = $request->validate([
                 "libelle"=>"required|string",
-                "code"=>"required|string",
                 "type_service"=>"required|string",
                 "couleur"=>"required|string"
             ]);
-
+            // Génération d'un code unique : 6 caractères alphanumériques
+            $data["code"] = strtoupper(substr(uniqid(), -6));
             $data["ets_id"] = Auth::user()->ets_id;
-            $categorie = Categorie::updateOrCreate(["id"=>$request->id], $data);
+            $categorie = Categorie::updateOrCreate(
+                ["id"=>$request->id],
+                $data
+            );
 
             return response()->json([
                 "status"=>"success",

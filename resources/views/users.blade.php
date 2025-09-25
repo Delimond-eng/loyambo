@@ -8,8 +8,8 @@
 	  <div class="container-full">
 		<!-- Content Header (Page header) -->
 		<div class="content-header">
-			<div class="d-flex align-items-center">
-				<div class="me-auto">
+			<div class="d-flex align-items-center justify-content-center">
+				<div class="align-center">
 					<h3 class="page-title">Liste des utilisateurs</h3>
 					<!-- <div class="d-inline-block align-items-center">
 						<nav>
@@ -27,7 +27,7 @@
 
 		<!-- Main content -->
 		<section class="content" id="AppAdmin" v-cloak>
-			<div class="row">
+			<div class="row d-flex justify-content-center align-items-center">
 				<div class="col-lg-9 col-md-8">
 					<div class="box">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding: 1.5rem;">
@@ -36,7 +36,7 @@
                                 <small class="subtitle">Actifs et non actifs</small>
                             </h4>
                             @can("creer-utilisateurs")
-                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-primary text-center btn-rounded">+ Créer nouveau utilisateur</a>
+                                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-primary text-center btn-sm btn-rounded">+ Créer nouveau utilisateur</a>
                             @endcan
                         </div>
                         <div class="box-body py-0">
