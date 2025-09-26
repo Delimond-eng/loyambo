@@ -578,6 +578,12 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 }, 0);
             },
 
+            totalQte() {
+                return this.cart.reduce((somme, item) => {
+                    return somme + (item.qte || 0);
+                }, 0);
+            },
+
             allTables() {
                 return this.tables;
             },

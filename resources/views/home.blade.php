@@ -67,7 +67,7 @@
                             @canCloseDay
                             <button class="menu-btn" type="button" onclick="location.href='/factures'">
                                 <img class="menu-icon" src="assets/icons/quality-control.png" alt="Factures">
-                                <span class="btn-badge">0</span>
+                                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.facs ?? 0 }}</span>
                                 <div class="menu-label">Factures</div>
                             </button>
                             @endif
@@ -87,7 +87,7 @@
                             @canCloseDay
                             <button class="menu-btn" type="button" onclick="location.href='/orders'">
                                 <img class="menu-icon" src="assets/icons/room-service.png" alt="Commandes">
-                                <span class="btn-badge">0</span>
+                                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
                                 <div class="menu-label">Commandes</div>
                             </button>
                             @endif
@@ -98,7 +98,6 @@
                                 @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
                                 <button class="menu-btn" type="button" onclick="location.href='/bedroom.reserve'">
                                     <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
-                                    <span class="btn-badge">0</span>
                                     <div class="menu-label">Reservations</div>
                                 </button>
                                 @endif
@@ -123,7 +122,7 @@
 <div class="license-widget trial">
     <div class="d-flex justify-content-between mb-2 align-items-center">
         <h4 class="text-primary mb-0">Licence Trial</h4>
-        <button class="btn btn-sm btn-soft-primary">Activer</button>
+        <button class="btn btn-sm btn-soft-primary" onclick="location.href='/licences/pricing'">Activer</button>
     </div>
     <div class="license-status status-trial">
         Essai (15 j restants)
@@ -131,3 +130,7 @@
 </div>
 
 @endsection
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>
+@endpush

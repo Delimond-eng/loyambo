@@ -50526,3 +50526,16 @@ img.online {
   border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
+
+.data-loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.data-loading img {
+  height: 60px;
+}

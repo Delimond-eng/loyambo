@@ -19,18 +19,19 @@
     <link rel="stylesheet" href="{{ asset('assets/css/horizontal-menu.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/skin_color.css') }}">
+    <link rel="stylesheet" href="{{ asset("assets/css/pos.css") }}">
 
     <style>
     @media (min-width: 768px) {
         .layout-top-nav.fixed .content-wrapper {
-            padding-top: {{ Auth::user()->role === 'serveur' ? '40px' : '60px' }};
+            padding-top: 60px;
         }
     }
 
     /* Téléphones (écrans < 768px) */
     @media (max-width: 767.98px) {
         .layout-top-nav.fixed .content-wrapper {
-            padding-top: {{ Auth::user()->role === 'serveur' ? '40px' : '60px' }};
+            padding-top: 60px;
         }
     }
     </style>

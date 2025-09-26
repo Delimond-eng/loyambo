@@ -1,14 +1,13 @@
 @extends("layouts.admin")
 
 @section("content")
-<div class="content-wrapper">
+<div class="content-wrapper mt-50">
     <div class="container-full">
     <!-- Content Header (Page header) -->
     <!-- <div class="content-header">
         <div class="d-flex align-items-center justify-content-center">
             <div class="me-auto">
                 <h3 class="page-title">Licences</h3>
-               
             </div>
 
         </div>

@@ -3,7 +3,7 @@
         <div class="d-lg-flex logo-box justify-content-start">
             <!-- Logo -->
             <a href="{{ route("home") }}" class="logo">
-                @if (!Route::is("home"))
+                @if ((!Route::is("home") && Auth::user()->role !== 'serveur') || (!Route::is("orders.portal") && Auth::user()->role==='serveur'))
                     <!-- Bouton retour -->
                     <button onclick="window.history.back()" class="btn btn-sm text-white fs-20 shadow-sm">
                         <i class="mdi mdi-arrow-left"></i>
@@ -39,7 +39,7 @@
             <div class="navbar-custom-menu r-side" >
                 <ul class="nav navbar-nav AppService" v-cloak>
                     <li class="btn-group nav-item">
-                        <span class="label label-danger">@{{ cart.length }}</span>
+                        <span class="label label-danger">@{{ totalQte }}</span>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-right" title="Setting" class="waves-effect waves-light nav-link full-screen btn-danger-light">
                             <span class="icon-Cart2"><span class="path1"></span><span class="path2"></span></span>
                         </a>
@@ -91,55 +91,56 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title fs-20 fw-700 d-flex" v-if="selectedTable">Bon de commande Table <div class="bg-primary fw-500 fs-12 ms-2 rounded-circle w-30 h-30 l-h-30 text-center">@{{ selectedTable.numero }}</div></h5>
+            <h5 class="modal-title fs-20 fw-700 d-flex" v-if="selectedTable">Bon de commande,  Table <div class="text-primary fw-500 ms-2 text-center">@{{ selectedTable.numero }}</div></h5>
             <h5 class="modal-title fs-20 text-danger" v-else>Aucune Table trouvé</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div v-if="cart.length" class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Produit</th>
-                                <th>PU</th>
-                                <th style="width:100px">QTE</th>
-                                <th style="text-align:center">Total</th>
-                                <th style="text-align:center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(data, index) in cart">
-                                <td class="fs-12">
-                                    @{{data.libelle}}
-                                </td>
-                                <td class="fs-12">@{{ data.prix_unitaire }}</td>
-                                <td>
-                                    <input type="number" v-model="data.qte" class="form-control" placeholder="1" min="1">
-                                </td>
-                                <td align="center" class="fw-900 fs-12">@{{ data.prix_unitaire * data.qte }}</td>
-                                <td align="center"><a href="javascript:void(0)" class="btn btn-danger-light btn-xs" @click="removeFromCart(data)" title=""><i class="ti-close"></i></a></td>
-                            </tr>
-                            <tr>
-                                <td class="fw-800">Total</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="fw-800">@{{ totalGlobal }}</td>
-                            </tr>					
-                        </tbody>
-                    </table>
-                </div>
-                <div v-else style="height:100%" class="d-flex justify-content-center align-items-center flex-column">
-                    <p class="mt-3 text-danger">Panier vide !</p>
+            <div class="modal-body d-flex flex-column">
+                 <div class="cart-items">
+                    <template v-if="cart.length === 0">
+                        <div class="empty-cart">
+                            <i class="mdi mdi-cart-outline"></i>
+                            <p>Le Panier est vide !</p>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div v-for="item in cart" :key="item.id" class="cart-item">
+                            <div class="cart-item-image">
+                                <i class="icon-Dinner1 fs-18 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                            </div>
+                            <div class="cart-item-details">
+                                <div class="cart-item-name">
+                                    @{{ item.libelle }}
+                                </div>
+                                <div class="cart-item-info">@{{ item.qte }} x @{{ item.prix_unitaire }}F</div>
+                            </div>
+                            <input type="number" style="width:60px" v-model="item.qte" class="form-control" placeholder="1" min="1">
+                            <div class="cart-item-actions">
+                                <button @click="removeFromCart(item)" class="btn btn-danger-light btn-xs ms-2">
+                                    <i class="mdi mdi-close fs-10"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
             <div class="modal-footer modal-footer-uniform" v-if="selectedTable">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-success float-end" @click="createFacture" :disabled="isLoading"> <i class="mdi mdi-check-all me-1"></i> Valider la commande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button>
+                <div class="cart-total">
+                    <span>Total</span>
+                    <span class="total-amount">@{{ totalGlobal }}F</span>
+                </div>
+                <button class="pay-button" :disabled="cart.length === 0 || isLoading" @click="createFacture">
+                    <i class="ri-money-dollar-circle-line"></i>
+                    <span v-if="isLoading">Validation en cours....</span>
+                    <span v-else>Valider la commande</span>
+                </button>
+                <!-- <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-success float-end" @click="createFacture" :disabled="isLoading"> <i class="mdi mdi-check-all me-1"></i> Valider la commande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button> -->
             </div>
         </div>
     </div>
 </div>
+
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>

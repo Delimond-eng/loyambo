@@ -4,8 +4,12 @@
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
 	<div class="container-full AppService" v-cloak>
+		<div class="data-loading" v-if="isDataLoading">
+			<img src="{{ asset("assets/images/loading.gif") }}" alt="loading">
+			<h4 class="mt-2">Chargement...</h4>
+		</div>
 	<!-- Content Header (Page header) -->
-	 	<div class="content-header">
+	 	<div class="content-header"  v-if="!isDataLoading">
             <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
                 <!-- <a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
                 <div class="me-auto">
@@ -24,15 +28,15 @@
                 </div>
 
 				<div class="clearfix mt-3 mt-lg-0 mt-xl-0">
-					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2">Transferer Table <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
-					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn-sm btn btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
+					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2 rounded-2">Transferer Table <i class="mdi mdi-swap-horizontal ms-2"></i></button>
+					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn-sm btn btn-success mb-2 rounded-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
 					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
-					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
+					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger rounded-2 mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
 				</div>
             </div>
         </div>
 
-		<section class="content">
+		<section class="content" v-if="!isDataLoading">
 		  	<div>
 			  <!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
@@ -54,7 +58,7 @@
 					</div>
 				</div>
 			<!-- /.box-body -->
-		  </div>
+		  	</div>
 		  <!-- /.box -->
 		</section>
 
@@ -204,14 +208,72 @@
 </div>
 
 @if (Auth::user()->role === 'serveur')
-	<a class="btn btn-app btn-primary" style="position: fixed; right: 20px; bottom: 30px;" href="{{ url("/orders") }}">
-		<span class="badge bg-danger AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
-		<i class="icon-Dinner1"><span class="path1"></span><span class="path2"></span></i>
-	</a>
+     <button class="fixed-btn" onclick="location.href='/orders'">
+		<div class="badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</div>
+		<i class="mdi mdi-menu fs-18"></i>
+	</button>
 @endif
-
 @endsection
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
 	<script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>	
+@endpush
+
+@push("styles")
+	 <style>
+        .fixed-btn {
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            background: #4c95dd;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(1, 9, 18, 0.3);
+            animation: glow 1.5s infinite alternate;
+            color: #FFFFFF;
+        }
+
+        @keyframes glow {
+            from {
+            box-shadow: 0 0 10px rgba(76, 95, 221, 0.5),
+                        0 0 20px rgba(76, 149, 221, 0.3);
+            }
+            to {
+            box-shadow: 0 0 25px rgba(76, 149, 221, 0.9),
+                        0 0 50px rgba(76, 149, 221, 0.7);
+            }
+        }
+
+        .badge {
+            position: absolute;
+			top: -5px;
+			left: 50%;
+			transform: translateX(-50%);
+			min-width: 20px;
+			height: 20px;
+			padding: 0 3px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #ef4444;
+			color: #fff;
+			font-weight: 500;
+			border: 2px solid #FFF;
+			font-size: 10px;
+			border-radius: 5px;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .fixed-btn-container {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+    </style>
 @endpush
