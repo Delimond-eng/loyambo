@@ -12,16 +12,15 @@
     <title>Loyambo Plateforme</title>
 
     <!-- Vendors Style-->
-    <link rel="stylesheet" href="assets/css/vendors_css.css">
+    <link rel="stylesheet" href="{{ asset("assets/css/vendors_css.css") }}">
 
     <!-- Style-->
-    <link rel="stylesheet" href="assets/css/horizontal-menu.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/skin_color.css">
-
+    <link rel="stylesheet" href="{{ asset("assets/css/horizontal-menu.css") }}">
+    <link rel="stylesheet" href="{{ asset("assets/css/style.css") }}">
+    <link rel="stylesheet" href="{{ asset("assets/css/skin_color.css") }}">
 </head>
 
-<body class="hold-transition theme-primary bg-img" style="background-image: url('assets/images/auth-bg/bg-6.jpg')">
+<body class="hold-transition theme-primary bg-img" style="background-image: url({{ asset('assets/images/auth-bg/bg-6.jpg') }})">
 
     <div class="container h-p100">
         <div class="row align-items-center justify-content-md-center h-p100">

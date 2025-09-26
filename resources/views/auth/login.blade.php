@@ -34,6 +34,11 @@
                                     <label for="basic_checkbox_1">Garder ma session</label>
                                 </div>
                             </div>
+                            <div class="col-6">
+                                <div class="fog-pwd text-end">
+                                    <a href="{{ route("password.request") }}" class="hover-warning"><i class="ion ion-locked me-1"></i>Mot de passe oublié ?</a><br>
+                                </div>
+                            </div>
                             <div class="col-12 text-center">
                                 <button type="submit" :disabled="isLoading" style="width:100%;" class="waves-effect waves-light btn mb-5 btn-warning mt-10"> <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> CONNECTER</button>
                                 <a href="{{ route("register") }}" style="width:100%;" class="waves-effect waves-light btn btn-outline btn-primary mt-2 text-uppercase">Créer établissement</a>
