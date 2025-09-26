@@ -10,6 +10,10 @@ new Vue({
         };
     },
 
+    mounted() {
+        $("input,select,textarea").not("[type=submit]").jqBootstrapValidation();
+    },
+
     methods: {
         login(event) {
             const formData = new FormData(event.target);

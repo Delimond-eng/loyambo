@@ -21,7 +21,7 @@
                         </div>
                         <div class="form-group">
                             <div class="input-group mb-3">
-                                <span class="input-group-text  bg-transparent"><i
+                                <span class="input-group-text bg-transparent"><i
                                         class="ti-lock text-primary"></i></span>
                                 <input type="password" class="form-control ps-15 bg-transparent"
                                     placeholder="Password" name="password" required>

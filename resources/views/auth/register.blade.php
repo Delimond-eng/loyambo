@@ -57,7 +57,7 @@
                                 <span class="input-group-text bg-transparent"><i
                                         class="ti-email text-primary"></i></span>
                                 <input type="email" class="form-control ps-15 bg-transparent"
-                                    placeholder="Email" name="email">
+                                    placeholder="Email" name="email" required data-validation-required-message="This field is required">
                             </div>
                         </div>
 

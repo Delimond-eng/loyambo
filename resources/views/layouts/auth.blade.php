@@ -30,9 +30,10 @@
     </div>
 
     <!-- Vendor JS -->
-    <script src="assets/js/vendors.min.js"></script>
-    <script src="assets/vendors/icons/feather-icons/feather.min.js"></script>
-    <script src="assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js"></script>
+    <script src="{{ asset('assets/js/vendors.min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/plugins/validators/validators.js') }}"></script>
+    <script src="{{ asset('assets/vendors/icons/feather-icons/feather.min.js') }}"></script>
+    <script src="{{ asset('assets/vendors/components/jquery-toast-plugin-master/src/jquery.toast.js') }}"></script>
     <script src="{{ asset("assets/js/libs/vue2.js") }}"></script>
     @stack("scripts")
 </body>
