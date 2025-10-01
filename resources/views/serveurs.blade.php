@@ -20,7 +20,7 @@
                         <div class="box-body">
                             <div class="box-header border-0 pb-3 d-flex flex-column d-lg-flex justify-content-center align-items-center">
                                 <h4 class="box-title text-primary mb-0 fw-600">Liste des serveurs</h4>
-                                <h6 class="box-subtitle">Veuillez sélectionner un serveur.</h6>
+                                <h6 class="box-subtitle">-- Veuillez sélectionner un serveur --</h6>
                             </div>
                             <div class="row d-flex justify-content-center">
                                 <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(data, index) in allServeurs" :key="index">

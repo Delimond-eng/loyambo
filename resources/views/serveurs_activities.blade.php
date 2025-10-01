@@ -16,7 +16,7 @@
 					<div class="box">
 						<div class="box-header d-flex justify-content-between align-items-center" style="padding:1.5rem">
 							<h4 class="box-title fw-600">SERVEURS EN SERVICE</h4>
-							<button class="btn btn-sm btn-round btn-danger btn-xs" title="Clôturer">Clôturer la journée <i class="fa fa-sign-out ms-1"></i></button>
+							<button class="btn btn-sm btn-round btn-danger btn-xs" @click="triggerClosingDay" title="Clôturer">Clôturer la journée <i class="fa fa-sign-out ms-1"></i></button>
 						</div>
 						<div class="box-body">
 							<div class="table-responsive">

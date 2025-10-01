@@ -122,7 +122,7 @@
                                             <th>Quantité</th>
                                             <th>Source</th>
                                             <th>Destination</th>
-                                            <th>Utilisateur</th>
+                                            <th>Caissier</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
                                     </thead>

@@ -65,11 +65,11 @@ document.querySelectorAll(".AppService").forEach((el) => {
                             let serveursList = "";
                             data.serveurs.forEach((srv) => {
                                 serveursList += `<div class="col-xl-12">
-                                <div class="media bg-light">
+                                <div class="media bg-light overflow-hidden">
                                 <span class="avatar status-success">
                                     <img class="avatar" src="assets/images/profil-2.png">
                                 </span>
-                                <div class="media-body text-start">
+                                <div class="media-body text-start overflow-hidden">
                                     <p><strong>${srv.name}</strong></p>
                                     <p class="fs-12">${
                                         srv.emplacement.libelle ?? "-----"
@@ -83,7 +83,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                 icon: "warning",
                                 title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
                                 html: `
-                                <div class="row gy-1">${serveursList}</div>
+                                <div class="row gy-1 overflow-hidden">${serveursList}</div>
                                 `,
                                 showCancelButton: true,
                                 showConfirmButton: true,
