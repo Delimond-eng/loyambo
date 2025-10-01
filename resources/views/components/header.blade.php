@@ -55,16 +55,15 @@
                                 <strong class="text-white">{{ Auth::user()->name }}</strong><br>
                                 <small class="text-white">{{ Auth::user()->role }}</small>
                             </div>
-                            <img src="{{ asset("assets/images/avatar/avatar-2.png") }}"
+                            <img src="{{ asset("assets/images/profil-2.png") }}"
                                 class="user-image rounded-circle avatar bg-white mx-10" alt="User Image">
                         </a>
-                        <ul class="dropdown-menu animated flipInX">
+                        <ul class="dropdown-menu animated flipInX AppService">
                             <li class="user-body">
                                 <a class="dropdown-item" href="{{ url('/licences/pricing') }}"> <i class="mdi mdi-key-variant text-muted me-2"></i>Licence trial <small class="text-info">(7 jrs restants)</small></a>
                                 @canCloseDay
                                     @can("cloturer-journee")
-                                    <a class="dropdown-item text-danger" href="{{ route("orders.portal") }}"><i class="fa fa-sign-out me-2"></i>
-                                    Clotûrer la journée</a>
+                                    <a class="dropdown-item text-danger" href="javascript:void(0);" @click="triggerClosingDay"><i class="fa fa-sign-out me-2"></i>Clotûrer la journée</a>
                                     @endcan
                                 @else
                                     @can("ouvrir-journee")

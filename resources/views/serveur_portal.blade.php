@@ -80,7 +80,11 @@
 								<div class="btn-group">
 									<button class="btn btn-primary-light btn-block"><i class="mdi mdi-file-document me-2"></i> Bon de Commande N°@{{ cmd.id }}</button>
 									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
-									<button @click="selectedFacture=cmd" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-info"> <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span> <i v-else class="mdi mdi-glass-tulip"></i> </button>	
+									
+									<button v-if="cmd.statut_service==='en_attente'" @click="servirCmd(cmd)" class="btn btn-info"> <i class="mdi mdi-glass-tulip"></i> </button>	
+									@if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
+									<button @click="selectedFacture=cmd" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-dark"> <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span> <i v-else class="fa fa-money"></i> </button>	
+									@endif
 									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
 								</div>
 							</div>
@@ -121,11 +125,11 @@
 							type="text" 
 							v-model="selectedModeRef"
 							placeholder="Réference du mode de paiement ..." 
-							class="form-control mt-2 mb-2"
+							class="form-control rounded-2 mt-2 mb-2"
 						>
 
 						<div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
-							<button class="btn btn-success mt-5" @click="triggerPayment">
+							<button class="btn btn-success rounded-2 mt-5" style="width:100%" @click="triggerPayment">
 								Valider <i class="mdi mdi-check-all"></i>
 							</button>
 						</div>
@@ -210,7 +214,7 @@
 @if (Auth::user()->role === 'serveur')
      <button class="fixed-btn" onclick="location.href='/orders'">
 		<div class="badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</div>
-		<i class="mdi mdi-menu fs-18"></i>
+		<i class="mdi mdi-basket fs-18"></i>
 	</button>
 @endif
 @endsection

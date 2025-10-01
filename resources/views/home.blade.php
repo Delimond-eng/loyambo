@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="assets/css/menu.css">
 @endpush
 
-@section("content")
+@section("content") 
 <div class="content-wrapper">
     <div class="container-full">
         <div class="content-header">

@@ -42,7 +42,7 @@
                                         <th>N° Table/Chambre</th>
                                         <th>Emplacement</th>
                                         <th>Montant</th>
-                                        <th>Créée par</th>
+                                        <th>Serveur</th>
                                         <th>Status</th>
                                         <th></th>
                                     </tr>
@@ -153,7 +153,6 @@
                             <div class="row">
                                 <div class="col-12 text-end">
                                     <p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
-
                                     <div>
                                         <p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
                                         <p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
@@ -167,13 +166,11 @@
                             </div>
                         </section>
                     </div>
-                
                 </div>
                 <!-- /.modal-content -->
             </div>
             <!-- /.modal-dialog -->
         </div>
-
     </section>
     <!-- /.content -->
     </div>

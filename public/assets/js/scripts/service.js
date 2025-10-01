@@ -40,6 +40,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 selectedModeRef: "",
                 operation: null,
                 selectedTables: [],
+                selectedData: null,
                 store: Store,
                 search: "",
                 load_id: "",
@@ -56,8 +57,95 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         methods: {
+            triggerClosingDay() {
+                postJson("/day.close", {})
+                    .then(({ data, status }) => {
+                        if (data.status === "failed") {
+                            // Construire la liste des serveurs avec emplacement
+                            let serveursList = "";
+                            data.serveurs.forEach((srv) => {
+                                serveursList += `<li><b>${srv.name}</b> - ${
+                                    srv.emplacement
+                                        ? srv.emplacement.libelle
+                                        : "Sans emplacement"
+                                }</li>`;
+                            });
+
+                            new Swal({
+                                icon: "warning",
+                                title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
+                                html: `
+                                <ul class="d-flex justify-content-center align-items-center flex-column">${serveursList}</ul>
+                                `,
+                                showCancelButton: true,
+                                showConfirmButton: true,
+                                confirmButtonColor: "#4c95dd",
+                                confirmButtonText: "Voir serveurs en service",
+                                cancelButtonText: "Fermer",
+                            }).then((res) => {
+                                if (res.isConfirmed) {
+                                    location.href = "/serveurs.activities";
+                                }
+                            });
+                        } else if (data.status === "success") {
+                            new Swal({
+                                icon: "success",
+                                title: "Succès",
+                                text: data.message,
+                                confirmButtonText: "Fermer",
+                            });
+                        } else {
+                            new Swal({
+                                icon: "error",
+                                title: "Erreur",
+                                text: data.errors || "Erreur inattendue",
+                                confirmButtonText: "Fermer",
+                            });
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plus tard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            triggerSingleClosing(data) {
+                this.selectedData = data;
+                $("#reportAppendModal").modal("show");
+            },
+
             setOperation(op) {
                 this.operation = op;
+            },
+
+            servirCmd(data) {
+                postJson(`/cmd.servir`, { id: data.id })
+                    .then(({ data, status }) => {
+                        $(".modal-commande").modal("hide");
+                        if (data.status === "success") {
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
             },
 
             triggerOperation(data) {
@@ -352,7 +440,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             viewAllCategories() {
-                const validPath = true;
+                const validPath = location.pathname !== "/serveurs";
                 if (validPath) {
                     this.isDataLoading = true;
                     get("/categories.all")
@@ -366,7 +454,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 }
             },
             viewAllProducts() {
-                const validPath = true;
+                const validPath = location.pathname !== "/serveurs";
                 if (validPath) {
                     this.isDataLoading = true;
                     get("/products.all")

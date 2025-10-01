@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('total_ttc', 15, 2);
             $table->string('devise')->default("CDF");
             $table->enum('statut', ['en_attente', 'payée', 'annulée'])->default('en_attente');
+            $table->enum('statut_service', ['en_attente', 'servie'])->default('en_attente');
             $table->unsignedBigInteger("ets_id");
             $table->unsignedBigInteger("emplacement_id");
             $table->unsignedBigInteger("client_id")->nullable();

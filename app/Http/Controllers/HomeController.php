@@ -201,14 +201,14 @@ class HomeController extends Controller
             "ventes" => $sells
         ]);
     } */
-   public function getAllSells(Request $request)
+    public function getAllSells(Request $request)
     {
         $dateRange = $request->query("dateRange");
         $serveurId = $request->query("serveur");
         $user = Auth::user();
         $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
 
-        $req = MouvementStock::with("produit")
+        $req = MouvementStock::with(["produit", "facture.user"])
             ->selectRaw("produit_id, SUM(quantite) as total_vendu")
             ->where("type_mouvement", "vente");
 
@@ -220,38 +220,34 @@ class HomeController extends Controller
             ]);
         });
 
-        $req->when($serveurId, function ($q) use ($serveurId) {
-            $q->where("user_id", $serveurId);
-        });
-
         $req->when(!$dateRange, function ($q) use ($saleDay) {
             $q->where("sale_day_id", $saleDay->id);
-        })->where("ets_id", $user->ets_id);
+        });
 
+        $req->where("ets_id", $user->ets_id);
+
+        // Restriction par emplacement pour non-admin
         if($user->role !== 'admin' && $user->emplacement_id){
             $req->where("emplacement_id", $user->emplacement_id);
         }
 
         $sells = $req->groupBy("produit_id")->get();
 
-        // 🔥 Ajouter regroupement par utilisateur pour chaque produit
-        $sells->map(function ($item) use ($dateRange, $serveurId, $saleDay, $user) {
-            $query = MouvementStock::with("user")
-                ->selectRaw("user_id, SUM(quantite) as quantite")
-                ->where("type_mouvement", "vente")
-                ->where("produit_id", $item->produit_id);
+        $sells->map(function ($item) use ($dateRange, $saleDay, $serveurId, $user) {
 
-            // réappliquer les mêmes filtres
+            $query = MouvementStock::with("facture.user")
+                ->selectRaw("numdoc, SUM(quantite) as quantite")
+                ->where("type_mouvement", "vente")
+                ->where("produit_id", $item->produit_id)
+                ->whereNotNull("numdoc"); // s'assurer que c'est lié à une facture
+
+            // Appliquer les mêmes filtres de date
             $query->when($dateRange, function ($q) use ($dateRange) {
                 [$start, $end] = explode(";", $dateRange);
                 $q->whereBetween("date_mouvement", [
                     $start . " 00:00:00",
                     $end . " 23:59:59"
                 ]);
-            });
-
-            $query->when($serveurId, function ($q) use ($serveurId) {
-                $q->where("user_id", $serveurId);
             });
 
             $query->when(!$dateRange, function ($q) use ($saleDay) {
@@ -262,13 +258,21 @@ class HomeController extends Controller
                 $query->where("emplacement_id", $user->emplacement_id);
             }
 
-            $users = $query->groupBy("user_id")->get();
+            // Filtrer par serveur si demandé
+            if($serveurId){
+                $query->whereHas("facture", function ($q) use ($serveurId) {
+                    $q->where("user_id", $serveurId);
+                });
+            }
 
-            // Calcul du montant par user
+            $users = $query->groupBy("numdoc")->get();
+
+            // Calculer montant par utilisateur/facture
             $item->byUsers = $users->map(function ($u) use ($item) {
                 return [
-                    "user_id" => $u->user_id,
-                    "nom" => $u->user->name ?? "Inconnu",
+                    "facture_id" => $u->numdoc,
+                    "user_id" => $u->facture->user->id ?? null,
+                    "nom" => $u->facture->user->name ?? "Inconnu",
                     "quantite" => $u->quantite,
                     "montant" => $u->quantite * $item->produit->prix_unitaire,
                 ];

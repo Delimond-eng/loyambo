@@ -24,6 +24,9 @@ class MouvementStock extends Model
     ];
 
 
+    public function facture(){
+        return $this->belongsTo(Facture::class, 'numdoc');
+    }
     public function produit(){
         return $this->belongsTo(Produit::class, 'produit_id');
     }

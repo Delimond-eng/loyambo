@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AccessAllow;
+use App\Models\CaisseReport;
 use App\Models\Chambre;
 use App\Models\Client;
 use App\Models\Currencie;
@@ -14,6 +15,7 @@ use App\Models\Reservation;
 use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
+use App\Models\UserLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -77,6 +79,78 @@ class AdminController extends Controller
         }
     }
 
+    public function closeDay()
+    {
+        try {
+            $user = Auth::user();
+            // 1. Vérifier qu'il y a une journée ouverte
+            $saleDay = SaleDay::whereNull("end_time")
+                ->where("ets_id", $user->ets_id)
+                ->latest()
+                ->first();
+
+            if (!$saleDay) {
+                return response()->json([
+                    "errors" => "Aucune journée ouverte à clôturer."
+                ]);
+            }
+
+            // 2. Récupérer tous les serveurs ayant fait des factures dans cette journée
+            $serveursAvecFactures = Facture::where("sale_day_id", $saleDay->id)
+                ->pluck("user_id")
+                ->unique();
+
+            // 3. Récupérer tous les serveurs ayant déjà un rapport de caisse
+            $serveursAvecRapport = CaisseReport::where("sale_day_id", $saleDay->id)
+                ->pluck("serveur_id")
+                ->unique();
+
+            // 4. Identifier les serveurs qui n'ont pas encore de rapport
+            $serveursManquants = $serveursAvecFactures->diff($serveursAvecRapport);
+
+            if ($serveursManquants->isNotEmpty()) {
+                // Charger les infos des serveurs manquants
+                $serveursInfos = User::with("emplacement")->whereIn("id", $serveursManquants)->get();
+                return response()->json([
+                    "status" => "failed",
+                    "message" => "Impossible de clôturer, serveurs connectés !",
+                    "serveurs" => $serveursInfos
+                ]);
+            }
+            // 5. Tout est OK → clôturer la journée
+            $saleDay->update([
+                "end_time" => Carbon::now()->setTimezone("Africa/Kinshasa")
+            ]);
+
+            // 6. Mettre à jour les logs utilisateurs
+            UserLog::where("sale_day_id", $saleDay->id)
+                ->whereNull("logged_out_at")
+                ->update([
+                    "logged_out_at" => Carbon::now(),
+                    "status" => "offline"
+                ]);
+            // 7. Bloquer l'accès
+            $accessAllow = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
+            if ($accessAllow) {
+                $accessAllow->update(["allowed" => false]);
+            }
+            return response()->json([
+                "status" => "success",
+                "message" => "La journée a été clôturée avec succès.",
+                "saleDay" => $saleDay
+            ]);
+
+        }catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+    }
+
 
     //GET ALL USERS 
     public function getAllUsersWithLatestLog(Request $request){
@@ -112,7 +186,7 @@ class AdminController extends Controller
         $saleDay = SaleDay::where("ets_id", $user->ets_id)->whereNull("end_time")->latest()->first();
 
         $req = Facture::with("user.lastLog")
-            ->selectRaw("user_id, SUM(total_ttc) as total_encaisse")
+            ->selectRaw("user_id, SUM(total_ttc) as total_encaisse, COUNT(id) as total_ticket")
             ->where("sale_day_id", $saleDay->id)
             ->whereHas("user", function ($q) {
                 $q->where("role", "serveur"); 
@@ -526,6 +600,17 @@ class AdminController extends Controller
             "result" => "Table liberée avec succès !"
         ]);
     }
+    public function servirCommande(Request $request)
+    {
+        $commande = Facture::find((int)$request->id);
+        if($commande){
+            $commande->update(["statut_service"=>"servie"]);
+        }
+        return response()->json([
+            "status"=>"success",
+            "result" => "commande servie avec succès !"
+        ]);
+    }
 
 
     public function updateBedRoomStatus(Request $request)
@@ -708,6 +793,23 @@ class AdminController extends Controller
         return response()->json([
             "status" => "success",
             "reports" => $reports->values()
+        ]);
+    }
+
+
+    public function showDaySaleFacturesByCaissier(Request $request)
+    {
+        $caissierId = $request->query("id");
+        $factures = Facture::with(["payments", "saleDay.sales.user", "user"])
+            ->whereHas("saleDay.sales", function($query) use ($caissierId) {
+                $query->where("user_id", $caissierId);
+            })->where("statut", "payée")
+            ->orderByDesc("id")
+            ->get();
+
+        return response()->json([
+            "status" => "success",
+            "factures" => $factures
         ]);
     }
 

@@ -93,6 +93,7 @@
 	<script src="{{ asset("assets/vendors/components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js") }}"></script>
 	<script src="{{ asset("assets/vendors/components/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js") }}"></script>
 	<script src="{{ asset("assets/vendors/plugins/timepicker/bootstrap-timepicker.min.js") }}"></script>
+    <script src="{{ asset("assets/vendors/components/sweetalert/sweetalert.min.js") }}"></script>
 
     <script>
         const startBtn = document.querySelectorAll('.btn-start-day');

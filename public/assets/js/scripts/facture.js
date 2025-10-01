@@ -185,8 +185,8 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                             <tr>
                                 <td>${d.produit.libelle}</td>
                                 <td>${d.quantite}</td>
-                                <td class="right">${d.prix_unitaire}</td>
-                                <td class="right">${d.total_ligne}</td>
+                                <td class="right">${d.prix_unitaire}|</td>
+                                <td class="right">${d.total_ligne}|</td>
                             </tr>
                         `
                             )

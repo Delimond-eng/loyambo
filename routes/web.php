@@ -29,6 +29,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "home")->name("home");
     Route::view('/dashboard', "dashboard")->name("dashboard");
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
+    Route::post("day.close", [AdminController::class, "closeDay"])->name("day.close")->middleware("can:cloturer-journee");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
 
     Route::view('/orders', "orders")->name("orders");
@@ -55,7 +56,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     //GET ALL USER WITH LATEST LOGS
     Route::get("users.all", [AdminController::class, "getAllUsersWithLatestLog"])->name("users.all")->middleware("can:voir-utilisateurs");
     Route::get("serveurs.all", [AdminController::class, "getAllServeurs"])->name("serveurs.all")->middleware("can:voir-serveurs");
-    Route::get("/serveurs.services", [AdminController::class, "getAllServeursServices"])->name("users.services");
+    Route::get("/serveurs.services", [AdminController::class, "getAllServeursServices"])->name("serveurs.services");
 
     //GET ALL PERMISSIONS
     Route::get("/permissions", [AdminController::class, "getAllPermissions"])->name("users.all");
@@ -78,12 +79,14 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/tables.all", [AdminController::class, "getAllTables"])->name("tables.all")->middleware("can:voir-tables");
     Route::post("/table.operation", [AdminController::class, "triggerTableOperation"])->name("table.operation")->middleware("can:voir-tables");
     Route::post("/table.liberer", [AdminController::class, "libererTable"])->name("table.liberer");
+    Route::post("/cmd.servir", [AdminController::class, "servirCommande"])->name("cmd.servir");
     Route::post("/chambre.status", [AdminController::class, "updateBedRoomStatus"])->name("chambre.status");
     
     
     ///==========PAYMENT & INVOICE=============//
     Route::post("/payment.create", [AdminController::class, "createPayment"])->name("payment.create");
     Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.all");
+    Route::get("/report.detail", [AdminController::class, "showDaySaleFacturesByCaissier"])->name("report.detail");
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");

@@ -16,12 +16,6 @@
                     <div class="box-body" v-if="data.tables.length">
                         <div class="box-header pb-3 d-grid d-lg-flex d-sm-grid justify-content-center align-items-center">
                             <h4 class="box-title text-primary mb-0 fw-600"><i class="ti-home me-15"></i> @{{ data.libelle }}</h4>
-                            <!-- <div class="clearfix">
-                                <button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn btn-sm btn-info mb-2">Transferer @{{  data.type !== 'hôtel' ? 'Table' : 'Chambre' }} <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
-                                <button v-if="data.type !== 'hôtel'" type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn btn-sm btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
-                                <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button>
-                                <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
-                            </div> -->
                         </div>
                         <div class="row d-flex justify-content-center mt-25" v-if="data.tables">
                             <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in data.tables">

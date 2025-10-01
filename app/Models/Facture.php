@@ -22,6 +22,7 @@ class Facture extends Model
         'devise',
         'date_facture',
         'statut',
+        'statut_service',
         'ets_id',
         'emplacement_id',
         'client_id'

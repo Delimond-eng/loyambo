@@ -19,7 +19,6 @@
                     </div>
                     <div class="box-body" v-cloak>
                         <div class="table-responsive">
-
                             <table id="example" class="table table-lg invoice-archive">
                                 <thead>
                                     <tr>
@@ -42,7 +41,7 @@
                                             <h6 class="mb-0 fw-bold">@{{ data.total_factures }}</h6>
                                         </td>
                                         <td class="text-center">
-                                            <button type="button" class="waves-effect waves-light btn btn-sm btn-outline btn-rounded btn-danger">Afficher</button>
+                                            <button type="button" @click="showReportDetails(data)" class="waves-effect waves-light btn btn-sm btn-outline btn-rounded btn-danger">Afficher <span v-if="load_id === data.user.id" class="spinner-border spinner-border-sm ms-1"></span></button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -54,6 +53,48 @@
             </div>
         </section>
 		<!-- /.content -->
+
+         <div class="modal fade modal-sell-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel" v-if="selectedSell">Détails des opérations pour le caissier <span v-if="selectedSell.user" class="fw-600 text-primary">@{{ selectedSell.user.name }}</span> </h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <section v-if="selectedSell" class="invoice border-0 p-0 printableArea">
+                            <div class="row" v-if="sellFactures.length > 0">
+                                <div class="col-12 table-responsive">
+                                    <table class="table table-bordered">
+                                        <tbody>
+                                            <tr>
+                                                <th>N° Facture</th>
+                                                <th>Journée du</th>
+                                                <th class="text-end">Montant</th>
+                                                <th class="text-end">Montant payé</th>
+                                                <th class="text-end">Serveur</th>
+                                                <th class="text-end">Statut</th>
+                                            </tr>
+                                            <tr v-for="(fac, index) in sellFactures" :key="index">
+                                                <td>@{{ fac.numero_facture }}</td>
+                                                <td><span v-if="fac.sale_day">@{{ fac.sale_day.sale_date }}</span></td>
+                                                <td class="text-end">@{{ fac.total_ttc }}</td>
+                                                <td class="text-end">@{{ allPayment(fac.payments) }}</td>
+                                                <td class="text-end"><span v-if="fac.user">@{{ fac.user.name }}</span></td>
+                                                <td class="text-end"><span class="badge badge-pill" :class="{'badge-warning-light':fac.statut==='en_attente', 'badge-success-light':fac.statut==='payée', 'badge-danger-light':fac.statut==='annulée'}">@{{ fac.statut.replaceAll('_', ' ') }}</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
 	</div>
 </div>
   <!-- /.content-wrapper -->
