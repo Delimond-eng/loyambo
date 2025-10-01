@@ -64,18 +64,26 @@ document.querySelectorAll(".AppService").forEach((el) => {
                             // Construire la liste des serveurs avec emplacement
                             let serveursList = "";
                             data.serveurs.forEach((srv) => {
-                                serveursList += `<li><b>${srv.name}</b> - ${
-                                    srv.emplacement
-                                        ? srv.emplacement.libelle
-                                        : "Sans emplacement"
-                                }</li>`;
+                                serveursList += `<div class="col-xl-12">
+                                <div class="media bg-light">
+                                <span class="avatar status-success">
+                                    <img class="avatar" src="assets/images/profil-2.png">
+                                </span>
+                                <div class="media-body text-start">
+                                    <p><strong>${srv.name}</strong></p>
+                                    <p class="fs-12">${
+                                        srv.emplacement.libelle ?? "-----"
+                                    }</p>
+                                </div>
+                                </div>
+                                </div>`;
                             });
 
                             new Swal({
                                 icon: "warning",
                                 title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
                                 html: `
-                                <ul class="d-flex justify-content-center align-items-center flex-column">${serveursList}</ul>
+                                <div class="row gy-1">${serveursList}</div>
                                 `,
                                 showCancelButton: true,
                                 showConfirmButton: true,

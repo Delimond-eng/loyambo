@@ -19,7 +19,9 @@
 
                 @canCloseDay
                     @can("cloturer-journee")
-                    <a href="{{ route("orders.portal") }}" class="waves-effect waves-light btn btn-danger text-center btn-rounded"><i class="fa fa-sign-out"></i> Clôturer la journée</a>
+                    <div class="AppService">
+                        <button @click="triggerClosingDay" class="waves-effect waves-light btn btn-danger text-center btn-rounded"><i class="fa fa-sign-out"></i> Clôturer la journée</button>
+                    </div>
                     @endcan
                 @else
                     @can("ouvrir-journee")  
@@ -592,6 +594,7 @@
 @endsection
 
 @push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
     <script type="module" src="{{ asset("assets/js/scripts/facture.js") }}"></script>
     <script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>
 @endpush

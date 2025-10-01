@@ -75,17 +75,64 @@
 							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
 							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
 						</div>
-						<div class="row g-3">
-							<div class="col-12 col-lg-6" v-for="(cmd, index) in selectedPendingTable.commandes">
-								<div class="btn-group">
-									<button class="btn btn-primary-light btn-block"><i class="mdi mdi-file-document me-2"></i> Bon de Commande N°@{{ cmd.id }}</button>
-									<button class="btn btn-success" @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)"><i class="mdi mdi-printer"></i></button>
-									
-									<button v-if="cmd.statut_service==='en_attente'" @click="servirCmd(cmd)" class="btn btn-info"> <i class="mdi mdi-glass-tulip"></i> </button>	
-									@if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
-									<button @click="selectedFacture=cmd" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-dark"> <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span> <i v-else class="fa fa-money"></i> </button>	
-									@endif
-									<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail" @click="selectedFacture = cmd"><i class="mdi mdi-eye"></i></button>	
+						<div class="row g-2">
+							<div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
+								<div class="box ribbon-box border-1 b-1 border-primary rounded-3 shadow-sm">
+									<!-- Ribbon statut -->
+									<div class="ribbon-two ribbon-two-primary" v-if="cmd.statut_service==='servie'">
+										<span v-if="cmd.statut_service==='servie'">Servie</span>
+										<span v-else>En attente</span>
+									</div>
+
+									<div class="box-body m-0">
+										<!-- Titre -->
+										<div class="text-center border-bottom pb-2 mb-3">
+											<h5 class="fw-bold text-primary mb-0">
+												<i class="mdi mdi-file-document-outline me-2"></i>
+												Bon de Commande N°@{{ cmd.id }}
+											</h5>
+										</div>
+
+										<!-- Actions -->
+										<div class="d-flex flex-wrap justify-content-center gap-2">
+											<!-- Edit -->
+											<button class="btn btn-circle btn-sm btn-primary">
+												<i class="fa fa-pencil"></i>
+											</button>
+
+											<!-- Impression -->
+											<button class="btn btn-circle btn-sm btn-success" 
+													@click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)">
+												<i class="fa fa-print"></i>
+											</button>
+
+											<!-- Servir -->
+											<button v-if="cmd.statut_service==='en_attente'" 
+													@click="servirCmd(cmd)" 
+													class="btn btn-circle btn-sm btn-warning">
+												<i class="fa fa-glass"></i>
+											</button>
+
+											<!-- Paiement -->
+											@if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
+											<button @click="selectedFacture=cmd" 
+													data-bs-toggle="modal" 
+													data-bs-target=".modal-pay-trigger" 
+													class="btn btn-circle btn-sm btn-dark">
+												<span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span>
+												<i v-else class="fa fa-money"></i>
+											</button>
+											@endif
+
+											<!-- Voir facture -->
+											<button class="btn btn-circle btn-sm btn-info" 
+													data-bs-toggle="modal" 
+													data-bs-target=".modal-invoice-detail" 
+													@click="selectedFacture = cmd">
+												<i class="fa fa-eye"></i>
+											</button>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -167,22 +214,22 @@
 							<div class="row" v-if="selectedFacture.details">
 								<div class="col-12 table-responsive">
 									<table class="table table-bordered">
-									<tbody>
-									<tr>
-										<th>#</th>
-										<th>Designation</th>
-										<th class="text-end">Quantité</th>
-										<th class="text-end">Prix unitaire</th>
-										<th class="text-end">Sous total</th>
-									</tr>
-									<tr v-for="(detail, index) in selectedFacture.details" :key="index">
-										<td>@{{ index+1 }}</td>
-										<td>@{{ detail.produit.libelle }}</td>
-										<td class="text-end">@{{ detail.quantite }}</td>
-										<td class="text-end">@{{ detail.prix_unitaire }}</td>
-										<td class="text-end">@{{ detail.total_ligne }}</td>
-									</tr>
-									</tbody>
+										<tbody>
+										<tr>
+											<th>#</th>
+											<th>Designation</th>
+											<th class="text-end">Quantité</th>
+											<th class="text-end">Prix unitaire</th>
+											<th class="text-end">Sous total</th>
+										</tr>
+										<tr v-for="(detail, index) in selectedFacture.details" :key="index">
+											<td>@{{ index+1 }}</td>
+											<td>@{{ detail.produit.libelle }}</td>
+											<td class="text-end">@{{ detail.quantite }}</td>
+											<td class="text-end">@{{ detail.prix_unitaire }}</td>
+											<td class="text-end">@{{ detail.total_ligne }}</td>
+										</tr>
+										</tbody>
 									</table>
 								</div>
 								<!-- /.col -->
@@ -213,7 +260,7 @@
 
 @if (Auth::user()->role === 'serveur')
      <button class="fixed-btn" onclick="location.href='/orders'">
-		<div class="badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</div>
+		<div class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</div>
 		<i class="mdi mdi-basket fs-18"></i>
 	</button>
 @endif
@@ -224,7 +271,7 @@
 @endpush
 
 @push("styles")
-	 <style>
+	<style>
         .fixed-btn {
             position: fixed;
             bottom: 50px;
@@ -254,7 +301,7 @@
             }
         }
 
-        .badge {
+        .btn-badge {
             position: absolute;
 			top: -5px;
 			left: 50%;
