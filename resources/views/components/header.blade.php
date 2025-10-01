@@ -60,14 +60,14 @@
                         </a>
                         <ul class="dropdown-menu animated flipInX AppService">
                             <li class="user-body">
-                                <a class="dropdown-item" href="{{ url('/licences/pricing') }}"> <i class="mdi mdi-key-variant text-muted me-2"></i>Licence trial <small class="text-info">(7 jrs restants)</small></a>
+                                <a class="dropdown-item" href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}"> <i class="mdi mdi-key-variant text-muted me-2"></i>Licence {{ auth()->user()->etablissement->licence->type }} <small class="text-info">({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)</small></a>
                                 @canCloseDay
                                     @can("cloturer-journee")
-                                    <a class="dropdown-item text-danger" href="javascript:void(0);" @click="triggerClosingDay"><i class="fa fa-sign-out me-2"></i>Clotûrer la journée</a>
+                                    <a class="dropdown-item text-danger"  @unless(Blade::check('licenceActive')) disabled @endunless href="javascript:void(0);" @click="triggerClosingDay"><i class="fa fa-sign-out me-2"></i>Clotûrer la journée</a>
                                     @endcan
                                 @else
                                     @can("ouvrir-journee")
-                                    <a class="dropdown-item text-primary btn-start-day" href="#"><i class="fa fa-sign-in me-2"></i>
+                                    <a class="dropdown-item text-primary btn-start-day"  @unless(Blade::check('licenceActive')) disabled @endunless href="#"><i class="fa fa-sign-in me-2"></i>
                                     Commencer la journée</a>
                                     @endcan
                                 @endif

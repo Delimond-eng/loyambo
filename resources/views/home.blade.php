@@ -26,14 +26,14 @@
             <div class="app-shell" role="application" aria-label="Application de restaurant — menu rapide">
                 <main class="menu-wrap" id="main">
                     <div class="menu-grid" id="menuGrid">
-                        <button class="menu-btn" type="button" onclick="location.href='/dashboard'">
+                        <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/dashboard'">
                             <img class="menu-icon" src="assets/icons/data-analysis.png" alt="Tableau de bord">
                             <div class="menu-label">Tableau de bord</div>
                         </button>
 
                         @can('voir-rapports')
                             @canCloseDay
-                            <button class="menu-btn" type="button" onclick="location.href='/reports.global'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/reports.global'">
                                 <img class="menu-icon" src="assets/icons/document.png" alt="Rapports">
                                 <div class="menu-label">Rapports</div>
                             </button>
@@ -41,7 +41,7 @@
                         @endcan
 
                         @can('voir-serveurs')
-                            <button class="menu-btn" type="button" onclick="location.href='/serveurs'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/serveurs'">
                                 <img class="menu-icon" src="assets/icons/serving-dish.png" alt="Serveurs">
                                 <div class="menu-label">Serveurs</div>
                             </button>
@@ -49,14 +49,14 @@
 
 
                         @can('voir-produits')
-                            <button class="menu-btn" type="button" onclick="location.href='/products'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/products'">
                                 <img class="menu-icon" src="assets/icons/add-product.png" alt="Produits">
                                 <div class="menu-label">Produits</div>
                             </button>
                         @endcan
                         
                         @can('voir-emplacements')
-                            <button class="menu-btn" type="button" onclick="location.href='/tables.emplacements'"> 
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/tables.emplacements'"> 
                                 <img class="menu-icon" src="assets/icons/home-button.png" alt="Emplacements">
                                 <div class="menu-label">Emplacements</div>
                             </button>
@@ -65,7 +65,7 @@
 
                         @can('voir-factures')
                             @canCloseDay
-                            <button class="menu-btn" type="button" onclick="location.href='/factures'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/factures'">
                                 <img class="menu-icon" src="assets/icons/quality-control.png" alt="Factures">
                                 <span class="btn-badge AppDashboard" v-cloak>@{{ counts.facs ?? 0 }}</span>
                                 <div class="menu-label">Factures</div>
@@ -75,7 +75,7 @@
 
                         @can('voir-ventes')
                             @canCloseDay
-                            <button class="menu-btn" type="button" onclick="location.href='/sells'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/sells'">
                                 <img class="menu-icon" src="assets/icons/online-shopping.png" alt="Ventes">
                                 <div class="menu-label">Ventes</div>
                             </button>
@@ -85,7 +85,7 @@
 
                         @can('voir-commandes')
                             @canCloseDay
-                            <button class="menu-btn" type="button" onclick="location.href='/orders'">
+                            <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/orders'">
                                 <img class="menu-icon" src="assets/icons/room-service.png" alt="Commandes">
                                 <span class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
                                 <div class="menu-label">Commandes</div>
@@ -96,7 +96,7 @@
                         @can('voir-chambres')
                             @canCloseDay
                                 @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
-                                <button class="menu-btn" type="button" onclick="location.href='/bedroom.reserve'">
+                                <button class="menu-btn"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/bedroom.reserve'">
                                     <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
                                     <div class="menu-label">Reservations</div>
                                 </button>
@@ -106,7 +106,7 @@
 
 
                         @can("manage-users")
-                            <button class="menu-btn" type="button" onclick="location.href='/users'">
+                            <button class="menu-btn" @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/users'">
                                 <img class="menu-icon" src="assets/icons/user.png" alt="Utilisateurs">
                                 <div class="menu-label">Utilisateurs</div>
                             </button>
@@ -119,15 +119,28 @@
 </div>
 
 <!-- Widget Licence -->
-<div class="license-widget trial">
+@licenceActive
+<div class="license-widget {{ auth()->user()->etablissement->licence->type === 'trial' ? 'trial' : 'active' }}">
     <div class="d-flex justify-content-between mb-2 align-items-center">
-        <h4 class="text-primary mb-0">Licence Trial</h4>
-        <button class="btn btn-sm btn-soft-primary" onclick="location.href='/licences/pricing'">Activer</button>
+        <h4 class="text-primary mb-0">Licence {{ auth()->user()->etablissement->licence->type }}</h4>
+        <a href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}" class="btn btn-sm btn-soft-primary">
+            Activer
+        </a>
     </div>
-    <div class="license-status status-trial">
-        Essai (15 j restants)
+    <div class="license-status {{ auth()->user()->etablissement->licence->type === 'trial' ? 'status-trial' : 'status-active' }}">
+        Essai ({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)
     </div>
 </div>
+@else
+<div class="row d-flex justify-content-center">
+    <div class="col-xl-4 col-12">
+        <div class="alert alert-danger text-center">
+            Votre licence a expiré. Veuillez <a href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}">renouveler</a>.
+        </div>
+    </div>
+</div>
+@endlicenceActive
+
 
 @endsection
 

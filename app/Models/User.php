@@ -29,6 +29,7 @@ class User extends Authenticatable
         'actif' => 'boolean',
         'salaire' => 'decimal:2',
     ];
+    
 
     public function etablissement()
     {

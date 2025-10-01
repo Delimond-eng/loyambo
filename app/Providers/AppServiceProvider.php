@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        \Carbon\Carbon::setLocale("fr");
         Blade::directive('active', function ($routes) {
             return "<?php
                 \$activeClasses = [];
@@ -50,6 +51,16 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo \\App\\Models\\Currencie::latest()->value('currencie_value') ?? 0; ?>";
         });
 
-        \Carbon\Carbon::setLocale("fr");
+
+        Blade::if('licenceActive', function () {
+            $user = Auth::user();
+            if (!$user || !$user->etablissement || !$user->etablissement->licence) {
+                return false; // pas de licence → bloqué
+            }
+            $licence = $user->etablissement->licence;
+            // Vérifie si la licence est encore valide
+            return $licence->status === 'available' && now()->lessThanOrEqualTo($licence->date_fin);
+        });
+
     }
 }

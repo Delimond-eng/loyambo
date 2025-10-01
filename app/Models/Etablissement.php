@@ -23,4 +23,9 @@ class Etablissement extends Model
     {
         return $this->hasMany(User::class);
     }
+
+
+    public function licence(){
+        return $this->hasOne(Licence::class, "ets_id", "id");
+    }
 }

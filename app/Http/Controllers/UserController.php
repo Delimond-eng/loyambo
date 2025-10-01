@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AccessAllow;
 use App\Models\Etablissement;
+use App\Models\Licence;
+use App\Models\LicencePayRequest;
 use App\Models\User;
 
 use Illuminate\Http\Request;
@@ -52,6 +54,13 @@ class UserController extends Controller
             // 3️⃣ Assigner le rôle admin via Spatie
             $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
             $user->assignRole($roleAdmin);
+
+            Licence::create([
+                'ets_id' => $etablissement->id,
+                'type' => 'trial',
+                'date_debut' => now(),
+                'date_fin' => now()->addDays(15),
+            ]);
 
             return response()->json([
                 "status"=>"success",
@@ -131,6 +140,67 @@ class UserController extends Controller
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
             return response()->json(['errors' => "Action non autorisée !"]);
         }
+    }
+
+    public function redirectToPayment($ets_id)
+    {
+        $etablissement = Etablissement::findOrFail($ets_id);
+        // Nombre d'utilisateurs pour calculer le montant
+        $userCount = User::where('ets_id', $etablissement->id)->count();
+        $amount = $userCount * 8; // 8$ par utilisateur
+
+        // Générer un UUID unique pour le paiement
+        $uuid = (string) \Illuminate\Support\Str::uuid();
+
+        // Créer une entrée dans licence_pay_requests
+        $payRequest = LicencePayRequest::create([
+            'ets_id' => $etablissement->id,
+            'uuid' => $uuid,
+            'amount' => $amount,
+            'status' => 'pending'
+        ]);
+
+        // Préparer les données HMAC pour le paiement
+        $data = json_encode([
+            'amount' => $amount,
+            'currency' => 'USD',
+            'uuid' => $uuid,
+            'phone' => $etablissement->telephone
+        ]);
+
+        $secretKey = '9f8b7c3a2d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a';
+        $hash = hash_hmac('sha256', $data, $secretKey);
+        $payload = base64_encode($data . '::' . $hash);
+
+        $url = 'https://payment.milleniumhorizon.com?query=' . urlencode($payload);
+
+        return redirect($url);
+    }
+
+
+    private function generatePaymentLink($ets_id)
+    {
+        $etablissement = Etablissement::findOrFail($ets_id);
+        // Nombre d’utilisateurs de l’établissement
+        $userCount = User::where('ets_id', $etablissement->id)->count();
+
+        $amount = $userCount * 8;
+        $currency = "USD";
+
+        $data = json_encode([
+            'amount' => $amount,
+            'currency' => $currency,
+            "uuid" => (string) \Illuminate\Support\Str::uuid(),
+            "phone" => $etablissement->telephone
+        ]);
+        $secretKey = '9f8b7c3a2d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a';
+        $hash = hash_hmac('sha256', $data, $secretKey);
+
+        $payload = base64_encode($data . '::' . $hash);
+
+        $url = 'https://payment.milleniumhorizon.com?query=' . urlencode($payload);
+
+        return $url;
     }
 
 }
