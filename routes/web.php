@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Models\Categorie;
 use App\Models\Emplacement;
+use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Models\SaleDay;
 use App\Models\User;
@@ -42,6 +43,41 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/orders.interface', "orders_interface")->name("orders.interface");
     Route::view('/products.categories', "product_categories")->name("products.categories");
     Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->where("ets_id", Auth::user()->ets_id)->get(), "emplacements" => Emplacement::where("ets_id", Auth::user()->ets_id)->get()]))->name("products.mvts");
+    Route::get('/fiche_stock', function () {
+
+    // Récupération des produits avec leurs mouvements de stock + emplacement
+    $produits = Produit::where('ets_id', Auth::user()->ets_id)
+        ->orderBy('libelle')
+        ->get();
+
+        foreach ($produits as $produit) {
+            // Regrouper les mouvements du produit par type
+            $mouvements = MouvementStock::select(
+                    'produit_id',
+                    'emplacement_id',
+                    'type_mouvement',
+                    DB::raw('SUM(quantite) as total')
+                )
+                ->where('produit_id', $produit->id)
+                ->groupBy('produit_id', 'emplacement_id', 'type_mouvement')
+                ->with('emplacement:id,libelle')
+                ->get();
+
+            // On peut prendre l’emplacement principal (ex. du premier mouvement)
+            $produit->emplacement = $mouvements->first()->emplacement->libelle ?? '-';
+
+            // Calculs par type
+            $entree = $mouvements->firstWhere('type_mouvement', 'entrée')->total ?? 0;
+            $sortie = $mouvements->firstWhere('type_mouvement', 'sortie')->total ?? 0;
+
+            // Totaux
+            $produit->total_entree = $entree;
+            $produit->total_sortie = $sortie;
+            $produit->solde = ($produit->qte_init ?? 0) + $entree - $sortie;
+        }
+
+        return view('fiche_stock', compact('produits'));
+    })->name('fiche_stock');
     Route::get('/products', fn()=>view("products", ["categories"=>Categorie::where("ets_id", Auth::user()->ets_id)->get()]))->name("products");
 
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");

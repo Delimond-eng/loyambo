@@ -44,6 +44,9 @@ class MouvementStock extends Model
     public function dest(){
         return $this->belongsTo(Emplacement::class, "destination");
     }
+    public function emplacement(){
+        return $this->belongsTo(Emplacement::class, "emplacement_id");
+    }
 
 
     protected $casts = [
