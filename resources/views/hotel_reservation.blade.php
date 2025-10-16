@@ -132,7 +132,7 @@
 					</div>
 					<div class="modal-footer d-flex justify-content-end">
 						<div class="form-actions">
-							<button type="button" class="btn btn-danger">Annuler</button>
+							<button type="button" class="btn btn-danger" @click="cancelForm">Annuler</button>
 							<button type="submit" class="btn btn-primary" :disabled="isLoading"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> <i v-else class="fa fa-check"></i> Reserver</button>
 						</div>
 					</div>
@@ -200,111 +200,6 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- Modal mode de paiement -->
-		<!-- <div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content" v-if="selectedFacture">
-					<div class="modal-header">
-						<h4 class="modal-title" id="myModalLabel">Servir le bon de commande n°@{{ selectedFacture.id }}</h4>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<p class="text-danger">Sélectionnez un mode de paiement.</p>
-						<div class="flexbox flex-justified text-center">
-							<a href="#"
-								v-for="mode in modes" 
-								@click="selectedMode=mode.value; selectedModeRef=''"
-								class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
-								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
-							>
-								<p class="mb-0 fa-3x">
-									<i :class="mode.icon"></i>
-								</p>
-								<p class="mb-2 fw-300">@{{ mode.label }}</p>
-							</a>
-						</div>
-						<input 
-							v-if="selectedMode && selectedMode !== 'cash'" 
-							type="text" 
-							v-model="selectedModeRef"
-							placeholder="Réference du mode de paiement ..." 
-							class="form-control mt-2 mb-2"
-						>
-
-						<div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
-							<button class="btn btn-success mt-5" @click="triggerPayment">
-								Valider <i class="mdi mdi-check-all"></i>
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div> -->
-
-		<!-- Modal Facture Details -->
-		<!-- <div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button class="btn btn-success btn-sm me-2 rounded-3" @click="printInvoiceFromJson(selectedFacture, selectedPendingTable.emplacement)"> <i class="mdi mdi-printer"></i></button>
-						<button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button>
-						<h4 class="modal-title" id="myModalLabel">Facture détails</h4>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<section v-if="selectedFacture" class="invoice border-0 p-0 printableArea">
-							<div class="row">
-								<div class="col-12">
-									<div class="page-header">
-										<h2 class="d-inline"><span class="fs-30">@{{ selectedFacture.numero_facture }}</span></h2>
-										<div class="pull-right text-end">
-											<h3>@{{ formateDate2(selectedFacture.date_facture) }}</h3>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="row" v-if="selectedFacture.details">
-								<div class="col-12 table-responsive">
-									<table class="table table-bordered">
-									<tbody>
-									<tr>
-										<th>#</th>
-										<th>Designation</th>
-										<th class="text-end">Quantité</th>
-										<th class="text-end">Prix unitaire</th>
-										<th class="text-end">Sous total</th>
-									</tr>
-									<tr v-for="(detail, index) in selectedFacture.details" :key="index">
-										<td>@{{ index+1 }}</td>
-										<td>@{{ detail.produit.libelle }}</td>
-										<td class="text-end">@{{ detail.quantite }}</td>
-										<td class="text-end">@{{ detail.prix_unitaire }}</td>
-										<td class="text-end">@{{ detail.total_ligne }}</td>
-									</tr>
-									</tbody>
-									</table>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-12 text-end">
-									<p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
-
-									<div>
-										<p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
-										<p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
-										<p>TVA  :  0</p>
-									</div>
-									<div class="total-payment">
-										<h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>
-									</div>
-								</div>
-							</div>
-						</section>
-					</div>
-				</div>
-			</div>
-		</div> -->
 	</div>
 </div>
 

@@ -86,6 +86,8 @@
         </nav>
     </div>
 </header>
+
+
 <div class="modal modal-right fade AppService" id="modal-right" tabindex="-1" aria-modal="true" role="dialog">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">

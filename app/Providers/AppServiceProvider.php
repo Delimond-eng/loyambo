@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Blade::directive("lastRate", function(){
-            return "<?php echo \\App\\Models\\Currencie::latest()->value('currencie_value') ?? 0; ?>";
+            return "<?php echo \\App\\Models\\Currencie::where('ets_id', Auth::user()->ets_id)->latest('id')->value('currencie_value') ?? 0; ?>";
         });
 
 

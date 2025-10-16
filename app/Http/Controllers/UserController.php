@@ -25,7 +25,7 @@ class UserController extends Controller
                 "telephone"=>"nullable|string",
                 "name"=>"required|string",
                 "email"=>"required|email|unique:users,email",
-                "password"=>"required|string|max:6",
+                "password"=>"required|string|min:4",
             ]);
 
              // 1️⃣ Créer l'établissement
@@ -73,9 +73,6 @@ class UserController extends Controller
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
-        }
-        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
         }
     }
 

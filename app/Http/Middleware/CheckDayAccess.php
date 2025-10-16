@@ -30,7 +30,6 @@ class CheckDayAccess
                 'message' => 'La journée n\'est pas encore lancée.'
             ]);
         }
-
         return $next($request);
     }
 }

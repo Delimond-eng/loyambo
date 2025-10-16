@@ -425,7 +425,7 @@ class AdminController extends Controller
 
             if (!$data['chambre_id'] && !$data['table_id']) {
                 return response()->json([
-                    'errors' => 'Veuillez sélectionner une chambre ou une table.'
+                    'errors' => 'Veuillez sélectionner une chambre.'
                 ]);
             }
             $clientData = $data['client'];
@@ -459,7 +459,7 @@ class AdminController extends Controller
                 /* if ($table)   $query->where('table_id', $table->id); */
 
                 if ($query->exists()) {
-                    throw new \Exception('Cette ressource est déjà réservée sur cette période.');
+                    throw new \Exception('Cette chambre est déjà réservée sur cette période.');
                 }
                 // Créer la réservation
                 $reservation = Reservation::create([

@@ -158,6 +158,30 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                     });
             },
 
+            servirCmd(data) {
+                this.load_id = data.id;
+                postJson(`/cmd.servir`, { id: data.id })
+                    .then(({ data, status }) => {
+                        this.load_id = "";
+                        $(".modal-commande").modal("hide");
+                        if (data.status === "success") {
+                            this.viewAllFactures();
+                        }
+                    })
+                    .catch((err) => {
+                        this.load_id = "";
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
             printInvoice(facture, place) {
                 const content = `
             <div class="ticket">

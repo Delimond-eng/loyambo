@@ -123,7 +123,7 @@ class PermissionSeeder extends Seeder
 
         $roleCuisinier->givePermissionTo([
             'voir-commandes',
-            'modifier-commandes', // ex : changer le statut en "préparé"
+            'modifier-commandes'
         ]);
 
         // Admin a tous les droits

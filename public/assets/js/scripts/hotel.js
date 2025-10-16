@@ -180,6 +180,7 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                                 hideAfter: 3000,
                                 stack: 6,
                             });
+                            $(".modal-reservation").modal("hide");
                             this.viewAllChambres();
                         }
                     })
@@ -195,6 +196,21 @@ document.querySelectorAll(".AppHotel").forEach((el) => {
                             stack: 6,
                         });
                     });
+            },
+
+            cancelForm() {
+                $(".modal-reservation").modal("hide");
+                this.form = {
+                    client: {
+                        nom: "",
+                        telephone: "",
+                        email: "",
+                        identite: "",
+                        identite_type: "",
+                    },
+                    date_debut: "",
+                    date_fin: "",
+                };
             },
         },
 
