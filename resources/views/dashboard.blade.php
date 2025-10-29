@@ -153,15 +153,9 @@
                                             <td>												
                                                 <div class="d-flex">
                                                     <button type="button" class="btn btn-success btn-xs me-1" @click="printInvoice(data, data.table ? data.table.emplacement : data.chambre.emplacement)"><i class="mdi mdi-printer"></i></button>
-                                                    <button type="button" :disabled="load_id===data.id" @click="servirCmd(data)" v-if="data.statut_service==='en_attente'" class="btn btn-warning btn-xs me-1">
-                                                        <span v-if="load_id===data.id" class="spinner-border spinner-border-sm"></span> 
-                                                        <i v-else-if="data.table" class="fa fa-glass"></i>
-                                                    </button>
-                                                    @if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
-                                                        <button v-if="data.statut!=='payée'" type="button" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-info me-1 btn-xs"><i class="fa fa-money"></i></button>
-                                                    @endif
+                                                    <button type="button"  @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" v-if="data.statut==='en_attente'" class="btn btn-info btn-xs me-1"><span v-if="load_id===data.id" class="spinner-border spinner-border-sm "></span> <i v-else :class="data.details.length > 0 ? 'mdi mdi-glass-tulip' : 'fa fa-money'"></i></button>
                                                     <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
-                                                    <button type="button" v-if="data.statut !== 'payée'" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
+                                                    <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
                                                 </div>
                                             </td>
                                         </tr>

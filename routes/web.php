@@ -1,17 +1,29 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\UserController;
+use App\Models\User;
+use App\Models\Chambre;
+use App\Models\Facture;
+use App\Models\Produit;
+use App\Models\SaleDay;
+use App\Models\Payments;
 use App\Models\Categorie;
 use App\Models\Emplacement;
 use App\Models\MouvementStock;
-use App\Models\Produit;
-use App\Models\SaleDay;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\report\financeController;
+use App\Http\Controllers\report\ProduitController;
+use App\Http\Controllers\report\CommandeController;
+use App\Http\Controllers\report\InventaireController;
+use App\Http\Controllers\report\ConsommationController;
+use App\Http\Controllers\report\VentreSrviceController;
+use App\Http\Controllers\report\PerfomanceUserController;
+use App\Http\Controllers\reservation\ReservationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -134,6 +146,53 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view("/bedroom.reserve", "hotel_reservation")->name("bedroom.reserve")->can("voir-chambres");
     Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
     Route::get("/chambres.all", [AdminController::class, "getAllChambres"])->name("chambres.all")->can("voir-chambres");
-    
+    //==================Module des rapports===================================//
+    Route::get("/reports.service.vente", [VentreSrviceController::class, "index"])->name("reports.service.vente");
+
+    Route::get("/reports/service/vente/emplacement/{emplacement_id}", [VentreSrviceController::class, "showEmplacementSales"])->name("reports.service_sales.emplacement");
+    Route::get("/reports/service/vente/details/{id_saleDay}/{emplacement_id}", [VentreSrviceController::class, "showSaleDetails"])->name("reports.service.vente.details");
+    //reports.performance
+    Route::get("/reports.performance", [PerfomanceUserController::class, "index"])->name("reports.performance");
+    //reports.produits
+    Route::get("/reports.produits", [ProduitController::class, "index"])->name("reports.produits");
+    Route::get('/reports/produits-plus-vendus/{emplacement_id}', [ProduitController::class, 'showProduitsPlusVendus'])->name('reports.produits.plusVendus.details');
+    //reports.commandes
+    Route::get("/reports.commandes", [CommandeController::class, "index"])->name("reports.commandes");
+    // Route::get('/api/commandes/{commande}/details', [ReportController::class, 'getCommandeDetails']);
+    Route::get('/reports/commandes/{id}', [CommandeController::class, 'getCommandeDetails'])->name('reports.commandes.details');
+    //reports.inventaires
+    Route::get('/reports.inventaires', [InventaireController::class, 'index'])->name('reports.inventaires');
+    //reports.stocks
+    Route::get('/reports.stocks', [InventaireController::class, 'stocks'])->name('reports.stocks');
+    //reports.Mouvements
+    Route::get('/reports.Mouvements', [InventaireController::class, 'mouvementstock'])->name('reports.Mouvements');
+    //reports.finances
+    Route::get('/reports.finances', [financeController::class, 'finances'])->name('reports.finances');
+    Route::get('/reports/payment-details/{id}', [financeController::class, 'getPaymentDetails'])->name('reports.payment-details');
+    //=============Reservation Hotel =============//
+    //Reservations
+    Route::get('/Reservations', [ReservationController::class, "viewReservations"])->name("Reservations");
+    //reservation.created
+    Route::get('/reservation.created', [ReservationController::class, "createReservationView"])->name("reservation.created");
+    //reservation.create
+    Route::get('/reservation/create/{chambre_id}', [ReservationController::class, "createReservation"])->name("reservation.create");
+    //reservation.store
+    Route::post('/reservation/store', [ReservationController::class, "storeReservation"])->name("reservation.store");
+    //inventaires.create
+    Route::get('/inventaires.create', [InventaireController::class, 'create'])->name('inventaires.create');
+    Route::post('/inventaire/store', [InventaireController::class, 'store'])->name('inventaire.store');
+    //inventaire.historiques
+    Route::get('/inventaire.historiques', [InventaireController::class, 'historiques'])->name('inventaire.historiques');
+    Route::get('/inventaire/{id}/reajuster', [InventaireController::class, 'showReajustement'])->name('inventaire.reajuster');
+
+    // Route pour traiter le réajustement
+    Route::post('/inventaire/{id}/reajuster', [InventaireController::class, 'processReajustement'])->name('inventaire.process-reajustement');
+    //reservations.edit
+    Route::get('/reservations.edit/{id}', [ReservationController::class, "editReservationView"])->name("reservations.edit"); 
+    Route::put('/reservation/{reservation_id}/update', [ReservationController::class, 'updateReservation'])->name('reservation.update');
+    //reservations.paie
+    Route::get('/reservations.paie/{id}', [ReservationController::class, "payReservationView"])->name("reservations.paie"); 
+    //reservation.occupe.chambre
+    Route::get('/reservation/occupe/chambre/{id}', [ReservationController::class, "occupeChambre"])->name("reservation.occupe.chambre");  
 });
 

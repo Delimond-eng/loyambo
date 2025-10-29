@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Emplacement;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Payments extends Model
 {
@@ -39,5 +40,11 @@ class Payments extends Model
     }
     public function user(){
         return $this->belongsTo(User::class, "user_id");
+    }
+     public function emplacement(){
+        return $this->belongsTo(Emplacement::class, "emplacement_id"); // Relation manquante
+    }
+    public function saleDay(){
+        return $this->belongsTo(SaleDay::class, "sale_day_id");
     }
 }

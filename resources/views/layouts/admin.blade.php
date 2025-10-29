@@ -42,7 +42,7 @@
 
     <div class="wrapper">
         <!-- <div id="loader"></div> -->
-
+        @include('components.alert.sweet-alert-corner')
         @include("components.header")
 
         @yield("content")

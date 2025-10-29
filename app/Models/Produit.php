@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Inventaire;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Produit extends Model
 {
@@ -24,6 +25,10 @@ class Produit extends Model
     public function categorie(){
         return $this->belongsTo(Categorie::class, "categorie_id");
     }
+    public function inventaires()
+{
+    return $this->hasMany(Inventaire::class, 'produit_id');
+}
 
     public function stocks(){
         return $this->hasMany(MouvementStock::class, "produit_id","id");

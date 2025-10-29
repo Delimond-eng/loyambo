@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Facture;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Emplacement extends Model
 {
@@ -25,5 +26,9 @@ class Emplacement extends Model
     public function chambres()
     {
         return $this->hasMany(Chambre::class, "emplacement_id", "id");
+    }
+    public function factures()
+    {
+        return $this->hasMany(Facture::class, "emplacement_id", "id");
     }
 }

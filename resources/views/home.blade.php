@@ -25,93 +25,121 @@
         <section class="content">
             <div class="app-shell" role="application" aria-label="Application de restaurant — menu rapide">
                 <main class="menu-wrap" id="main">
-                    <div class="menu-grid" id="menuGrid">
-                        <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/dashboard'">
-                            <img class="menu-icon" src="assets/icons/data-analysis.png" alt="Tableau de bord">
-                            <div class="menu-label">Tableau de bord</div>
-                        </button>
+    <div class="menu-grid" id="menuGrid">
 
-                        @can('voir-rapports')
-                            @canCloseDay
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/reports.global'">
-                                <img class="menu-icon" src="assets/icons/document.png" alt="Rapports">
-                                <div class="menu-label">Rapports</div>
-                            </button>
-                            @endif
-                        @endcan
+        {{-- Tous les utilisateurs peuvent voir le tableau de bord --}}
+        <button class="menu-btn b-1 border-primary"
+                @unless(Blade::check('licenceActive')) disabled @endunless
+                type="button"
+                onclick="location.href='/dashboard'">
+            <img class="menu-icon" src="assets/icons/data-analysis.png" alt="Tableau de bord">
+            <div class="menu-label">Tableau de bord</div>
+        </button>
 
-                        @can('voir-serveurs')
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/serveurs'">
-                                <img class="menu-icon" src="assets/icons/serving-dish.png" alt="Serveurs">
-                                <div class="menu-label">Serveurs</div>
-                            </button>
-                        @endcan
+        {{-- Rapports : admin et manager --}}
+        @if(in_array(Auth::user()->role, ['admin', 'manager']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/reports.global'">
+                <img class="menu-icon" src="assets/icons/document.png" alt="Rapports">
+                <div class="menu-label">Rapports</div>
+            </button>
+        @endif
 
+        {{-- Serveurs : admin et manager --}}
+        @if(in_array(Auth::user()->role, ['admin', 'manager']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/serveurs'">
+                <img class="menu-icon" src="assets/icons/serving-dish.png" alt="Serveurs">
+                <div class="menu-label">Serveurs</div>
+            </button>
+        @endif
 
-                        @can('voir-produits')
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/products'">
-                                <img class="menu-icon" src="assets/icons/add-product.png" alt="Produits">
-                                <div class="menu-label">Produits</div>
-                            </button>
-                        @endcan
-                        
-                        @can('voir-emplacements')
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/tables.emplacements'"> 
-                                <img class="menu-icon" src="assets/icons/home-button.png" alt="Emplacements">
-                                <div class="menu-label">Emplacements</div>
-                            </button>
-                        @endcan
-                        
-                        @can('voir-factures')
-                            @canCloseDay
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/factures'">
-                                <img class="menu-icon" src="assets/icons/quality-control.png" alt="Factures">
-                                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.facs ?? 0 }}</span>
-                                <div class="menu-label">Factures</div>
-                            </button>
-                            @endif
-                        @endcan
+        {{-- Produits : admin et manager --}}
+        @if(in_array(Auth::user()->role, ['admin', 'manager']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/products'">
+                <img class="menu-icon" src="assets/icons/add-product.png" alt="Produits">
+                <div class="menu-label">Produits</div>
+            </button>
+        @endif
 
-                        @can('voir-ventes')
-                            @canCloseDay
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/sells'">
-                                <img class="menu-icon" src="assets/icons/online-shopping.png" alt="Ventes">
-                                <div class="menu-label">Ventes</div>
-                            </button>
-                            @endif
-                        @endcan
+        {{-- Emplacements : admin et manager --}}
+        @if(in_array(Auth::user()->role, ['admin', 'manager']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/tables.emplacements'">
+                <img class="menu-icon" src="assets/icons/home-button.png" alt="Emplacements">
+                <div class="menu-label">Emplacements</div>
+            </button>
+        @endif
 
+        {{-- Factures : tous sauf serveur --}}
+        @if(!in_array(Auth::user()->role, ['serveur']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/factures'">
+                <img class="menu-icon" src="assets/icons/quality-control.png" alt="Factures">
+                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.facs ?? 0 }}</span>
+                <div class="menu-label">Factures</div>
+            </button>
+        @endif
 
-                        @can('voir-commandes')
-                            @canCloseDay
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/orders'">
-                                <img class="menu-icon" src="assets/icons/room-service.png" alt="Commandes">
-                                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
-                                <div class="menu-label">Commandes</div>
-                            </button>
-                            @endif
-                        @endcan
+        {{-- Ventes : admin, manager, caissier --}}
+        @if(in_array(Auth::user()->role, ['admin', 'manager', 'caissier']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/sells'">
+                <img class="menu-icon" src="assets/icons/online-shopping.png" alt="Ventes">
+                <div class="menu-label">Ventes</div>
+            </button>
+        @endif
 
-                        @can('voir-chambres')
-                            @canCloseDay
-                                @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
-                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/bedroom.reserve'">
-                                    <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
-                                    <div class="menu-label">Reservations</div>
-                                </button>
-                                @endif
-                            @endif
-                        @endcan
+        {{-- Commandes : tous sauf serveur (ou selon besoin) --}}
+        @if(!in_array(Auth::user()->role, ['serveur']))
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/orders'">
+                <img class="menu-icon" src="assets/icons/room-service.png" alt="Commandes">
+                <span class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
+                <div class="menu-label">Commandes</div>
+            </button>
+        @endif
 
+        {{-- Réservations chambres : caissier hôtel --}}
+        @if(Auth::user()->role === 'caissier' && Auth::user()->emplacement->type === 'hôtel')
+            <a href="{{ route('Reservations') }}" class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    >
+                <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
+                <div class="menu-label">Réservations</div>
+            </a>
+        @endif
 
-                        @can("manage-users")
-                            <button class="menu-btn b-1 border-primary" @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/users'">
-                                <img class="menu-icon" src="assets/icons/user.png" alt="Utilisateurs">
-                                <div class="menu-label">Utilisateurs</div>
-                            </button>
-                        @endcan
-                    </div>
-                </main>
+        {{-- Utilisateurs : admin uniquement --}}
+        @if(Auth::user()->role === 'admin')
+            <button class="menu-btn b-1 border-primary"
+                    @unless(Blade::check('licenceActive')) disabled @endunless
+                    type="button"
+                    onclick="location.href='/users'">
+                <img class="menu-icon" src="assets/icons/user.png" alt="Utilisateurs">
+                <div class="menu-label">Utilisateurs</div>
+            </button>
+        @endif
+
+    </div>
+</main>
+
             </div>
         </section>
     </div>

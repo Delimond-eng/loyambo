@@ -62,5 +62,7 @@ class AppServiceProvider extends ServiceProvider
             return $licence->status === 'available' && now()->lessThanOrEqualTo($licence->date_fin);
         });
 
+        
+
     }
 }

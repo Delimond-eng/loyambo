@@ -9,5 +9,5 @@
             </li>
         </ul> -->
     </div>
-    &copy; 2020 <a href="https://milleniumhorizon.com/">Loyambo Plateforme</a>. All Rights Reserved.
+    &copy; {{ date('Y') }} <a href="https://milleniumhorizon.com/">Loyambo Plateforme</a>. All Rights Reserved.
 </footer>
