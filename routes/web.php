@@ -20,10 +20,12 @@ use App\Http\Controllers\report\financeController;
 use App\Http\Controllers\report\ProduitController;
 use App\Http\Controllers\report\CommandeController;
 use App\Http\Controllers\report\InventaireController;
+use App\Http\Controllers\Commandes\commandesController;
 use App\Http\Controllers\report\ConsommationController;
 use App\Http\Controllers\report\VentreSrviceController;
 use App\Http\Controllers\report\PerfomanceUserController;
 use App\Http\Controllers\reservation\ReservationController;
+use App\Http\Controllers\reservation\ChambrelibreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -200,5 +202,15 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get('/reservation/reactivee/{id}', [ReservationController::class, "reactiveReseervation"])->name("reservation.autorise"); 
     //reservations.see
     Route::get('/reservation/voir/{id}', [ReservationController::class, "voirReseervation"])->name("reservations.see");
+    //Reservations.libres
+    Route::get('/Reservations.libres', [ChambrelibreController::class, "chambreLibre"])->name("Reservations.libres");
+    //Reservations.occupees
+    Route::get('/Reservations.occupees', [ChambrelibreController::class, "chambreOccupee"])->name("Reservations.occupees");
+    //Reservations.reserve
+    Route::get('/Reservations.reserve', [ChambrelibreController::class, "chambreReserve"])->name("Reservations.reserve");
+    //commandes
+    Route::get('/commandes', [commandesController::class, "index"])->name("commandes");
+    //servir.ok
+    Route::get('/commandes/servir/{id}', [commandesController::class, "servir"])->name("servir.ok");
 });
 

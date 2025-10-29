@@ -254,20 +254,45 @@ private function mettreAJourStatutsReservations($emplacementId)
         \Log::error("Erreur lors de la mise à jour automatique des statuts: " . $e->getMessage());
     }
 }
-    public function viewReservations()
+    public function viewReservations(Request $request)
 {
-
-    
     $emplacement = auth()->user()->emplacement;
-      $this->mettreAJourStatutsReservations($emplacement->id);
+    $this->mettreAJourStatutsReservations($emplacement->id);
     
     $chambres = $emplacement->chambres()->with('reservations.client')->get();
 
-    
+    // Récupérer les réservations avec filtres
     $reservations = Reservation::whereHas('chambre', function($query) use ($emplacement) {
         $query->where('emplacement_id', $emplacement->id);
     })
     ->with(['chambre', 'client', 'table'])
+    ->when($request->filled('search'), function($query) use ($request) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            // Recherche par numéro de réservation
+            $q->where('id', 'LIKE', "%{$search}%")
+              // Recherche par nom du client
+              ->orWhereHas('client', function($q2) use ($search) {
+                  $q2->where('nom', 'LIKE', "%{$search}%")
+                     ->orWhere('telephone', 'LIKE', "%{$search}%");
+              })
+              // Recherche par numéro de chambre
+              ->orWhereHas('chambre', function($q2) use ($search) {
+                  $q2->where('numero', 'LIKE', "%{$search}%");
+              
+             
+              });
+        });
+    })
+    ->when($request->filled('date_debut'), function($query) use ($request) {
+        $query->whereDate('date_debut', '>=', $request->date_debut);
+    })
+    ->when($request->filled('date_fin'), function($query) use ($request) {
+        $query->whereDate('date_fin', '<=', $request->date_fin);
+    })
+    ->when($request->filled('statut') && $request->statut !== 'tous', function($query) use ($request) {
+        $query->where('statut', $request->statut);
+    })
     ->orderBy('date_debut', 'desc')
     ->get();
 

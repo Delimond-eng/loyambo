@@ -81,7 +81,7 @@
         @endif
 
         {{-- Factures : tous sauf serveur --}}
-        @if(!in_array(Auth::user()->role, ['serveur']))
+        @if(!in_array(Auth::user()->role, ['serveur','caissier']))
             <button class="menu-btn b-1 border-primary"
                     @unless(Blade::check('licenceActive')) disabled @endunless
                     type="button"
@@ -93,7 +93,7 @@
         @endif
 
         {{-- Ventes : admin, manager, caissier --}}
-        @if(in_array(Auth::user()->role, ['admin', 'manager', 'caissier']))
+        @if(in_array(Auth::user()->role, ['admin', 'manager']))
             <button class="menu-btn b-1 border-primary"
                     @unless(Blade::check('licenceActive')) disabled @endunless
                     type="button"
@@ -108,7 +108,7 @@
             <button class="menu-btn b-1 border-primary"
                     @unless(Blade::check('licenceActive')) disabled @endunless
                     type="button"
-                    onclick="location.href='/orders'">
+                    onclick="location.href='/commandes'">
                 <img class="menu-icon" src="assets/icons/room-service.png" alt="Commandes">
                 <span class="btn-badge AppDashboard" v-cloak>@{{ counts.pendings ?? 0 }}</span>
                 <div class="menu-label">Commandes</div>

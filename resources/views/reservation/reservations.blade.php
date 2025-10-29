@@ -23,6 +23,71 @@
                             </a>
                         </div>
 
+                        <!-- Filtres de recherche -->
+                        <div class="box-body border-bottom">
+                            <form method="GET" action="{{ route('Reservations') }}" class="row g-3 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label">Recherche</label>
+                                    <input type="text" name="search" class="form-control" 
+                                           placeholder="Client, Chambre, Facture..." 
+                                           value="{{ request('search') }}">
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label">Date début</label>
+                                    <input type="date" name="date_debut" class="form-control" 
+                                           value="{{ request('date_debut') }}">
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label">Date fin</label>
+                                    <input type="date" name="date_fin" class="form-control" 
+                                           value="{{ request('date_fin') }}">
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label">Statut</label>
+                                    <select name="statut" class="form-control">
+                                        <option value="tous" {{ request('statut') == 'tous' ? 'selected' : '' }}>Tous les statuts</option>
+                                        <option value="en_attente" {{ request('statut') == 'en_attente' ? 'selected' : '' }}>En attente</option>
+                                        <option value="confirmée" {{ request('statut') == 'confirmée' ? 'selected' : '' }}>Confirmée</option>
+                                        <option value="terminée" {{ request('statut') == 'terminée' ? 'selected' : '' }}>Terminée</option>
+                                        <option value="annulée" {{ request('statut') == 'annulée' ? 'selected' : '' }}>Annulée</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-search"></i> Filtrer
+                                    </button>
+                                    <a href="{{ route('Reservations') }}" class="btn btn-secondary">
+                                        <i class="fa fa-refresh"></i> Réinitialiser
+                                    </a>
+                                </div>
+                            </form>
+                            
+                            @if(request()->anyFilled(['search', 'date_debut', 'date_fin', 'statut']))
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    Filtres actifs : 
+                                    @if(request('search'))
+                                        <span class="badge bg-info">Recherche: "{{ request('search') }}"</span>
+                                    @endif
+                                    @if(request('date_debut'))
+                                        <span class="badge bg-info">Début: {{ request('date_debut') }}</span>
+                                    @endif
+                                    @if(request('date_fin'))
+                                        <span class="badge bg-info">Fin: {{ request('date_fin') }}</span>
+                                    @endif
+                                    @if(request('statut') && request('statut') !== 'tous')
+                                        <span class="badge bg-info">Statut: {{ request('statut') }}</span>
+                                    @endif
+                                    <span class="badge bg-primary">{{ $reservations->count() }} résultat(s)</span>
+                                </small>
+                            </div>
+                            @endif
+                        </div>
+
                         <!-- Statistiques -->
                         <div class="box-body">
                            
@@ -228,7 +293,16 @@
                                                 <td colspan="8" class="text-center py-4">
                                                     <div class="text-muted">
                                                         <i class="fa fa-bed fa-2x mb-2"></i>
-                                                        <p>Aucune réservation trouvée</p>
+                                                        <p>
+                                                            @if(request()->anyFilled(['search', 'date_debut', 'date_fin', 'statut']))
+                                                                Aucune réservation trouvée avec les filtres actuels
+                                                            @else
+                                                                Aucune réservation trouvée
+                                                            @endif
+                                                        </p>
+                                                        @if(request()->anyFilled(['search', 'date_debut', 'date_fin', 'statut']))
+                                                            <a href="{{ route('Reservations') }}" class="btn btn-secondary btn-sm">Réinitialiser les filtres</a>
+                                                        @endif
                                                         <a href="{{ route('reservation.created') }}" class="btn btn-primary btn-sm">Créer une réservation</a>
                                                     </div>
                                                 </td>
@@ -377,6 +451,12 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 12px;
     white-space: nowrap;
     z-index: 1000;
+}
+/* Styles pour les filtres */
+.form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
 }
 </style>
 @endpush

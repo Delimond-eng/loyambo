@@ -28,6 +28,17 @@ class Facture extends Model
         'emplacement_id',
         'client_id'
     ];
+    public function reservations()
+{
+    return $this->hasManyThrough(
+        Reservation::class, // Le modèle final
+        Client::class,      // Le modèle intermédiaire
+        'id',               // Clé locale du modèle intermédiaire (Client)
+        'client_id',        // Clé étrangère du modèle final (Reservation)
+        'client_id',        // Clé étrangère locale sur la table Facture
+        'id'                // Clé primaire sur la table Client
+    );
+}
 
     // Relations
     public function emplacement()

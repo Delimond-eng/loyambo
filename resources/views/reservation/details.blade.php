@@ -24,7 +24,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="box">
-                        <div class="box-header with-border">
+                        <div class="box-header with-border text-center p-5">
                             <h4 class="box-title">Informations Générales</h4>
                             <div class="box-controls pull-right">
                                 <span class="badge badge-{{ match($reservation->statut) {

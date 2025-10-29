@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Reservation;
 
 class Client extends Model
 {
@@ -18,7 +19,9 @@ class Client extends Model
     ];
 
 
-    public function reservations(){
-        return $this->hasMany(Reservation::class, "client_id", "id");
-    }
+    public function reservations()
+{
+    return $this->hasMany(Reservation::class, 'client_id', 'id');
+}
+
 }
