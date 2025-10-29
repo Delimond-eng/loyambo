@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Pdf;
 
 class ReservationController extends Controller
 {
@@ -192,7 +193,7 @@ public function updateReservation(Request $request, $reservation_id)
             
             // Occuper la nouvelle chambre si la réservation est active
             if (in_array($request->statut, ['confirmée', 'en cours'])) {
-                Chambre::where('id', $request->chambre_id)->update(['statut' => 'occupée']);
+               Chambre::where('id', $request->chambre_id)->update(['statut' => 'occupée']);
             }
         } else {
             // Même chambre, mettre à jour le statut selon le statut de réservation
@@ -201,7 +202,14 @@ public function updateReservation(Request $request, $reservation_id)
         }
 
         DB::commit();
+        $chambre=Chambre::where('id', $request->chambre_id)->first();
+        $pdf = Pdf::loadView('pdf.facturereservation', [
+            'reservation' => $reservation,
+            'chambre' => $chambre,
+            'facture'=>$facture
+        ]);
 
+        return $pdf->download('facture_reservation_'.$reservation->id.'.pdf');
         return redirect()->route('Reservations')
             ->with('success', 'Réservation modifiée avec succès!');
 
@@ -278,10 +286,44 @@ public function occupeChambre($reservation_id)
     if ($reservation->chambre->emplacement_id !== $emplacement->id) {
         return redirect()->route('Reservations')->with('error', 'Vous n\'êtes pas autorisé à accéder à cette réservation.');
     }
-    
+    if (Carbon::parse($reservation->date_debut)->isFuture()) {
+    return redirect()->back()->with('error', 'Veuillez attendre la date de la réservation pour occuper la chambre.');
+}
     $reservation->chambre->statut='occupée';
     $reservation->chambre->save();
     return redirect()->back()->with("success","Chambre occupée avec succès");
+}
+public function annuleReseervation($reservation_id){
+    $emplacement = auth()->user()->emplacement;
+
+    $reservation = Reservation::with('client', 'chambre')->find($reservation_id);
+    if (!$reservation) {
+        return redirect()->route('Reservations')->with('error', 'Réservation non trouvée.');
+    }
+
+    // Vérifier que la réservation appartient à l'emplacement de l'utilisateur
+    if ($reservation->chambre->emplacement_id !== $emplacement->id) {
+        return redirect()->route('Reservations')->with('error', 'Vous n\'êtes pas autorisé à accéder à cette réservation.');
+    }
+    $reservation->statut="annulée";
+    $reservation->save();
+     return redirect()->route('Reservations')->with('success', 'Réservation annulée avec succès');
+}
+public function reactiveReseervation($reservation_id){
+    $emplacement = auth()->user()->emplacement;
+
+    $reservation = Reservation::with('client', 'chambre')->find($reservation_id);
+    if (!$reservation) {
+        return redirect()->route('Reservations')->with('error', 'Réservation non trouvée.');
+    }
+
+    // Vérifier que la réservation appartient à l'emplacement de l'utilisateur
+    if ($reservation->chambre->emplacement_id !== $emplacement->id) {
+        return redirect()->route('Reservations')->with('error', 'Vous n\'êtes pas autorisé à accéder à cette réservation.');
+    }
+    $reservation->statut="en_attente";
+    $reservation->save();
+     return redirect()->route('Reservations')->with('success', 'Réservation réactivée avec succès');
 }
 public function createReservationView()
 {
@@ -292,6 +334,82 @@ public function createReservationView()
     $chambres = $emplacement->chambres()->get();
     return view('reservation.create_reservation', compact('emplacement', 'chambres'));
 
+}
+public function voirReseervation($reservation_id)
+{
+    $emplacement = auth()->user()->emplacement;
+
+    $reservation = Reservation::with(['client', 'chambre', 'chambre.emplacement'])->find($reservation_id);
+    if (!$reservation) {
+        return redirect()->route('Reservations')->with('error', 'Réservation non trouvée.');
+    }
+
+    // Vérifier que la réservation appartient à l'emplacement de l'utilisateur
+    if ($reservation->chambre->emplacement_id !== $emplacement->id) {
+        return redirect()->route('Reservations')->with('error', 'Vous n\'êtes pas autorisé à accéder à cette réservation.');
+    }
+
+    // Récupérer la facture associée à cette réservation
+    $facture = Facture::with(['details', 'payments', 'client'])
+        ->where('chambre_id', $reservation->chambre_id)
+        ->where('client_id', $reservation->client_id)
+        ->whereDate('date_facture', '>=', \Carbon\Carbon::parse($reservation->date_debut)->format('Y-m-d'))
+        ->first();
+
+    // Calculer la durée du séjour
+    $dateDebut = \Carbon\Carbon::parse($reservation->date_debut);
+    $dateFin = \Carbon\Carbon::parse($reservation->date_fin);
+    
+    $dureeSecondes = $dateDebut->diffInSeconds($dateFin);
+    $dureeMinutesTotal = floor($dureeSecondes / 60);
+    $dureeHeuresTotal = floor($dureeMinutesTotal / 60);
+    $dureeJours = floor($dureeHeuresTotal / 24);
+    $heuresRestantes = $dureeHeuresTotal % 24;
+    $minutesRestantes = $dureeMinutesTotal % 60;
+
+    // Formater la durée
+    if ($dureeJours > 0) {
+        if ($heuresRestantes > 0) {
+            $dureeAffichage = $dureeJours . ' jour(s) et ' . $heuresRestantes . ' heure(s)';
+        } else {
+            $dureeAffichage = $dureeJours . ' jour(s)';
+        }
+    } else {
+        if ($dureeHeuresTotal > 0) {
+            if ($minutesRestantes > 0) {
+                $dureeAffichage = $dureeHeuresTotal . 'h' . str_pad($minutesRestantes, 2, '0', STR_PAD_LEFT);
+            } else {
+                $dureeAffichage = $dureeHeuresTotal . ' heure(s)';
+            }
+        } else {
+            $dureeAffichage = $dureeMinutesTotal . ' minute(s)';
+        }
+    }
+
+    // Calcul du montant théorique
+    $montantTheorique = 0;
+    $prixHoraire = $reservation->chambre->prix;
+    $prixParMinute = $prixHoraire / 60;
+    
+    if ($dureeJours > 0) {
+        $prixJournalier = $prixHoraire * 24;
+        $montantJoursComplets = $dureeJours * $prixJournalier;
+        $montantHeuresRestantes = $heuresRestantes * $prixHoraire;
+        $montantMinutesRestantes = $minutesRestantes * $prixParMinute;
+        $montantTheorique = $montantJoursComplets + $montantHeuresRestantes + $montantMinutesRestantes;
+    } else {
+        $montantHeures = $dureeHeuresTotal * $prixHoraire;
+        $montantMinutes = $minutesRestantes * $prixParMinute;
+        $montantTheorique = $montantHeures + $montantMinutes;
+    }
+
+    return view('reservation.details', compact(
+        'reservation',
+        'facture',
+        'dureeAffichage',
+        'montantTheorique',
+        'emplacement'
+    ));
 }
 public function storeReservation(Request $request)
 {
@@ -424,7 +542,13 @@ public function storeReservation(Request $request)
             $chambre->update(['statut' => 'réservée']);
 
             DB::commit();
+            $pdf = Pdf::loadView('pdf.facturereservation', [
+            'reservation' => $reservation,
+            'chambre' => $chambre,
+            'facture'=>$facture
+        ]);
 
+        return $pdf->download('facture_reservation_'.$reservation->id.'.pdf');
             return redirect()->route('Reservations')
                              ->with('success', 'Réservation et facture créées avec succès !');
 

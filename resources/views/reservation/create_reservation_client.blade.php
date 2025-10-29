@@ -33,10 +33,18 @@
                         </div>
                         <div class="box-body text-center">
                             <div class="chambre-preview">
-                                <img src="{{ asset('assets/images/bed-empt.jpeg') }}" 
-                                     class="img-fluid rounded mb-3" 
-                                     alt="Chambre {{ $chambres->numero }}"
-                                     style="max-height: 200px; object-fit: cover;">
+                                <!-- Container image avec bandeau oblique -->
+                                <div class="image-container" style="position: relative; display: inline-block; margin-bottom: 20px;">
+                                    <img src="{{ asset('assets/images/bed-empt.jpeg') }}" 
+                                         class="img-fluid rounded" 
+                                         alt="Chambre {{ $chambres->numero }}"
+                                         style="max-height: 200px; object-fit: cover; width: 100%;">
+                                    
+                                    <!-- Bandeau oblique sur l'image -->
+                                    <div class="status-ribbon status-{{ $chambres->statut }}">
+                                        {{ ucfirst($chambres->statut) }}
+                                    </div>
+                                </div>
                                 
                                 <h4 class="text-primary">Chambre {{ $chambres->numero }}</h4>
                                 
@@ -49,6 +57,10 @@
                                 @if($chambres->prix)
                                     <p class="text-success font-weight-bold h4 mb-3">
                                         {{ number_format($chambres->prix, 0, ',', ' ') }} {{ $chambres->prix_devise }}/heure
+                                        <br>
+                                        <small class="text-muted">
+                                            ({{ number_format($chambres->prix * 24, 0, ',', ' ') }} {{ $chambres->prix_devise }}/jour)
+                                        </small>
                                     </p>
                                 @endif
                                 
@@ -426,6 +438,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .border-right {
     border-right: 1px solid #dee2e6;
+}
+
+/* Styles pour les bandeaux de statut obliques */
+.status-ribbon {
+    position: absolute;
+    top: 15px;
+    right: -30px;
+    padding: 5px 30px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* Couleurs pour les différents statuts */
+.status-libre {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.status-occupée {
+    background: linear-gradient(45deg, #dc3545, #e83e8c);
+}
+
+.status-réservée {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+}
+
+.status-maintenance {
+    background: linear-gradient(45deg, #6c757d, #495057);
+}
+
+.status-nettoyage {
+    background: linear-gradient(45deg, #17a2b8, #138496);
+}
+
+/* Container image */
+.image-container {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+/* Effet de superposition pour l'image */
+.image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.1);
+    z-index: 1;
+    border-radius: 8px;
+}
+
+.image-container img {
+    position: relative;
+    z-index: 0;
+}
+
+/* Ajustement pour le texte sous l'image */
+.chambre-preview h4 {
+    margin-top: 15px;
+    margin-bottom: 10px;
 }
 </style>
 @endpush

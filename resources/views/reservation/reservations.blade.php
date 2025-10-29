@@ -176,6 +176,10 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group">
+                                                        <a href="{{ route('reservations.see', $reservation->id) }}" class="btn btn-outline-info" 
+                                                               title="Voir">
+                                                               <i class="fa fa-eye"></i>
+                                                           </a>
                                                        @if ($reservation->statut == 'en_attente')
                                                            <a href="{{ route('reservations.edit', $reservation->id) }}" class="btn btn-outline-info" 
                                                                title="Modifier">
@@ -192,35 +196,29 @@
                                                               <i class="fa fa-dollar"></i>
                                                           </button>
                                                        @endif
-                                                       
-                                                        @if($reservation->statut == 'confirmée' && $dateDebut->isToday())
-                                                            <button class="btn btn-outline-success checkin-btn" 
-                                                                    title="Check-in"
-                                                                    data-reservation-id="{{ $reservation->id }}">
-                                                                <i class="fa fa-sign-in"></i>
-                                                            </button>
-                                                        @endif
-                                                        
-                                                        @if($reservation->statut == 'en cours' && $dateFin->isToday())
-                                                            <button class="btn btn-outline-warning checkout-btn" 
-                                                                    title="Check-out"
-                                                                    data-reservation-id="{{ $reservation->id }}">
-                                                                <i class="fa fa-sign-out"></i>
-                                                            </button>
-                                                        @endif
-                                                        
+                                            
                                                         @if ($reservation->statut == "confirmée")
                                                             <a href="{{ route('reservation.occupe.chambre',$reservation->id) }}" class="btn btn-outline-success" title="Occuper la chambre">
-                                                                <i class="fa fa-check"></i>
+                                                                <i class="fa fa-bed"></i>
                                                             </a>
+                                                            
                                                         @endif
                                                         
-                                                        @if($reservation->statut != 'annulée')
-                                                            <button class="btn btn-outline-danger cancel-btn" 
+                                                        @if($reservation->statut == 'en_attente')
+                                                            <a href="{{route('reservation.delete',$reservation->id)}}" class="btn btn-outline-danger cancel-btn" 
                                                                     title="Annuler"
                                                                     data-reservation-id="{{ $reservation->id }}">
                                                                 <i class="fa fa-times"></i>
-                                                            </button>
+                                                            </a>
+
+                                                        @endif
+                                                         @if($reservation->statut == 'annulée')
+                                                            <a href="{{route('reservation.autorise',$reservation->id)}}" class="btn btn-outline-success" 
+                                                                    title="Réactiver"
+                                                                   >
+                                                                <i class="fa fa-check"></i>
+                                                            </a>
+
                                                         @endif
                                                     </div>
                                                 </td>
@@ -259,12 +257,13 @@
         <div class="row g-2 text-center">
             @php
                 $paymentModes = [
-                    'cash' => ['icon' => 'fa fa-money-bill-wave', 'label' => 'Espèces'],
-                    'mobile' => ['icon' => 'fa fa-mobile-alt', 'label' => 'Mobile'],
-                    'cheque' => ['icon' => 'fa fa-file-invoice-dollar', 'label' => 'Chèque'],
-                    'virement' => ['icon' => 'fa fa-university', 'label' => 'Virement'],
-                    'card' => ['icon' => 'fa fa-credit-card', 'label' => 'Carte']
-                ];
+                                    'cash' => ['icon' => 'fa fa-money', 'label' => 'Espèces'],
+                                    'mobile' => ['icon' => 'fa fa-mobile', 'label' => 'Mobile'],
+                                    'cheque' => ['icon' => 'fa fa-file-text', 'label' => 'Chèque'],
+                                    'virement' => ['icon' => 'fa fa-university', 'label' => 'Virement'],
+                                    'card' => ['icon' => 'fa fa-credit-card', 'label' => 'Carte']
+                                ];
+
             @endphp
 
             @foreach($paymentModes as $mode => $data)
@@ -303,7 +302,8 @@ document.querySelectorAll('.payment-mode-btn').forEach(btn => {
             modal.hide();
             
             // Rediriger vers la page de paiement
-            window.location.href = `/reservations/${currentReservationId}/paiement?mode=${mode}`;
+            window.location.href = `/reservations.paie/${currentReservationId}?mode=${mode}`;
+
         }
     });
 });

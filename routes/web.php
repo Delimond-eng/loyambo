@@ -194,5 +194,11 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get('/reservations.paie/{id}', [ReservationController::class, "payReservationView"])->name("reservations.paie"); 
     //reservation.occupe.chambre
     Route::get('/reservation/occupe/chambre/{id}', [ReservationController::class, "occupeChambre"])->name("reservation.occupe.chambre");  
+    //reservation.delete
+    Route::get('/reservation/annulee/{id}', [ReservationController::class, "annuleReseervation"])->name("reservation.delete"); 
+    //reservation.autorise
+    Route::get('/reservation/reactivee/{id}', [ReservationController::class, "reactiveReseervation"])->name("reservation.autorise"); 
+    //reservations.see
+    Route::get('/reservation/voir/{id}', [ReservationController::class, "voirReseervation"])->name("reservations.see");
 });
 

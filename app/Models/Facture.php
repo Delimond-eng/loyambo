@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Emplacement;
 
 class Facture extends Model
 {
@@ -29,6 +30,10 @@ class Facture extends Model
     ];
 
     // Relations
+    public function emplacement()
+{
+    return $this->belongsTo(Emplacement::class, 'emplacement_id');
+}
 
     // Facture appartient à un utilisateur
     public function user()
