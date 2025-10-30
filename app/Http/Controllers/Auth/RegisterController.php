@@ -9,7 +9,9 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 class RegisterController extends Controller
 {
     /*
@@ -41,56 +43,73 @@ class RegisterController extends Controller
     {
         $this->middleware('guest');
     }
-
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
+     /**
+     * Enregistrement d'un nouvel utilisateur avec connexion automatique
      */
-    protected function validator(array $data)
+    public function register(Request $request)
     {
-        return Validator::make($data, [
+        // 1️⃣ Validation
+        $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'confirmed'],
-            'telephone' => ['required', 'string', 'min:10', 'confirmed'],
+            'telephone' => ['required', 'string', 'min:10'],
             'nom' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'max:255'],
             'adresse' => ['required', 'string', 'max:255'],
         ]);
-    }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\Models\User
-     */
-    protected function create(array $data)
-    {
-        // 1️⃣ Créer l'établissement
-        $etablissement = Etablissement::create([
-            'nom' => $data['nom'],
-            'type' => $data['type'] ?? null,
-            'adresse' => $data['adresse'] ?? null,
-            'telephone' => $data['telephone'] ?? null,
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ]);
+        }
 
-        // 2️⃣ Créer l'utilisateur admin lié à cet établissement
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'actif' => true,
-            'role' => 'admin',
-            'etablissement_id' => $etablissement->id,
-        ]);
+        DB::beginTransaction();
 
-        // 3️⃣ Assigner le rôle admin via Spatie
-        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
-        $user->assignRole($roleAdmin);
+        try {
+            // 2️⃣ Création de l’établissement
+            $etablissement = Etablissement::create([
+                'nom' => $request->nom,
+                'type' => $request->type,
+                'adresse' => $request->adresse,
+                'telephone' => $request->telephone,
+            ]);
 
-        return $user;
+            // 3️⃣ Création de l’utilisateur admin
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'actif' => true,
+                'role' => 'admin',
+                'etablissement_id' => $etablissement->id,
+            ]);
+
+            // 4️⃣ Attribution du rôle admin via Spatie
+            $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+            $user->assignRole($roleAdmin);
+
+            // 5️⃣ Connexion automatique
+            Auth::login($user);
+
+            DB::commit();
+
+            // 6️⃣ Détermination de la redirection selon le rôle
+            $redirect = '/';
+
+            // ✅ Réponse JSON
+            return response()->json([
+                'message' => 'Utilisateur et établissement créés avec succès. Connexion effectuée.',
+                'user' => $user,
+                'redirect' => $redirect,
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'errors' => $e->getMessage(),
+            ]);
+        }
     }
 }

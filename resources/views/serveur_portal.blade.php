@@ -14,7 +14,7 @@
                 <!-- <a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
                 <div class="me-auto">
 					@if (Auth::user()->role === "serveur")
-                    <h3 class="page-title">Bienvenue, <span class="fw-800 text-primary">{{ Auth::user()->name }}</span> </h3>
+                    <h3 class="page-title">Bienvenue, <span class="fw-800 text-primary me-2">{{ Auth::user()->name }} </span>  <span class="fa fa-home me-1"></span> {{ Auth::user()->etablissement->nom }} | {{ Auth::user()->emplacement->libelle ?? "" }}</span> </h3>
 					@else
                     <h3 class="page-title">Bienvenue à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
 					@endif
@@ -73,7 +73,8 @@
 					<div class="modal-body">
 						<div class="d-flex">
 							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
-							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20 me-2">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button v-if="selectedPendingTable.commandes.length > 1" class="btn btn-info btn-xs mb-20"><i class="mdi mdi-link me-1"></i>Fusionner les commandes</button>
 						</div>
 						<div class="row g-2">
 							<div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
@@ -96,7 +97,7 @@
 										<!-- Actions -->
 										<div class="d-flex flex-wrap justify-content-center gap-2">
 											<!-- Edit -->
-											<button class="btn btn-circle btn-sm btn-primary">
+											<button  @click="editCommande(cmd)" class="btn btn-circle btn-sm btn-primary">
 												<i class="fa fa-pencil"></i>
 											</button>
 

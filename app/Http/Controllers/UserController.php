@@ -46,6 +46,8 @@ class UserController extends Controller
                 'ets_id' => $etablissement->id,
             ]);
 
+            Auth::login($user);
+
             AccessAllow::create([
                 "allowed"=>false,
                 "ets_id"=>$user->ets_id
@@ -64,7 +66,9 @@ class UserController extends Controller
 
             return response()->json([
                 "status"=>"success",
-                "user"=>$user
+                "message"=> "Utilisateur et établissement créés avec succès. Connexion effectuée.",
+                "user"=>$user,
+                "redirect"=>"/"
             ]);
 
         }
@@ -85,10 +89,10 @@ class UserController extends Controller
             // Validation
             $data = $request->validate([
                 'name'=>'required|string',
+                'email'=>'required|email|unique:users,email',
                 'password'=>'required|string',
                 'emplacement_id'=>'required|int|exists:emplacements,id',
-                'role'=>"required|string",
-                'salaire'=>'nullable|numeric'
+                'role'=>"required|string"
             ]);
 
             $userId = $request->id ?? null;
@@ -105,9 +109,9 @@ class UserController extends Controller
                     }
                 }
             }
-            $data["email"] = trim(strtolower($data["name"])) . "@gmail.com";
             $data["ets_id"] = Auth::user()->ets_id;
             $data["password"] = bcrypt($data["password"]);
+            $data["salaire"] = 0;
 
             // Création ou mise à jour
             $user = User::updateOrCreate(

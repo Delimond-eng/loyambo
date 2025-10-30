@@ -29,7 +29,7 @@ new Vue({
                         this.error = data.errors;
                         $.toast({
                             heading: "Identifiants erronés.",
-                            text: "Nom d'utilisateur ou mot de passe non reconnu",
+                            text: data.errors,
                             position: "top-right",
                             loaderBg: "#ff4949ff",
                             icon: "error",
@@ -71,7 +71,7 @@ new Vue({
                     this.isLoading = false;
                     $.toast({
                         heading: "Echec de traitement",
-                        text: "Veuillez réessayer plutard !",
+                        text: err.toString(),
                         position: "top-right",
                         loaderBg: "#ff4949ff",
                         icon: "error",
@@ -93,8 +93,8 @@ new Vue({
                     if (data.errors !== undefined) {
                         this.error = data.errors;
                         $.toast({
-                            heading: "Echec de traitement",
-                            text: "Une erreur est survenue lors de l'envoi de la requête",
+                            heading: "Erreur de données !",
+                            text: data.errors.toString(),
                             position: "top-right",
                             loaderBg: "#ff4949ff",
                             icon: "error",
@@ -109,7 +109,7 @@ new Vue({
                         this.result = data.user;
                         $.toast({
                             heading: "Opération reussi",
-                            text: `Veuillez vous connecter avec vos identifiants.`,
+                            text: data.message,
                             position: "top-right",
                             loaderBg: "#49ff5eff",
                             icon: "success",
@@ -117,7 +117,7 @@ new Vue({
                             stack: 6,
                         });
                         // Rediriger l'utilisateur
-                        window.location.href = "/login";
+                        window.location.href = data.redirect;
                     }
                 })
                 .catch((err) => {

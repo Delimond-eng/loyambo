@@ -14,7 +14,7 @@
                     <div class="d-inline-block align-items-center">
                         <nav>
                             <ol class="breadcrumb">
-                               <li class="breadcrumb-item ms-1" aria-current="page">Bienvenue {{ Auth::user()->name }}, Vous êtes connectés comme <span class="text-primary fw-700">{{ Auth::user()->role }}</span></li>
+                               <li class="breadcrumb-item ms-1" aria-current="page">Bienvenue {{ Auth::user()->name }}, Vous êtes connectés comme <span class="text-primary fw-700">{{ Auth::user()->role }}, <span class="fa fa-home me-1"></span> {{ Auth::user()->etablissement->nom }} | {{ Auth::user()->emplacement->libelle ?? "" }}</span></li>
                             </ol>
                         </nav>
                     </div>
@@ -95,7 +95,7 @@
                         @can('voir-chambres')
                             @canCloseDay
                                 @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
-                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/bedroom.reserve'">
+                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/Reservations'">
                                     <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
                                     <div class="menu-label">Reservations</div>
                                 </button>

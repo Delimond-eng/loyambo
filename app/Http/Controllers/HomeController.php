@@ -35,87 +35,98 @@ class HomeController extends Controller
     public function saveFacture(Request $request)
     {
         try {
-            $data = $request->validate([
+             $data = $request->validate([
                 'facture_id' => 'nullable|exists:factures,id',
                 'table_id' => 'nullable|exists:restaurant_tables,id',
-                'chambre_id' => 'nullable|exists:restaurant_tables,id',
+                'chambre_id' => 'nullable|exists:chambres,id',
                 'user_id' => 'nullable|exists:users,id',
-                'remise' => 'nullable|numeric',
+                'remise' => 'nullable|numeric|min:0',
                 'details' => 'required|array|min:1',
                 'details.*.produit_id' => 'required|exists:produits,id',
                 'details.*.quantite' => 'required|integer|min:1',
                 'details.*.prix_unitaire' => 'required|numeric|min:0',
             ]);
 
-            $factureId = null;
             $user = Auth::user();
-            $serveur = User::find($data["user_id"]);
-            $serveur = $serveur ?? $user;
-            $saleDay = SaleDay::whereNull("end_time")->where("ets_id", $user->ets_id)->latest()->first();
-            if(!$saleDay){
+            $serveur = User::find($data['user_id'] ?? null) ?? $user;
+
+            $saleDay = SaleDay::whereNull('end_time')
+                ->where('ets_id', $user->ets_id)
+                ->latest()
+                ->first();
+
+            if (!$saleDay) {
                 return response()->json([
-                    "errors"=>"La journée de vente non ouverte !"
-                ]);
+                    'errors' => 'La journée de vente n’est pas ouverte !'
+                ], 400);
             }
-            DB::transaction(function () use ($data, $saleDay, $serveur) {
-                if (isset($data['facture_id'])) {
-                    // Modification
+
+            $facture = DB::transaction(function () use ($data, $saleDay, $serveur) {
+                if (!empty($data['facture_id'])) {
                     $facture = Facture::findOrFail($data['facture_id']);
-                    // Supprimer les anciens détails
-                    $facture->details()->delete();
                 } else {
-                    // Création
                     $facture = new Facture();
-                    $facture->numero_facture = 'FAC-' . time(); 
+                    $facture->numero_facture = 'FAC-' . time();
                 }
-                // Mise à jour des infos
+
                 $facture->user_id = $serveur->id;
-                if(isset($data["table_id"])){
-                    $facture->table_id = $data['table_id'] ?? null;
-                }
-                if(isset($data["chambre_id"])){
-                    $facture->chambre_id = $data['chambre_id'] ?? null;
-                }
+                $facture->table_id = $data['table_id'] ?? null;
+                $facture->chambre_id = $data['chambre_id'] ?? null;
                 $facture->sale_day_id = $saleDay->id;
                 $facture->remise = $data['remise'] ?? 0;
                 $facture->statut = "en_attente";
                 $facture->emplacement_id = $serveur->emplacement_id;
-                $facture->ets_id =$serveur->ets_id;
+                $facture->ets_id = $serveur->ets_id;
+                $facture->date_facture = Carbon::now('Africa/Kinshasa');
+
                 // Calcul total HT
-                $total_ht = 0;
-                foreach ($data['details'] as $detail) {
-                    $total_ht += (int)$detail['quantite'] * (float)$detail['prix_unitaire'];
-                }
+                $total_ht = collect($data['details'])->sum(function ($detail) {
+                    return (int)$detail['quantite'] * (float)$detail['prix_unitaire'];
+                });
+
                 $facture->total_ht = $total_ht;
-                $facture->date_facture = Carbon::now(tz:"Africa/Kinshasa");
-                // Calcul total TTC
                 $facture->total_ttc = $total_ht - $facture->remise;
                 $facture->save();
 
-                // Création des détails
+                // ✅ Créer ou mettre à jour chaque détail en fonction de facture_id + produit_id
+                $produitIds = [];
                 foreach ($data['details'] as $detail) {
-                    FactureDetail::create([
-                        'facture_id' => $facture->id,
-                        'produit_id' => $detail['produit_id'],
-                        'quantite' => $detail['quantite'],
-                        'prix_unitaire' => $detail['prix_unitaire'],
-                        'total_ligne' => $detail['quantite'] * $detail['prix_unitaire'],
+                    $detailRecord = FactureDetail::updateOrCreate(
+                        [
+                            'facture_id' => $facture->id,
+                            'produit_id' => $detail['produit_id'],
+                        ],
+                        [
+                            'quantite' => $detail['quantite'],
+                            'prix_unitaire' => $detail['prix_unitaire'],
+                            'total_ligne' => $detail['quantite'] * $detail['prix_unitaire'],
+                        ]
+                    );
+                    $produitIds[] = $detailRecord->produit_id;
+                }
+
+                // Supprimer les détails de la facture non présents dans la requête
+                FactureDetail::where('facture_id', $facture->id)
+                    ->whereNotIn('produit_id', $produitIds)
+                    ->delete();
+
+                if (!empty($data['table_id'])) {
+                    RestaurantTable::where('id', $data['table_id'])->update([
+                        'statut' => 'occupée',
                     ]);
                 }
 
-                $factureId = $facture->id;
-
-                if(isset($data["table_id"])){
-                    $table = RestaurantTable::find($data["table_id"]);
-                    $table->update([
-                        "statut"=>"occupée"
-                    ]);
-                }
+                return $facture;
             });
-            $facture = Facture::with('details')->find($factureId);
+
+            $facture->load('details.produit');
+
             return response()->json([
                 'status' => 'success',
-                'result' => $facture
+                'result' => $facture,
+                'message' => !empty($data['facture_id'])
+                    ? 'Facture modifiée avec succès !'
+                    : 'Facture créée avec succès !'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);

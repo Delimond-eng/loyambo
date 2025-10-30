@@ -15,9 +15,9 @@ new Vue({
             form: {
                 password: "",
                 name: "",
+                email: "",
                 emplacement_id: "",
                 role: "",
-                salaire: "",
                 id: "",
             },
         };
@@ -67,16 +67,53 @@ new Vue({
             this.form.id = user.id;
             this.form.emplacement_id = user.emplacement_id;
             this.form.role = user.role;
-            this.form.salaire = user.salaire;
+            this.form.email = user.email;
+        },
+        deleteUser(user) {
+            const self = this;
+            Swal.fire({
+                title: "Êtes-vous sûr ?",
+                text: "Cette action est irréversible. voulez-vous vraiment supprimer cet utilisateur ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Oui, supprimer",
+                cancelButtonText: "Annuler",
+                reverseButtons: true,
+                focusCancel: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = { user_id: user.id };
+                    postJson("user.delete", form).then(({ data, status }) => {
+                        if (data.errors !== undefined) {
+                            Swal.fire({
+                                icon: "warning",
+                                title: data.errors.toString(),
+                                toast: true,
+                                timer: 2000,
+                                showCancelButton: !1,
+                                showConfirmButton: !1,
+                            });
+                        } else {
+                            self.viewAllUsers();
+                            Swal.fire({
+                                icon: "success",
+                                title: data.message.toString(),
+                                toast: true,
+                                timer: 2000,
+                                showCancelButton: !1,
+                                showConfirmButton: !1,
+                            });
+                        }
+                    });
+                }
+            });
         },
 
         //A L'OUVERTURE DU MODAL
         openPermissionsModal(userData) {
             // garder les objets si tu veux
             this.selectedUserPermissions = userData.permissions;
-
             /* console.log(userData.roles[0].permissions.length); */
-
             // tableau d'IDs pour v-model
             this.selectedPermissionIds = userData.permissions.map((p) => p.id);
             this.selectedUserId = userData.id;

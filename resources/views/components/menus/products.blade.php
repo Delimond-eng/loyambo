@@ -6,9 +6,9 @@
         <button class="menu-tab {{ Route::is("products.categories") ? 'active' : '' }}" onclick="location.href='/products.categories'">
             Catégories
         </button>
-        <button class="menu-tab {{ Route::is("products.mvts") ? 'active' : '' }}" onclick="location.href='/products.mvts'">
+        <!-- <button class="menu-tab {{ Route::is("products.mvts") ? 'active' : '' }}" onclick="location.href='/products.mvts'">
             Mouvements stocks
-        </button>
+        </button> -->
         <button class="menu-tab {{ Route::is("fiche_stock") ? 'active' : '' }}" onclick="location.href='/fiche_stock'">
             Fiche de stock
         </button>

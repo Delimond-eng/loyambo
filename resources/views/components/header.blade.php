@@ -2,7 +2,7 @@
     <div class="inside-header bg-transparent">
         <div class="d-lg-flex logo-box justify-content-start">
             <!-- Logo -->
-            <a href="{{ route("home") }}" class="logo">
+            <a href="{{ Auth::user()->role === 'serveur' ? url('/orders.portal') : route("home")  }}" class="logo">
                 @if ((!Route::is("home") && Auth::user()->role !== 'serveur') || (!Route::is("orders.portal") && Auth::user()->role==='serveur'))
                     <!-- Bouton retour -->
                     <button onclick="window.history.back()" class="btn btn-sm text-white fs-20 shadow-sm">
@@ -67,7 +67,7 @@
                                     @endcan
                                 @else
                                     @can("ouvrir-journee")
-                                    <a class="dropdown-item text-primary btn-start-day"  @unless(Blade::check('licenceActive')) disabled @endunless href="#"><i class="fa fa-sign-in me-2"></i>
+                                    <a @click="triggerStartDay" class="dropdown-item text-primary btn-start-day"  @unless(Blade::check('licenceActive')) disabled @endunless href="javascript:void(0)"><i class="fa fa-sign-in me-2"></i>
                                     Commencer la journée</a>
                                     @endcan
                                 @endif

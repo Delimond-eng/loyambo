@@ -14,9 +14,9 @@
                         <div class="form-group">
                             <div class="input-group mb-3">
                                 <span class="input-group-text bg-transparent"><i
-                                        class="ti-user text-primary"></i></span>
-                                <input type="text" name="name" class="form-control ps-15 bg-transparent"
-                                    placeholder="Username" required>
+                                        class="ti-email text-primary"></i></span>
+                                <input type="email" name="email" class="form-control ps-15 bg-transparent"
+                                    placeholder="Email" required>
                             </div>
                         </div>
                         <div class="form-group">

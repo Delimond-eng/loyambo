@@ -19,7 +19,7 @@ class User extends Authenticatable
     protected $guard_name = 'web';
 
     protected $fillable = [
-        'name', 'email', 'password', 'actif', 'salaire','role', 'ets_id','emplacement_id'
+        'name', 'email', 'password', 'actif', 'salaire','role', 'ets_id','emplacement_id', 'status'
     ];
 
     protected $hidden = ['password', 'remember_token'];

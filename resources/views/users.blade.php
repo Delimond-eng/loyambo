@@ -64,7 +64,7 @@
                                             </td>
                                             <td>
                                                 <a href="#" class="text-dark fw-600 hover-primary fs-16">@{{ data.name }}</a>
-                                                <span class="text-fade d-block">@{{ data.role }}</span>
+                                                <span class="text-fade d-block">@{{ data.email }} | @{{ data.role }}</span>
                                             </td>
                                             <td>
                                                 <span v-if="data.emplacement" class="text-dark fw-600 d-block fs-16">
@@ -91,7 +91,7 @@
                                             <td class="text-end">
                                                 <a href="#" v-if="data.role !=='admin'" @click="openPermissionsModal(data)" data-bs-toggle="modal" data-bs-target="#modalPermissions" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Plus fs-18"><span class="path1"></span><span class="path2"></span></span></a>
                                                 <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5" @click="editUser(data)"  data-bs-toggle="modal" data-bs-target="#myModal"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle" @click="deleteUser(data)"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -119,6 +119,14 @@
                                             placeholder="Nom d'utilisateur" required>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text bg-transparent"><i
+                                                class="ti-email text-primary"></i></span>
+                                        <input v-model="form.email" type="email" class="form-control ps-15 bg-transparent"
+                                            placeholder="Adresse email" required>
+                                    </div>
+                                </div>
 
                                 <div class="form-group">
                                     <div class="input-group mb-3">
@@ -126,15 +134,6 @@
                                                 class="ti-lock text-primary"></i></span>
                                         <input v-model="form.password" type="password" class="form-control ps-15 bg-transparent"
                                             placeholder="Mot de passe" required>
-                                    </div>
-                                </div>
-            
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text bg-transparent"><i
-                                                class="ti-money text-primary"></i></span>
-                                        <input v-model="form.salaire" type="text" class="form-control ps-15 bg-transparent"
-                                            placeholder="Salaire en CDF/Heure">
                                     </div>
                                 </div>
 

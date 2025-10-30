@@ -56,7 +56,7 @@
                                         <td colspan="6" class="section-sortie">{{ $produit->total_sortie }}</td>
 
                                         {{-- Solde --}}
-                                        <td colspan="6" class="section-solde">{{ $produit->solde }}</td>
+                                        <td colspan="6" class="section-solde">{{ $produit->solde -  $produit->qte_init}}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>

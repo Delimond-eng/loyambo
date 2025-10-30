@@ -46,6 +46,7 @@
                                             <th>Montant</th>
                                             <th>Emplacement</th>
                                             <th>Serveur</th>
+                                            <th>Délai</th>
                                             <th>Status</th>
                                             <th></th>
                                         </tr>
@@ -64,6 +65,8 @@
                                                 <span v-if="data.chambre">@{{ data.chambre.emplacement.libelle}}</span>
                                             </td>
                                             <td><span class="fw-600">@{{ data.user.name}}</span></td>
+                                            <td>												
+                                                --
                                             <td>												
                                                 <span class="badge badge-pill" :class="{'badge-warning-light':data.statut==='en_attente', 'badge-success-light':data.statut==='payée', 'badge-danger-light':data.statut==='annulée'}">@{{ data.statut.replaceAll('_', ' ') }}</span>
                                             </td>

@@ -25,6 +25,11 @@ class Produit extends Model
         return $this->belongsTo(Categorie::class, "categorie_id");
     }
 
+    public function inventaires()
+    {
+        return $this->hasMany(Inventaire::class, 'produit_id');
+    }
+
     public function stocks(){
         return $this->hasMany(MouvementStock::class, "produit_id","id");
     }

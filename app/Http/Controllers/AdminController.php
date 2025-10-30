@@ -38,7 +38,10 @@ class AdminController extends Controller
             $user = Auth::user();
 
             $currencie = Currencie::updateOrCreate(
-                ["currencie_date"=>Carbon::now()->toDateString(),],
+                [
+                    "currencie_date"=>Carbon::now()->toDateString(),
+                    "ets_id"=>$user->ets_id
+                ],
             [
                 "currencie_date"=>Carbon::now()->toDateString(),
                 "currencie_value"=>$data["currencie_value"],
@@ -46,7 +49,7 @@ class AdminController extends Controller
             ]);
 
             $saleDay = SaleDay::updateOrCreate(
-                ["sale_date"=>Carbon::now()->toDateString()],
+                ["sale_date"=>Carbon::now()->toDateString(),"ets_id"=>$user->ets_id ],
                 [
                 "sale_date"=>Carbon::now(tz: "Africa/Kinshasa")->toDateString(),
                 "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa"),
@@ -161,7 +164,7 @@ class AdminController extends Controller
         if($role){
             $query->where("role", $role);
         }
-        $users = $query->get();
+        $users = $query->whereNot("status", "deleted")->get();
         return response()->json([
             "status"=>"success",
             "users"=>$users
@@ -329,6 +332,10 @@ class AdminController extends Controller
 
 
             if($emplacement->type === 'hôtel'){
+                $check = Chambre::where("numero",$data["numero"])->where("ets_id", Auth::user()->ets_id)->first();
+                if($check && $check->emplacement_id === $data['emplacement_id']){
+                    return response()->json(["errors"=> "Numéro de la table existe déjà."]);
+                }
                 $result = Chambre::updateOrCreate(["numero"=>$data["numero"]],[
                     "numero"=>$data["numero"], 
                     "prix"=>$data["prix"],
@@ -339,15 +346,16 @@ class AdminController extends Controller
                     "ets_id"=>$user->ets_id
                 ]);
             }else{
+                $check = RestaurantTable::where("numero",$data["numero"])->where("ets_id", Auth::user()->ets_id)->first();
+                if($check && $check->emplacement_id === $data['emplacement_id']){
+                    return response()->json(["errors"=> "Numéro de la chambre existe déjà."]);
+                }
                 $result = RestaurantTable::updateOrCreate($cdts,[
                     "numero"=>$data["numero"], 
                     "emplacement_id"=>$data["emplacement_id"],
                     "ets_id"=>$user->ets_id
                 ]);
             }
-
-
-            
             return response()->json([
                 'status'=>'success',
                 'message' => 'Nouvelle table créée avec succès !',

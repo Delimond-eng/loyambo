@@ -23,6 +23,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 chambre: null,
                 selectedPendingTable: null,
                 selectedFacture: null,
+                editedCommandeId: null,
                 modes: [
                     { value: "cash", label: "CASH", icon: "fa fa-money" },
                     {
@@ -48,6 +49,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         mounted() {
+            this.loadEditedCommande();
             this.refreshUserOrderSession();
             this.refreshTableData();
             this.getAllServeursServices();
@@ -57,6 +59,10 @@ document.querySelectorAll(".AppService").forEach((el) => {
         },
 
         methods: {
+            triggerStartDay() {
+                $("body").toggleClass("right-bar-toggle");
+            },
+
             triggerClosingDay() {
                 postJson("/day.close", {})
                     .then(({ data, status }) => {
@@ -102,6 +108,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                 text: data.message,
                                 confirmButtonText: "Fermer",
                             });
+                            location.reload();
                         } else {
                             new Swal({
                                 icon: "error",
@@ -156,6 +163,50 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     });
             },
 
+            editCommande(data) {
+                // Vider le panier actuel
+                localStorage.setItem("edited-orders", JSON.stringify(data));
+                localStorage.setItem(
+                    "table",
+                    JSON.stringify(this.selectedPendingTable)
+                );
+                location.href = "/orders.interface";
+            },
+
+            loadEditedCommande() {
+                if (location.pathname === "/orders.interface") {
+                    const cachedDatas = localStorage.getItem("edited-orders");
+                    if (cachedDatas !== null) {
+                        let data = JSON.parse(cachedDatas);
+                        this.editedCommandeId = data.id;
+                        this.store.cart = [];
+                        // S'assurer que la facture contient des détails
+                        if (data.details && data.details.length > 0) {
+                            data.details.forEach((detail) => {
+                                const produit = detail.produit;
+                                // Ajouter chaque produit avec sa quantité et prix
+                                this.store.cart.push({
+                                    id: produit.id,
+                                    libelle: produit.libelle,
+                                    prix_unitaire: parseFloat(
+                                        detail.prix_unitaire
+                                    ),
+                                    qte: parseInt(detail.quantite),
+                                    unite: produit.unite,
+                                    reference: produit.reference,
+                                    code_barre: produit.code_barre,
+                                    image: produit.image,
+                                });
+                            });
+                        }
+                    }
+                } else {
+                    localStorage.removeItem("edited-orders");
+                    localStorage.removeItem("table");
+                    this.store.cart = [];
+                }
+            },
+
             triggerOperation(data) {
                 postJson(`/table.operation`, data)
                     .then(({ data, status }) => {
@@ -180,25 +231,37 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             libererTable(table) {
-                postJson(`/table.liberer`, { table_id: table.id })
-                    .then(({ data, status }) => {
-                        $(".modal-commande").modal("hide");
-                        if (data.status === "success") {
-                            this.viewAllTables();
-                        }
-                    })
-                    .catch((err) => {
-                        this.isLoading = false;
-                        $.toast({
-                            heading: "Echec de traitement",
-                            text: "Veuillez réessayer plutard !",
-                            position: "top-right",
-                            loaderBg: "#ff4949ff",
-                            icon: "error",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
-                    });
+                const self = this;
+                Swal.fire({
+                    title: "Etes-vous sûr ??",
+                    text: "Voulez-vous vraiment liberer cette table  ??.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Oui",
+                    cancelButtonText: "Non",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        postJson(`/table.liberer`, { table_id: table.id })
+                            .then(({ data, status }) => {
+                                $(".modal-commande").modal("hide");
+                                if (data.status === "success") {
+                                    self.viewAllTables();
+                                }
+                            })
+                            .catch((err) => {
+                                self.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plutard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            });
+                    }
+                });
             },
 
             triggerPayment() {
@@ -461,6 +524,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                         });
                 }
             },
+
             viewAllProducts() {
                 const validPath = location.pathname !== "/serveurs";
                 if (validPath) {
@@ -490,6 +554,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 });
                 const form = {
                     user_id: user ? user.id : null,
+                    facture_id: this.editedCommandeId,
                     details: details,
                 };
                 if (chambre) {

@@ -48,12 +48,12 @@ class LoginController extends Controller
     {
         // 1️⃣ Validation
         $request->validate([
-            'name' => 'required|string',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
         // 2️⃣ Vérifier si la journée est autorisée
-        $user = User::where('name', $request->name)->first();
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['errors' => 'Identifiants invalides']);
@@ -70,7 +70,7 @@ class LoginController extends Controller
         }
 
         // 4️⃣ Tentative de connexion
-        if (Auth::attempt(['name' => $request->name, 'password' => $request->password], $request->filled('remember'))) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->filled('remember'))) {
             // 5️⃣ Redirection selon rôle
             return response()->json([
                 "user"=>$user,
