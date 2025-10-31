@@ -6,17 +6,43 @@ use App\Models\SaleDay;
 use App\Models\Emplacement;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class VentreSrviceController extends Controller
 {
     public function index()
     {
-        $emplacements = Emplacement::where('ets_id', auth()->user()->ets_id)
-            ->orderBy('libelle')
-            ->where('type',"restaurant & lounge")
-            ->get();
-        return view('reports.service_sales',compact('emplacements'));
-    }
+        
+           $user = Auth::user();
+
+           if ($user->role === 'caissier') {
+               $emplacement = Emplacement::where('ets_id', $user->ets_id)
+                   ->where('id', $user->emplacement_id)
+                   
+                   ->first();
+       
+               if (!$emplacement) {
+                   return redirect()->route('reports.service.vente')
+                       ->with('error', 'Cet emplacement n\'existe pas.');
+               }
+       
+               $saledays = SaleDay::with('factures')->paginate(15);
+       
+               return view('reports.service_sales_emplacement', compact('emplacement', 'saledays'));
+           }
+       
+           if ($user->role === 'admin') {
+               $emplacements = Emplacement::where('ets_id', $user->ets_id)
+                   ->orderBy('libelle')
+                   ->get();
+       
+               return view('reports.service_sales', compact('emplacements'));
+           }
+       
+           // Optionnel : cas où le rôle n’est ni admin ni caissier
+           return redirect()->route('reports.service.vente')
+               ->with('error', 'Accès non autorisé.');
+       }
     public function showEmplacementSales($emplacement_id)
     {
         $emplacement = Emplacement::where('ets_id', auth()->user()->ets_id)

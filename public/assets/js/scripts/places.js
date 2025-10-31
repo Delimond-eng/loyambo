@@ -210,6 +210,51 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                 };
             },
 
+            supprimerEmplacement(id) {
+                if (confirm("Voulez-vous vraiment supprimer cet emplacement ?")) {
+                    this.isLoading = true;
+                    postJson(`/emplacement/delete/${id}`)
+                        .then(({ data, status }) => {
+                            this.isLoading = false;
+                            if (data.status === "success") {
+                                $.toast({
+                                    heading: "Suppression réussie",
+                                    text: data.message,
+                                    position: "top-right",
+                                    loaderBg: "#49ff5eff",
+                                    icon: "success",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                                this.viewAllEmplacements(); // Rafraîchir la liste
+                            } else {
+                                $.toast({
+                                    heading: "Erreur",
+                                    text: data.message || "Échec de suppression",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            this.isLoading = false;
+                            $.toast({
+                                heading: "Erreur",
+                                text: "Une erreur s'est produite. Réessayez plus tard.",
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        });
+                }
+            },
+
+
             whenModalHidden() {
                 const self = this;
                 const modals = document.querySelectorAll(".modal");

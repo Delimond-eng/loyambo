@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -49,7 +48,8 @@ class AdminController extends Controller
                 "ets_id"=>$user->ets_id
             ]);
 
-            $saleDay = SaleDay::create(
+            $saleDay = SaleDay::updateOrCreate(
+                ["sale_date"=>Carbon::now()->toDateString(),"ets_id"=>$user->ets_id ],
                 [
                 "sale_date"=>Carbon::now(tz: "Africa/Kinshasa")->toDateString(),
                 "start_time"=>Carbon::now()->setTimezone("Africa/Kinshasa"),
@@ -82,37 +82,6 @@ class AdminController extends Controller
         }
     }
 
-    public function closeDayReport(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                "serveur_id"=>"required|int|exists:users,id",
-                "total_especes"=>"required|numeric",
-                "tickets_serveur"=>"required|int",
-                "tickets_emis"=>"required|int",
-                "valeur_theorique"=>"required|numeric"
-            ]);
-            $user = Auth::user();
-            $taux = Currencie::where('ets_id', Auth::user()->ets_id)->latest('id')->value('currencie_value') ?? 0;
-            $saleDay = SaleDay::where("ets_id", $user->ets_id)->whereNull("end_time")->latest()->first();
-            $data["caissier_id"] = $user->id;
-            $data["sale_day_id"] = $saleDay->id;
-            $data["taux"] = (double) $taux;
-            $data["rapport_date"] = Carbon::now(tz:"Africa/Kinshasa")->toDateString();
-            $result = CaisseReport::create($data);
-            return response()->json([
-                "status" => "success",
-                "message" => "La journée du serveur clôturée avec succès.",
-                "result" => $result
-            ]);
-        }catch (\Illuminate\Validation\ValidationException $e) {
-            $errors = $e->validator->errors()->all();
-            return response()->json(['errors' => $errors]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(['errors' => $e->getMessage()]);
-        }
-    }
-
     public function closeDay()
     {
         try {
@@ -120,7 +89,7 @@ class AdminController extends Controller
             // 1. Vérifier qu'il y a une journée ouverte
             $saleDay = SaleDay::whereNull("end_time")
                 ->where("ets_id", $user->ets_id)
-                ->latest("id")
+                ->latest()
                 ->first();
 
             if (!$saleDay) {
@@ -171,8 +140,7 @@ class AdminController extends Controller
             return response()->json([
                 "status" => "success",
                 "message" => "La journée a été clôturée avec succès.",
-                "saleDay" => $saleDay,
-                "report_url" => "caisse.day.report/".$saleDay->id,
+                "saleDay" => $saleDay
             ]);
 
         }catch (\Illuminate\Validation\ValidationException $e) {
@@ -184,25 +152,6 @@ class AdminController extends Controller
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
             return response()->json(['errors' => "Action non autorisée !"]);
         }
-    }
-
-
-    public function generatePDF($sale_day_id)
-    {
-        $saleDay = SaleDay::findOrFail($sale_day_id);
-        // Groupement des rapports par caissier
-        $groupedReports = CaisseReport::with(['caissier', 'serveur'])
-            ->where('sale_day_id', $sale_day_id)
-            ->get()
-            ->groupBy('caissier_id');
-
-        $pdf = Pdf::loadView('pdf.caisse_day_report', [
-            'saleDay' => $saleDay,
-            'groupedReports' => $groupedReports,
-        ])->setPaper('a4', 'portrait');
-
-        $filename = 'Rapport_Caisse_' . $saleDay->sale_date . '.pdf';
-        return $pdf->download($filename);
     }
 
 
@@ -237,48 +186,25 @@ class AdminController extends Controller
     public function getAllServeursServices(Request $request)
     {
         $user = Auth::user();
-        $saleDay = SaleDay::where("ets_id", $user->ets_id)
-            ->whereNull("end_time")
-            ->latest()
-            ->first();
-
-        if (!$saleDay) {
-            return response()->json([
-                "status" => "error",
-                "message" => "Aucune journée de vente active trouvée."
-            ]);
-        }
+        $saleDay = SaleDay::where("ets_id", $user->ets_id)->whereNull("end_time")->latest()->first();
 
         $req = Facture::with("user.lastLog")
             ->selectRaw("user_id, SUM(total_ttc) as total_encaisse, COUNT(id) as total_ticket")
             ->where("sale_day_id", $saleDay->id)
             ->whereHas("user", function ($q) {
-                $q->where("role", "serveur");
+                $q->where("role", "serveur"); 
             })
             ->where("statut", "payée")
             ->where("ets_id", $user->ets_id);
-        // Si l'utilisateur n'est pas admin, filtrer selon l'emplacement
-        if ($user->role !== "admin" && $user->emplacement_id) {
+        if($user->role !== "admin" && $user->emplacement_id){
             $req->where("emplacement_id", $user->emplacement_id);
         }
         $serveurs = $req->groupBy("user_id")->get();
-        // Ajout du statut du rapport
-        $serveurs->transform(function ($srv) use ($saleDay, $user) {
-            $rapport = CaisseReport::where("serveur_id", $srv->user_id)
-                ->where("sale_day_id", $saleDay->id)
-                ->where("caissier_id", $user->id)
-                ->first();
-            $srv->rapport_statut = $rapport ? "done" : "none";
-            $srv->rapport_id = $rapport->id ?? null;
-            return $srv;
-        });
-
         return response()->json([
             "status" => "success",
             "serveurs" => $serveurs
         ]);
     }
-
 
     //GET ALL USER PERMISSION
     public function getAllPermissions(){

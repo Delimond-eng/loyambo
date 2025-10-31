@@ -19,7 +19,7 @@
                 <div class="col-12">
                     <div class="box">
                         <div class="box-header with-border p-5 text-center">
-                            <h4 class="box-title">Sélectionnez un emplacement</h4>
+                            <h4 class="box-title mt-5">Sélectionnez un emplacement</h4>
                             <p class="text-muted">Veuillez choisir un emplacement pour afficher les rapports de ventes.</p>
                         </div>
                         <div class="box-body">
@@ -27,13 +27,15 @@
                             <div class="emplacement-buttons-container">
                                 <div class="d-flex flex-wrap justify-content-center gap-2" id="emplacementButtons">
                                     @foreach($emplacements as $emplacement)
-                                        <a href="{{ route('reports.service_sales.emplacement', ['emplacement_id' => $emplacement->id]) }}" 
+                                        
+                                            <a href="{{ route('reports.service_sales.emplacement', ['emplacement_id' => $emplacement->id]) }}" 
                                                 class="btn btn-outline-primary emplacement-btn"
                                                 style="min-width: 150px; margin: 5px; ">
                                             {{ $emplacement->libelle }}
                                             <br>
                                             <small class="text-muted">{{ $emplacement->type }}</small>
                                         </a>
+                                      
                                     @endforeach
                                 </div>
                             </div>

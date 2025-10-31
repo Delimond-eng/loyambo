@@ -41,10 +41,7 @@
 												</div>
 											</td>
 											<td align="center" class="fw-900">@{{  data.total_encaisse}}</td>
-											<td align="center">
-												<a v-if="data.rapport_statut === 'none'" href="javascript:void(0)" @click="triggerSingleClosing(data)" class="btn btn-xs btn-danger btn-outline btn-xs" title="Clôturer"><i class="fa fa-sign-out me-1"></i>Clôturer</a>
-												<span v-else class="badge badge-pill badge-success-light">Rapport effectué</span>
-											</td>
+											<td align="center"><a href="javascript:void(0)" @click="triggerSingleClosing(data)" class="btn btn-xs btn-danger btn-outline btn-xs" title="Clôturer"><i class="fa fa-sign-out me-1"></i>Clôturer</a></td>
 										</tr>
 									</tbody>
 								</table>
@@ -56,7 +53,7 @@
 		  	</div>
 			<div id="reportAppendModal" class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 				<div class="modal-dialog modal-lg">
-					<form class="modal-content" @submit.prevent="triggerSendServeurReport">
+					<form class="modal-content">
 						<div class="modal-header">
 							<h4 class="modal-title" id="myModalLabel">Clôture de la journée pour le serveur : <span v-if="selectedData" class="fw-600 text-primary">@{{ selectedData.user.name }}</span></h4>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -69,23 +66,23 @@
 								</div>
 								<div class="form-group col-md-4">
 									<label class="form-label">Total espèces</label>
-									<input type="number" v-model="form.total_especes" class="form-control" placeholder="Ex: 50000" required>
+									<input type="text" class="form-control" placeholder="Ex: 50000" required>
 								</div>
 								<div class="form-group col-md-4">
 									<label class="form-label text-muted">Difference</label>
-									<input type="text" :value="selectedData.total_encaisse - form.total_especes" class="form-control" placeholder="Ex:1" readonly>
+									<input type="text" class="form-control" placeholder="Ex:1" readonly>
 								</div>
 								<div class="form-group col-md-4">
-									<label class="form-label">Nombre tickets système</label>
+									<label class="form-label">Nombre tickets du serveur</label>
 									<input type="text" :value="selectedData.total_ticket" class="form-control" placeholder="Ex: 02" readonly>
 								</div>
 								<div class="form-group col-md-4">
-									<label class="form-label">Nombre tickets emis par le serveur</label>
-									<input type="number" v-model="form.tickets_serveur" class="form-control" placeholder="Ex: 02" required>
+									<label class="form-label">Nombre tickets emis</label>
+									<input type="text" class="form-control" placeholder="Ex: 02" required>
 								</div>
 								<div class="form-group col-md-4">
 									<label class="form-label text-muted">Difference</label>
-									<input type="text" :value="selectedData.total_ticket - form.tickets_serveur" class="form-control" placeholder="Ex: 02" readonly>
+									<input type="text" class="form-control" placeholder="Ex: 02" readonly>
 								</div>
 							</div>
 						</div>
@@ -104,7 +101,10 @@
   <!-- /.content-wrapper -->
 @endsection
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 07123be (31/10/2025)
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
 @endpush

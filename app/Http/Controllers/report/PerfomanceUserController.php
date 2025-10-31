@@ -7,28 +7,42 @@ use App\Models\Facture;
 use App\Models\Emplacement;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class PerfomanceUserController extends Controller
 {
     public function index(Request $request)
     {
-         $dateDebut = $request->input('date_debut');
+        $user = Auth::user();
+
+        $dateDebut = $request->input('date_debut');
         $dateFin = $request->input('date_fin');
         $emplacementId = $request->input('emplacement_id');
         $role = $request->input('role');
 
-        // Récupérer tous les emplacements pour le filtre
-        $emplacements = Emplacement::where('ets_id', auth()->user()->ets_id)
-            ->orderBy('libelle')
-            ->where('type',"restaurant & lounge")
-            ->get();
+        // 🔹 Emplacements visibles selon le rôle
+        if ($user->role === 'admin') {
+            $emplacements = Emplacement::where('ets_id', $user->ets_id)
+                ->orderBy('libelle')
+                ->get();
+        } elseif ($user->role === 'caissier') {
+            $emplacements = Emplacement::where('ets_id', $user->ets_id)
+                ->where('id', $user->emplacement_id)
+                ->orderBy('libelle')
+                ->get();
+        } else {
+            return redirect()->back()->with('error', 'Accès non autorisé.');
+        }
 
-        // Récupérer TOUS les employés (actifs et inactifs) avec filtres
-        $query = User::where('ets_id', auth()->user()->ets_id)
-            ->where('role',"serveur")
-            ->with(['emplacement']);
+        // 🔹 Requête employés
+        $query = User::where('ets_id', $user->ets_id)
+            ->with('emplacement');
 
-        if ($emplacementId) {
+        if ($user->role === 'caissier') {
+            $query->where('emplacement_id', $user->emplacement_id);
+        }
+
+        if ($user->role === 'admin' && $emplacementId) {
             $query->where('emplacement_id', $emplacementId);
         }
 
@@ -38,77 +52,59 @@ class PerfomanceUserController extends Controller
 
         $employes = $query->get();
 
-        // Calculer les performances pour chaque employé
+        // 🔹 Calcul des performances séparées par devise
         $performances = [];
-        $totalCommandesGlobal = 0;
-        $totalEncaissementGlobal = 0;
+        $totalCommandesGlobal = [];
+        $totalEncaissementGlobal = [];
 
         foreach ($employes as $employe) {
-            // Query pour les factures de l'employé
             $facturesQuery = Facture::where('user_id', $employe->id)
                 ->where('statut', 'payée')
-                ->with(['payments']);
+                ->with('payments');
 
-            // Appliquer les filtres de date
             if ($dateDebut) {
                 $facturesQuery->whereDate('date_facture', '>=', $dateDebut);
             }
-
             if ($dateFin) {
                 $facturesQuery->whereDate('date_facture', '<=', $dateFin);
             }
 
             $factures = $facturesQuery->get();
 
-            $nombreCommandes = $factures->count();
-            $totalEncaissement = $factures->sum('total_ttc');
-            
-            // Calculer le panier moyen
-            $panierMoyen = $nombreCommandes > 0 ? $totalEncaissement / $nombreCommandes : 0;
+            // 🔹 Séparer les factures par devise
+            $facturesParDevise = $factures->groupBy(function ($facture) {
+                return $facture->payments->first()->devise ?? 'CDF';
+            });
 
-            // Déterminer la devise principale (CDF par défaut)
-            $devisePrincipale = 'CDF';
-            if ($factures->isNotEmpty()) {
-                $premiereFacture = $factures->first();
-                if ($premiereFacture->payments->isNotEmpty()) {
-                    $devisePrincipale = $premiereFacture->payments->first()->devise ?? 'CDF';
-                }
-            }
+            $perfParDevise = [];
+            foreach ($facturesParDevise as $devise => $facturesDevise) {
+                $nombreCommandes = $facturesDevise->count();
+                $totalEncaissement = $facturesDevise->sum('total_ttc');
+                $panierMoyen = $nombreCommandes > 0 ? $totalEncaissement / $nombreCommandes : 0;
 
-            // Calculer le pourcentage de performance (basé sur le CA moyen)
-            $pourcentagePerformance = 0;
-            if ($panierMoyen > 0) {
-                // Logique de calcul de performance ajustée
-                $pourcentagePerformance = min(100, ($panierMoyen / 50000) * 100); // Ajusté pour CDF
+                $perfParDevise[$devise] = [
+                    'nombre_commandes' => $nombreCommandes,
+                    'total_encaissement' => $totalEncaissement,
+                    'panier_moyen' => $panierMoyen,
+                ];
+
+                // 🔹 Totaux globaux par devise
+                $totalCommandesGlobal[$devise] = ($totalCommandesGlobal[$devise] ?? 0) + $nombreCommandes;
+                $totalEncaissementGlobal[$devise] = ($totalEncaissementGlobal[$devise] ?? 0) + $totalEncaissement;
             }
 
             $performances[] = [
                 'employe' => $employe,
-                'nombre_commandes' => $nombreCommandes,
-                'total_encaissement' => $totalEncaissement,
-                'panier_moyen' => $panierMoyen,
-                'devise_principale' => $devisePrincipale,
-                'pourcentage_performance' => $pourcentagePerformance,
+                'par_devise' => $perfParDevise,
                 'est_actif' => $employe->actif,
             ];
-
-            $totalCommandesGlobal += $nombreCommandes;
-            $totalEncaissementGlobal += $totalEncaissement;
         }
 
-        // Trier par performance (total encaissement décroissant)
-        usort($performances, function($a, $b) {
-            return $b['total_encaissement'] - $a['total_encaissement'];
-        });
-        $totalEmployes = $employes->count();
-        $totalCommandes = $totalCommandesGlobal;
-        $totalEncaissement = $totalEncaissementGlobal;
-        return view('reports.performance', compact(
-            'performances',
-            'emplacements',
-            'totalEmployes',
-            'totalCommandes',
-            'totalEncaissement'
-        ));
+        return view('reports.performance', [
+            'performances' => $performances,
+            'emplacements' => $emplacements,
+            'totalCommandes' => $totalCommandesGlobal,
+            'totalEncaissement' => $totalEncaissementGlobal,
+        ]);
     }
 }

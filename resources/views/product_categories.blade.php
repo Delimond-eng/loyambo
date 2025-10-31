@@ -49,7 +49,16 @@
 											<td class="d-flex align-items-center justify-content-end">
 												<a href="#" class="btn btn-primary-light btn-sm me-1" data-bs-toggle="modal" data-bs-target="#productListModalByCategory" @click="selectedCategory = data"><span class="icon-Dinner1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
 												<a href="#" data-bs-toggle="modal" data-bs-target="#categoryModal"  @click="formCategory = data" class="btn btn-info-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-												<a href="#" class="btn btn-danger-light btn-sm"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+												<a href="#" 
+       class="btn btn-danger-light btn-sm"
+       @click="supprimerCategorie(data)"
+       :disabled="isLoading"
+       title="Supprimer la catégorie">
+        <span class="icon-Trash1 fs-18">
+            <span class="path1"></span>
+            <span class="path2"></span>
+        </span>
+    </a>
 											</td>
 										</tr>
 									</tbody>
@@ -162,7 +171,18 @@
                                             </td>
 
                                              <td class="text-center">
-												<a href="#" class="btn btn-danger-light btn-rounded btn-sm"><span class="icon-Trash1 fs-16"><span class="path1"></span><span class="path2"></span></span></a>
+												<td class="text-center">
+    <a href="#" 
+       class="btn btn-danger-light btn-rounded btn-sm"
+       @click="supprimerProduit(data)"
+       :disabled="isLoading"
+       title="Supprimer le produit">
+        <span class="icon-Trash1 fs-16">
+            <span class="path1"></span>
+            <span class="path2"></span>
+        </span>
+    </a>
+</td>
                                             </td>
                                         </tr>
                                     </tbody>
