@@ -16,7 +16,8 @@ class CaisseReport extends Model
         "valeur_theorique",
         "total_especes",
         "tickets_emis",
-        "tickets_serveur"
+        "tickets_serveur",
+        "taux"
     ];
 
     public function serveur(){

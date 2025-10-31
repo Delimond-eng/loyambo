@@ -43,6 +43,8 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "home")->name("home");
     Route::view('/dashboard', "dashboard")->name("dashboard");
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
+    Route::post("day.close.report", [AdminController::class, "closeDayReport"])->name("day.close")->middleware("can:cloturer-journee");
+    Route::get("/caisse.day.report/{sale_day_id}", [AdminController::class, "generatePDF"])->middleware("can:cloturer-journee");
     Route::post("day.close", [AdminController::class, "closeDay"])->name("day.close")->middleware("can:cloturer-journee");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
 

@@ -10,11 +10,11 @@
         <div class="content-header">
             <div class="d-flex align-items-center justify-content-center">
                 <div class="align-center">
-                    <h3 class="page-title">Loyambo Restaurant & Hôtel</h3>
+                    <h3 class="page-title text-center">Bienvenue chez {{ Auth::user()->etablissement->nom }}</h3>
                     <div class="d-inline-block align-items-center">
                         <nav>
-                            <ol class="breadcrumb">
-                               <li class="breadcrumb-item ms-1" aria-current="page">Bienvenue {{ Auth::user()->name }}, Vous êtes connectés comme <span class="text-primary fw-700">{{ Auth::user()->role }}, <span class="fa fa-home me-1"></span> {{ Auth::user()->etablissement->nom }} | {{ Auth::user()->emplacement->libelle ?? "" }}</span></li>
+                            <ol class="breadcrumb text-center">
+                               <li class="breadcrumb-item ms-1" aria-current="page">Bienvenue {{ Auth::user()->name }}, Vous êtes connectés comme <span class="text-primary fw-700">{{ Auth::user()->role }}, <span class="fa fa-home me-1"></span> {{ Auth::user()->emplacement->libelle ?? "" }}</span></li>
                             </ol>
                         </nav>
                     </div>

@@ -45,6 +45,11 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 store: Store,
                 search: "",
                 load_id: "",
+
+                form: {
+                    total_especes: 0,
+                    tickets_serveur: 0,
+                },
             };
         },
 
@@ -64,13 +69,22 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             triggerClosingDay() {
-                postJson("/day.close", {})
-                    .then(({ data, status }) => {
-                        if (data.status === "failed") {
-                            // Construire la liste des serveurs avec emplacement
-                            let serveursList = "";
-                            data.serveurs.forEach((srv) => {
-                                serveursList += `<div class="col-xl-12">
+                Swal.fire({
+                    title: "Confirmation ?",
+                    text: "Confirmez la clôture de la journée",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "Confirmer",
+                    cancelButtonText: "Annuler",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        postJson("/day.close", {})
+                            .then(({ data, status }) => {
+                                if (data.status === "failed") {
+                                    // Construire la liste des serveurs avec emplacement
+                                    let serveursList = "";
+                                    data.serveurs.forEach((srv) => {
+                                        serveursList += `<div class="col-xl-12">
                                 <div class="media bg-light overflow-hidden">
                                 <span class="avatar status-success">
                                     <img class="avatar" src="assets/images/profil-2.png">
@@ -83,53 +97,61 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                 </div>
                                 </div>
                                 </div>`;
-                            });
+                                    });
 
-                            new Swal({
-                                icon: "warning",
-                                title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
-                                html: `
+                                    new Swal({
+                                        icon: "warning",
+                                        title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
+                                        html: `
                                 <div class="row gy-1 overflow-hidden">${serveursList}</div>
                                 `,
-                                showCancelButton: true,
-                                showConfirmButton: true,
-                                confirmButtonColor: "#4c95dd",
-                                confirmButtonText: "Voir serveurs en service",
-                                cancelButtonText: "Fermer",
-                            }).then((res) => {
-                                if (res.isConfirmed) {
-                                    location.href = "/serveurs.activities";
+                                        showCancelButton: true,
+                                        showConfirmButton: true,
+                                        confirmButtonColor: "#4c95dd",
+                                        confirmButtonText:
+                                            "Voir serveurs en service",
+                                        cancelButtonText: "Fermer",
+                                    }).then((res) => {
+                                        if (res.isConfirmed) {
+                                            location.href =
+                                                "/serveurs.activities";
+                                        }
+                                    });
+                                } else if (data.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Succès",
+                                        text: data.message,
+                                        confirmButtonText: "Fermer",
+                                    });
+                                    window.open(
+                                        "/" + data.report_url,
+                                        "_blank"
+                                    );
+                                } else {
+                                    new Swal({
+                                        icon: "error",
+                                        title: "Erreur",
+                                        text:
+                                            data.errors || "Erreur inattendue",
+                                        confirmButtonText: "Fermer",
+                                    });
                                 }
+                            })
+                            .catch((err) => {
+                                this.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plus tard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
                             });
-                        } else if (data.status === "success") {
-                            new Swal({
-                                icon: "success",
-                                title: "Succès",
-                                text: data.message,
-                                confirmButtonText: "Fermer",
-                            });
-                            location.reload();
-                        } else {
-                            new Swal({
-                                icon: "error",
-                                title: "Erreur",
-                                text: data.errors || "Erreur inattendue",
-                                confirmButtonText: "Fermer",
-                            });
-                        }
-                    })
-                    .catch((err) => {
-                        this.isLoading = false;
-                        $.toast({
-                            heading: "Echec de traitement",
-                            text: "Veuillez réessayer plus tard !",
-                            position: "top-right",
-                            loaderBg: "#ff4949ff",
-                            icon: "error",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
-                    });
+                    }
+                });
             },
 
             triggerSingleClosing(data) {
@@ -306,6 +328,61 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     })
                     .catch((err) => {
                         this.load_id = "";
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            triggerSendServeurReport(e) {
+                const reportData = this.selectedData;
+                this.form.serveur_id = reportData.user.id;
+                this.form.valeur_theorique = reportData.total_encaisse;
+                this.form.tickets_emis = reportData.total_ticket;
+                this.isLoading = true;
+
+                postJson("/day.close.report", this.form)
+                    .then(({ data, status }) => {
+                        this.isLoading = false;
+                        if (data.errors !== undefined) {
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: data.errors,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            return;
+                        }
+                        if (data.status === "success") {
+                            $("#reportAppendModal").modal("hide");
+                            this.getAllServeursServices();
+                            this.selectedData = null;
+                            this.form = {
+                                total_especes: 0,
+                                tickets_serveur: 0,
+                            };
+                            $.toast({
+                                heading: "Rapport effectué !",
+                                text: data.message,
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
                         $.toast({
                             heading: "Echec de traitement",
                             text: "Veuillez réessayer plutard !",

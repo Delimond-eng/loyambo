@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('total_especes', 15, 2)->default(0);
             $table->integer('tickets_emis')->default(0);
             $table->integer('tickets_serveur')->default(0);
+            $table->double('taux')->default(0);
             $table->timestamps();
         });
     }
