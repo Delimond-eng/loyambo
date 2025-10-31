@@ -74,69 +74,117 @@
 						<div class="d-flex">
 							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
 							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20 me-2">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
-							<button v-if="selectedPendingTable.commandes.length > 1" class="btn btn-info btn-xs mb-20"><i class="mdi mdi-link me-1"></i>Fusionner les commandes</button>
+							<button 
+                                v-if="selectedPendingTable.commandes.length > 1" 
+                                @click="toggleMergeMode()" 
+                                class="btn btn-info btn-xs mb-20"
+                                :class="{'btn-warning': isMergeMode}">
+                                <i class="mdi mdi-link me-1"></i>
+                               @{{ isMergeMode ? 'Annuler la fusion' : 'Fusionner les commandes' }}
+                            </button>
 						</div>
+						<!-- Actions de fusion (affichées seulement en mode fusion) -->
+                         <div v-if="isMergeMode" class="d-flex flex-wrap gap-2 mb-3 p-3 bg-light rounded">
+                             <button @click="fusionnerFactures()" class="btn btn-success btn-xs">
+                                 <i class="mdi mdi-check-all me-1"></i>
+                                 Fusionner les @{{ selectedFactures.length }} factures sélectionnées
+                             </button>
+                             <button @click="annulerFusion()" class="btn btn-secondary btn-xs">
+                                 <i class="mdi mdi-close me-1"></i>
+                                 Annuler
+                             </button>
+                             <span class="text-muted ms-2 align-self-center">
+                                 @{{ selectedFactures.length }} facture(s) sélectionnée(s)
+                             </span>
+                         </div>
 						<div class="row g-2">
-							<div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
-								<div class="box ribbon-box border-1 b-1 border-primary rounded-3 shadow-sm">
-									<!-- Ribbon statut -->
-									<div class="ribbon-two ribbon-two-primary" v-if="cmd.statut_service==='servie'">
-										<span v-if="cmd.statut_service==='servie'">Servie</span>
-										<span v-else>En attente</span>
-									</div>
+    <div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
+        <div class="box ribbon-box border-1 b-1 rounded-3 shadow-sm"
+             :class="{
+                 'border-primary': !isMergeMode,
+                 'border-success': isMergeMode && isFactureSelected(cmd),
+                 'border-warning': isMergeMode && !isFactureSelected(cmd)
+             }"
+             @click="isMergeMode ? toggleFactureSelection(cmd) : null"
+             :style="isMergeMode ? 'cursor: pointer;' : ''">
+            
+            <!-- Indicateur de sélection -->
+            <div v-if="isMergeMode && isFactureSelected(cmd)" 
+                 class="ribbon-two ribbon-two-success">
+                <span>Sélectionnée</span>
+            </div>
+            
+            <!-- Ribbon statut original -->
+            <div v-else class="ribbon-two ribbon-two-primary" v-if="cmd.statut_service==='servie'">
+                <span v-if="cmd.statut_service==='servie'">Servie</span>
+                <span v-else>En attente</span>
+            </div>
 
-									<div class="box-body m-0">
-										<!-- Titre -->
-										<div class="text-center border-bottom pb-2 mb-3">
-											<h5 class="fw-bold text-primary mb-0">
-												<i class="mdi mdi-file-document-outline me-2"></i>
-												Bon de Commande N°@{{ cmd.id }}
-											</h5>
-										</div>
+            <div class="box-body m-0">
+                <!-- Titre -->
+                <div class="text-center border-bottom pb-2 mb-3">
+                    <h5 class="fw-bold mb-0"
+                        :class="{
+                            'text-primary': !isMergeMode,
+                            'text-success': isMergeMode && isFactureSelected(cmd),
+                            'text-warning': isMergeMode && !isFactureSelected(cmd)
+                        }">
+                        <i class="mdi mdi-file-document-outline me-2"></i>
+                        Bon de Commande N° @{{ cmd.id }}
+                    </h5>
+                    <small class="text-muted">Total: @{{ cmd.total_ttc }}</small>
+                </div>
 
-										<!-- Actions -->
-										<div class="d-flex flex-wrap justify-content-center gap-2">
-											<!-- Edit -->
-											<button  @click="editCommande(cmd)" class="btn btn-circle btn-sm btn-primary">
-												<i class="fa fa-pencil"></i>
-											</button>
+                <!-- Actions (cachées en mode fusion) -->
+                <div v-if="!isMergeMode" class="d-flex flex-wrap justify-content-center gap-2">
+                    <!-- Edit -->
+                    <button @click="editCommande(cmd)" class="btn btn-circle btn-sm btn-primary">
+                        <i class="fa fa-pencil"></i>
+                    </button>
 
-											<!-- Impression -->
-											<button class="btn btn-circle btn-sm btn-success" 
-													@click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)">
-												<i class="fa fa-print"></i>
-											</button>
+                    <!-- Impression -->
+                    <button class="btn btn-circle btn-sm btn-success" 
+                            @click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)">
+                        <i class="fa fa-print"></i>
+                    </button>
 
-											<!-- Servir -->
-											<button v-if="cmd.statut_service==='en_attente'" 
-													@click="servirCmd(cmd)" 
-													class="btn btn-circle btn-sm btn-warning">
-												<i class="fa fa-glass"></i>
-											</button>
+                    <!-- Servir -->
+                    <button v-if="cmd.statut_service==='en_attente'" 
+                            @click="servirCmd(cmd)" 
+                            class="btn btn-circle btn-sm btn-warning">
+                        <i class="fa fa-glass"></i>
+                    </button>
 
-											<!-- Paiement -->
-											@if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
-											<button @click="selectedFacture=cmd" 
-													data-bs-toggle="modal" 
-													data-bs-target=".modal-pay-trigger" 
-													class="btn btn-circle btn-sm btn-dark">
-												<span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span>
-												<i v-else class="fa fa-money"></i>
-											</button>
-											@endif
+                    <!-- Paiement -->
+                    @if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
+                    <button @click="selectedFacture=cmd" 
+                            data-bs-toggle="modal" 
+                            data-bs-target=".modal-pay-trigger" 
+                            class="btn btn-circle btn-sm btn-dark">
+                        <span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span>
+                        <i v-else class="fa fa-money"></i>
+                    </button>
+                    @endif
 
-											<!-- Voir facture -->
-											<button class="btn btn-circle btn-sm btn-info" 
-													data-bs-toggle="modal" 
-													data-bs-target=".modal-invoice-detail" 
-													@click="selectedFacture = cmd">
-												<i class="fa fa-eye"></i>
-											</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+                    <!-- Voir facture -->
+                    <button class="btn btn-circle btn-sm btn-info" 
+                            data-bs-toggle="modal" 
+                            data-bs-target=".modal-invoice-detail" 
+                            @click="selectedFacture = cmd">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+
+                <!-- Indication en mode fusion -->
+                <div v-else class="text-center">
+                    <small :class="isFactureSelected(cmd) ? 'text-success' : 'text-muted'">
+                        @{{ isFactureSelected(cmd) ? '✓ Sélectionnée' : 'Cliquez pour sélectionner' }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 					</div>
 				</div>
 				<!-- /.modal-content -->
