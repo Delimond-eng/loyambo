@@ -101,10 +101,6 @@
   <!-- /.content-wrapper -->
 @endsection
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 07123be (31/10/2025)
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
 @endpush
