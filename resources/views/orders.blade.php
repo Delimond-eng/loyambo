@@ -1,5 +1,4 @@
 
-
 @extends("layouts.admin")
 
 @section("content")
@@ -81,7 +80,15 @@
                                                         <button type="button" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-pay-trigger" class="btn btn-info me-1 btn-xs"><i class="fa fa-money"></i></button>
                                                     @endif
                                                     <button type="button" class="btn btn-primary btn-xs me-1" @click="selectedFacture = data" data-bs-toggle="modal" data-bs-target=".modal-invoice-detail"><i class="mdi mdi-eye"></i></button>
-                                                    <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
+                                                  <button 
+                                                        type="button" 
+                                                        class="btn btn-danger-light btn-xs"
+                                                        @click="removeCommande(data)"
+                                                        :disabled="isLoading"
+   
+                                                    >
+                                                        <i class="mdi mdi-cancel"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

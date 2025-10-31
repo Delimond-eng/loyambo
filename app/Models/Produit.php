@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Categorie;
+use App\Models\Inventaire;
+use App\Models\Emplacement;
+use App\Models\MouvementStock;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Produit extends Model
 {
@@ -18,11 +22,16 @@ class Produit extends Model
         "qte_init",
         "unite",
         "seuil_reappro",
-        "image","quantified","ets_id"
+        "image","quantified","ets_id","emplacement_id"
     ];
 
     public function categorie(){
         return $this->belongsTo(Categorie::class, "categorie_id");
+    }
+
+    // AJOUT: Relation avec emplacement
+    public function emplacement(){
+        return $this->belongsTo(Emplacement::class, "emplacement_id");
     }
 
     public function inventaires()

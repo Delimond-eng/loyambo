@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Chambre;
+use App\Models\SaleDay;
+use App\Models\FactureDetail;
+use App\Models\RestaurantTable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Facture extends Model
 {

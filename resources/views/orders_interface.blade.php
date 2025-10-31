@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <aside class="sidebar d-none d-lg-block d-xl-block d-md-block">
+            <aside class="sidebar">
                 <div class="cart-header d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <i class="mdi mdi-cart-outline"></i>
