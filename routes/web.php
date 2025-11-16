@@ -42,6 +42,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get('/licence.payment/{ets_id}', [UserController::class, 'redirectToPayment'])->name('licence.payment');
     Route::view('/', "home")->name("home");
     Route::view('/dashboard', "dashboard")->name("dashboard");
+    Route::view('/settings', "settings")->name("settings");
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
     Route::post("day.close.report", [AdminController::class, "closeDayReport"])->name("day.close")->middleware("can:cloturer-journee");
     Route::get("/caisse.day.report/{sale_day_id}", [AdminController::class, "generatePDF"])->middleware("can:cloturer-journee");
@@ -136,6 +137,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/categories.all", [ProductController::class, "getAllCategories"])->name("categories.all")->middleware("can:voir-categories");
     Route::post("/product.create", [ProductController::class, "createProduct"])->name("product.create")->middleware("can:creer-produits");
     Route::post("/product.update.quantified", [ProductController::class, "updateProductQuantified"])->name("product.update.quantified")->middleware("can:modifier-produits");
+    Route::post("/product.update.tva", [ProductController::class, "updateProductTva"])->name("product.update.tva")->middleware("can:modifier-produits");
     Route::get("/products.all", [ProductController::class, "getAllProducts"])->name("products.all")->middleware("can:voir-produits");
     Route::post("/mvt.create", [ProductController::class, "createStockMvt"])->name("mvt.create")->middleware("can:creer-mouvements-stock");
     Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("products.all")->middleware("can:voir-mouvements-stock");

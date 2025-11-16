@@ -109,18 +109,20 @@
 											</select>
 										</div>
 									</div>
-									<div class="form-group" v-if="isHotel">
-									  	<label class="form-label">Type de chambre</label>
-									  	<select class="form-select" v-model="formTable.type">
-											<option value="" hidden selected>Sélectionnez un type</option>
-											<option value="simple">Simple</option>
-											<option value="double">Double</option>
-											<option value="suite">Suite</option>
-										</select>
-									</div>
-									<div class="form-group" v-if="isHotel">
-									  	<label class="form-label">Capacité de la chambre</label>
-									  	<input type="text" v-model="formTable.capacite" class="form-control" placeholder="Ex: 1 ou 2.." required>
+									<div class="row g-4">
+										<div class="form-group col-md-6" v-if="isHotel">
+											<label class="form-label">Type de chambre</label>
+											<select class="form-select" v-model="formTable.type">
+												<option value="" hidden selected>Sélectionnez un type</option>
+												<option value="simple">Simple</option>
+												<option value="double">Double</option>
+												<option value="suite">Suite</option>
+											</select>
+										</div>
+										<div class="form-group col-md-6" v-if="isHotel">
+											<label class="form-label">Capacité de la chambre</label>
+											<input type="text" v-model="formTable.capacite" class="form-control" placeholder="Ex: 1 ou 2.." required>
+										</div>
 									</div>
 								</div>
 							</div>

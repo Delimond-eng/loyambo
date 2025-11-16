@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('caissier_id');
             $table->unsignedBigInteger('sale_day_id');
             $table->date('rapport_date');
+            $table->string('taux');
             $table->decimal('valeur_theorique', 15, 2)->default(0);
             $table->decimal('total_especes', 15, 2)->default(0);
             $table->integer('tickets_emis')->default(0);

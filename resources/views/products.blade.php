@@ -34,6 +34,7 @@
                                             <th>Qté Initial</th>
                                             <th>unité</th>
                                             <th>Quantifiable</th>
+                                            <th>TVA</th>
                                             <th>statut</th>
                                             <th class="text-center">Actions</th>
                                         </tr>
@@ -68,12 +69,17 @@
                                                 </div>
                                             </td>
                                             <td>
+                                                <div class="demo-checkbox m-0 p-0">
+                                                    <input type="checkbox" @change="updateTva(data, $event)" :id="`md_checkbox_tva${data.id}`" class="filled-in chk-col-success" :checked="data.tva">
+                                                    <label :for="`md_checkbox_tva${data.id}`">TVA</label>
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <span class="badge badge-pill badge-success">actif</span>
                                             </td>
 
                                              <td class="text-center">
                                                 <div class="d-flex">
-                                                    <button type="button" class="btn btn-primary btn-xs me-1"><i class="mdi mdi-view-grid"></i></button>
                                                     <button type="button" class="btn btn-primary-light btn-xs me-1" data-bs-toggle="modal" data-bs-target="#productModal"  @click="formProduct = data"><i class="mdi mdi-pencil"></i></button>
                                                     <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-delete"></i></button>
                                                 </div>

@@ -41,7 +41,7 @@
 											</td>
 											<td class="d-flex align-items-center justify-content-end">
 												<div class="d-flex">
-													<button type="button" class="btn btn-primary btn-xs me-1" data-bs-toggle="modal" data-bs-target="#addTablesModal" @click="formTable=[{numero:'', emplacement_id:data.id}]; selectedEmplacement=data"><i class="mdi mdi-plus"></i></button>
+													<!--<button type="button" class="btn btn-primary btn-xs me-1" data-bs-toggle="modal" data-bs-target="#addTablesModal" @click="formTable=[{numero:'', emplacement_id:data.id}]; selectedEmplacement=data"><i class="mdi mdi-plus"></i></button>-->
 													<button type="button" class="btn btn-primary-light btn-xs me-1"  data-bs-toggle="modal" data-bs-target="#emplacementModal" @click="formEmplacement = data"><i class="mdi mdi-pencil"></i></button>
 													<button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-delete"></i></button>
 												</div>

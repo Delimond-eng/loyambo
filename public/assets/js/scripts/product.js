@@ -352,7 +352,45 @@ new Vue({
                         this.viewAllProducts();
                         $.toast({
                             heading: "Opération effectuée",
-                            text: `Produit quantifié !`,
+                            text: `Quantification du produit mise à jour !`,
+                            position: "top-right",
+                            loaderBg: "#49ff5eff",
+                            icon: "success",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    }
+                })
+                .catch((err) => {
+                    this.isLoading = false;
+                    $.toast({
+                        heading: "Echec de traitement",
+                        text: "Veuillez réessayer plutard !",
+                        position: "top-right",
+                        loaderBg: "#ff4949ff",
+                        icon: "error",
+                        hideAfter: 3000,
+                        stack: 6,
+                    });
+                });
+        },
+
+        updateTva(data, event) {
+            const checked = event.target.checked;
+            const productId = data.id;
+            postJson("/product.update.tva", {
+                id: productId,
+                tva: checked,
+            })
+                .then(({ data, status }) => {
+                    if (data.status === "success") {
+                        this.error = null;
+                        this.result = data.result;
+                        this.products = [];
+                        this.viewAllProducts();
+                        $.toast({
+                            heading: "Opération effectuée",
+                            text: `Tva mise à jour!`,
                             position: "top-right",
                             loaderBg: "#49ff5eff",
                             icon: "success",

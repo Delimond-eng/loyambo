@@ -113,7 +113,7 @@
 
                         @if (Auth::user()->role === 'admin')
                             <button class="menu-btn b-1 border-primary" @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/settings'">
-                                <img class="menu-icon" src="assets/icons/settings.png" alt="Utilisateurs">
+                                <img class="menu-icon" src="assets/icons/settings.png" alt="Settings">
                                 <div class="menu-label">Paramètres</div>
                             </button>
                         @endif

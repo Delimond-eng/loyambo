@@ -128,6 +128,17 @@ class ProductController extends Controller
             "product"=>$request->all()
         ]);
     }
+    public function updateProductTva(Request $request){
+        $produit = Produit::find($request->id);
+        if($produit){
+            $produit->update(["tva"=>$request->tva]);
+        }
+        return response()->json([
+            "status"=>"success",
+            "result"=>"updated success",
+            "product"=>$request->all()
+        ]);
+    }
 
     //ALL PRODUCT
     public function getAllProducts(){

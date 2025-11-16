@@ -205,13 +205,16 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                 this.formTable = {
                     numero: "",
                     emplacement_id: "",
+                    id: "",
                     prix: "",
                     prix_devise: "CDF",
                 };
             },
 
             supprimerEmplacement(id) {
-                if (confirm("Voulez-vous vraiment supprimer cet emplacement ?")) {
+                if (
+                    confirm("Voulez-vous vraiment supprimer cet emplacement ?")
+                ) {
                     this.isLoading = true;
                     postJson(`/emplacement/delete/${id}`)
                         .then(({ data, status }) => {
@@ -230,7 +233,8 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                             } else {
                                 $.toast({
                                     heading: "Erreur",
-                                    text: data.message || "Échec de suppression",
+                                    text:
+                                        data.message || "Échec de suppression",
                                     position: "top-right",
                                     loaderBg: "#ff4949ff",
                                     icon: "error",
@@ -253,7 +257,6 @@ document.querySelectorAll(".AppPlace").forEach((el) => {
                         });
                 }
             },
-
 
             whenModalHidden() {
                 const self = this;

@@ -89,9 +89,11 @@
                                                 </div>
                                             </td>
                                             <td class="text-end">
-                                                <a href="#" v-if="data.role !=='admin'" @click="openPermissionsModal(data)" data-bs-toggle="modal" data-bs-target="#modalPermissions" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Plus fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5" @click="editUser(data)"  data-bs-toggle="modal" data-bs-target="#myModal"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
-                                                <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle" @click="deleteUser(data)"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+                                                <div class="d-flex">
+                                                    <a href="#" v-if="data.role !=='admin'" @click="openPermissionsModal(data)" data-bs-toggle="modal" data-bs-target="#modalPermissions" class="waves-effect waves-light btn btn-info-light btn-circle"><span class="icon-Plus fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+                                                    <a href="#" class="waves-effect waves-light btn btn-primary-light btn-circle mx-5" @click="editUser(data)"  data-bs-toggle="modal" data-bs-target="#myModal"><span class="icon-Write"><span class="path1"></span><span class="path2"></span></span></a>
+                                                    <a href="#" class="waves-effect waves-light btn btn-danger-light btn-circle" @click="deleteUser(data)"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>

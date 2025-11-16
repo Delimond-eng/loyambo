@@ -406,7 +406,7 @@ class AdminController extends Controller
 
 
             if($emplacement->type === 'hôtel'){
-                $check = Chambre::where("numero",$data["numero"])->where("ets_id", Auth::user()->ets_id)->first();
+                $check = Chambre::where("numero",$data["numero"])->whereNot("id", $data["id"] ?? '')->where("ets_id", Auth::user()->ets_id)->first();
                 if($check && $check->emplacement_id === $data['emplacement_id']){
                     return response()->json(["errors"=> "Numéro de la table existe déjà."]);
                 }
@@ -420,9 +420,9 @@ class AdminController extends Controller
                     "ets_id"=>$user->ets_id
                 ]);
             }else{
-                $check = RestaurantTable::where("numero",$data["numero"])->where("ets_id", Auth::user()->ets_id)->first();
+                $check = RestaurantTable::where("numero",$data["numero"])->whereNot("id", $data["id"])->where("ets_id", Auth::user()->ets_id)->first();
                 if($check && $check->emplacement_id === $data['emplacement_id']){
-                    return response()->json(["errors"=> "Numéro de la chambre existe déjà."]);
+                    return response()->json(["errors"=> "Numéro de la table existe déjà."]);
                 }
                 $result = RestaurantTable::updateOrCreate($cdts,[
                     "numero"=>$data["numero"], 

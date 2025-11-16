@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('actif')->default(false);
             $table->decimal('salaire', 10, 2)->default(0);
             $table->string('role')->default('user');
+            $table->string('status')->default('actif');
             $table->unsignedBigInteger("ets_id");
             $table->unsignedBigInteger("emplacement_id")->nullable();
             $table->rememberToken(); // Jeton de session pour l’authentification "remember me"
