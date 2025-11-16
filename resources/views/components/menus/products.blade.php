@@ -12,6 +12,5 @@
         <button class="menu-tab {{ Route::is("fiche_stock") ? 'active' : '' }}" onclick="location.href='/fiche_stock'">
             Fiche de stock
         </button>
-       
     </div>
 </div>

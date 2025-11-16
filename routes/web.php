@@ -1,32 +1,27 @@
 <?php
 
-use App\Models\User;
-use App\Models\Produit;
-use App\Models\SaleDay;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use App\Models\Categorie;
 use App\Models\Emplacement;
-use Illuminate\Http\Request;
 use App\Models\MouvementStock;
+use App\Models\Produit;
+use App\Models\SaleDay;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ProductController;
 
 //Nathan imports
-use App\Http\Controllers\factureFactureController;
 use App\Http\Controllers\report\financeController;
-
+use App\Http\Controllers\report\ProduitController;
 use App\Http\Controllers\report\CommandeController;
-
-use App\Http\Controllers\Product\CategoryController;
-use App\Http\Controllers\Product\ProduitsController;
 use App\Http\Controllers\report\InventaireController;
 use App\Http\Controllers\Commandes\commandesController;
 use App\Http\Controllers\report\VentreSrviceController;
 use App\Http\Controllers\report\PerfomanceUserController;
-use App\Http\Controllers\emplacement\EmplacementController;
 use App\Http\Controllers\reservation\ReservationController;
 use App\Http\Controllers\reservation\ChambrelibreController;
 
@@ -48,6 +43,8 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/', "home")->name("home");
     Route::view('/dashboard', "dashboard")->name("dashboard");
     Route::post("day.start", [AdminController::class, "startDay"])->name("day.start")->middleware("can:ouvrir-journee");
+    Route::post("day.close.report", [AdminController::class, "closeDayReport"])->name("day.close")->middleware("can:cloturer-journee");
+    Route::get("/caisse.day.report/{sale_day_id}", [AdminController::class, "generatePDF"])->middleware("can:cloturer-journee");
     Route::post("day.close", [AdminController::class, "closeDay"])->name("day.close")->middleware("can:cloturer-journee");
     Route::view('/licences/pricing', "licences.pricing")->name("licences.pricing");
 
@@ -160,8 +157,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");
-    
-    
+
     //============Module pour les hotel===================//
     Route::view("/bedroom.reserve", "hotel_reservation")->name("bedroom.reserve")->can("voir-chambres");
     Route::post("/reservation.action", [AdminController::class, "reserverChambreOrTable"])->name("reservation.action");
@@ -234,15 +230,6 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     //edit
     Route::get('/commandes/edit/{id}', [commandesController::class, "edit"])->name("servir.edit");
     Route::put('/commandes/{id}', [CommandesController::class, 'update'])->name('commandes.update');
-    //supprimer un emplacement 
-    Route::post('/emplacement/delete/{id}', [EmplacementController::class, 'delete']);
-    Route::post('/facture.destroy', [factureFactureController::class, 'delete']);
-   
-    Route::post('/factures.fusionner', [factureFactureController::class, 'fusionner']);
-    Route::post('/product.delete', [ProduitsController::class, 'supprimer'])->name('product.delete');
-    Route::post('/categorie.delete', [CategoryController::class, 'supprimerAvecProduits'])->name('categorie.delete');
-    //approvisionnements
-    Route::get('/approvisionnements', [ProduitsController::class, 'approvisionnements'])->name('approvisionnements');
-    Route::post('/approvisionnement.store', [ProduitsController::class, 'createApprovisionnement'])->name('approvisionnement.store');
+    
 });
 

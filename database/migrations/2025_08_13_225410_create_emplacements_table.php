@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('type', 50)->nullable();
             $table->string('adresse', 255)->nullable();
             $table->string('telephone', 20)->nullable();
+            $table->text('token')->nullable();
             $table->timestamps();
         });
 

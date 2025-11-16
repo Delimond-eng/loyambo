@@ -18,16 +18,14 @@ return new class extends Migration
             $table->string('code_barre', 50)->nullable();
             $table->string('reference', 50)->nullable();
             $table->foreignId('categorie_id')->constrained('categories')->cascadeOnDelete();
-
-            
-
             $table->string('libelle', 100);
             $table->decimal('prix_unitaire', 15, 2);
             $table->string('unite', 20)->nullable();
             $table->integer("qte_init")->default(0);
             $table->integer('seuil_reappro')->default(0);
             $table->boolean('quantified')->default(true);
-            $table->string('image', 255)->nullable();
+            $table->boolean('tva')->default(false);
+            $table->text('image')->nullable();
             $table->unsignedBigInteger("ets_id");
             $table->timestamps();
         });

@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -34,6 +35,7 @@ class UserController extends Controller
                 'type' => $data['type'] ?? null,
                 'adresse' => $data['adresse'] ?? null,
                 'telephone' => $data['telephone'] ?? null,
+                'token'=> Str::random(60)
             ]);
 
             // 2️⃣ Créer l'utilisateur admin lié à cet établissement

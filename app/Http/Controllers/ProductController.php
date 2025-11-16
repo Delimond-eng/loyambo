@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Categorie;
 use App\Models\MouvementStock;
 use App\Models\Produit;
-use App\Models\Emplacement;
 use App\Models\Stock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -72,8 +71,7 @@ class ProductController extends Controller
                 "prix_unitaire"=>"required|string",
                 "unite"=>"nullable|string",
                 "seuil_reappro"=>"nullable|int",
-                "qte_init"=>"nullable|int",
-                "emplacement_id"=>"required|int|exists:emplacements,id" // AJOUT: Validation emplacement
+                "qte_init"=>"nullable|int"
             ]);
 
             if ($request->hasFile('image')) {
@@ -88,6 +86,7 @@ class ProductController extends Controller
 
             $data["ets_id"] = $user->ets_id;
             $data["quantified"] = $request->quantified ?? false;
+            $data["tva"] = $request->tva ?? false;
             $data["seuil_reappro"] = $data["seuil_reappro"] ?? 0;
             $data["qte_init"] = $data["qte_init"] ?? 0;
 
@@ -102,13 +101,9 @@ class ProductController extends Controller
                     "date_mouvement"=> Carbon::now()->setTimezone("Africa/Kinshasa"),
                     "user_id"=>Auth::id(),
                     "ets_id"=>$user->ets_id,
-                    "emplacement_id"=>$request->emplacement_id // MODIFICATION: Utiliser l'emplacement du produit
+                    "emplacement_id"=>$user->emplacement_id ?? null
                 ]);
             }
-
-            // Recharger le produit avec les relations pour le retour
-            $produit->load(['categorie', 'emplacement']);
-
             return response()->json([
                 "status"=>"success",
                 "produit"=>$produit
@@ -134,19 +129,13 @@ class ProductController extends Controller
         ]);
     }
 
-    //ALL PRODUCT - MODIFIÉ pour inclure les emplacements
+    //ALL PRODUCT
     public function getAllProducts(){
         $user = Auth::user();
-        $products = Produit::with(["categorie", "stocks", "emplacement"]) // AJOUT: Relation emplacement
+        $products = Produit::with(["categorie", "stocks"])
             ->where("ets_id", $user->ets_id)
             ->orderBy("libelle")->get();
-        
-        $emplacements = Emplacement::where("ets_id", $user->ets_id)->get(); // AJOUT: Récupérer les emplacements
-
-        return response()->json([
-            "produits"=>$products,
-            "emplacements"=>$emplacements // AJOUT: Retourner les emplacements
-        ]);
+        return response()->json(["produits"=>$products]);
     }
 
 

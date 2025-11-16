@@ -17,6 +17,7 @@ class Etablissement extends Model
         'type',
         'adresse',
         'telephone',
+        'token',
     ];
 
     public function users()

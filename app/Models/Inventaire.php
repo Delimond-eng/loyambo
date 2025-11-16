@@ -10,23 +10,26 @@ class Inventaire extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'produit_id',
+        'date_debut',
+        'date_fin',
+        'admin_id',
         'ets_id',
-        'quantite_physique',
-        'quantite_theorique',
-        'ecart',
-        'observation',
-        'date_inventaire',
-        'user_id',
+        'emplacement_id',
+        'comment',
+        'status'
     ];
 
-    public function produit()
+    public function admin()
     {
-        return $this->belongsTo(Produit::class, 'produit_id');
+        return $this->belongsTo(User::class, 'admin_id');
+    }
+    public function etablissement()
+    {
+        return $this->belongsTo(Etablissement::class, 'ets_id');
+    }
+    public function emplacement()
+    {
+        return $this->belongsTo(Emplacement::class, 'emplacement_id');
     }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 }

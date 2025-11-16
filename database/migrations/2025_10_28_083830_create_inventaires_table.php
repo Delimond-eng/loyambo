@@ -15,14 +15,13 @@ return new class extends Migration
     {
         Schema::create('inventaires', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produit_id')->constrained('produits')->onDelete('cascade');
-            $table->foreignId('ets_id')->nullable()->constrained('etablissements')->onDelete('cascade');
-            $table->integer('quantite_physique');
-            $table->integer('quantite_theorique')->nullable();
-            $table->integer('ecart')->nullable(); // différence entre théorie et réel
-            $table->text('observation')->nullable();
-            $table->date('date_inventaire')->default(now());
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // l’utilisateur qui a fait l’inventaire
+            $table->date("date_debut");
+            $table->date("date_fin")->nullable();
+            $table->unsignedBigInteger("admin_id");
+            $table->unsignedBigInteger('ets_id');
+            $table->unsignedBigInteger('emplacement_id')->nullable();
+            $table->text("comment")->nullable();
+            $table->enum("status", ["pending", "closed"])->default("pending");
             $table->timestamps();
         });
     }

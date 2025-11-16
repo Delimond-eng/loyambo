@@ -134,7 +134,6 @@ public function approvisionnements()
 
             foreach ($request->items as $item) {
                 $produit = Produit::find($item['produit_id']);
-                
                 MouvementStock::create([
                     'produit_id' => $item['produit_id'],
                     'type_mouvement' => 'entree',
@@ -164,7 +163,6 @@ public function approvisionnements()
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
             return response()->json([
                 'status' => 'error',
                 'message' => 'Erreur lors de l\'enregistrement: ' . $e->getMessage()

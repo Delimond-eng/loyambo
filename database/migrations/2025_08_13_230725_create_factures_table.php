@@ -30,7 +30,6 @@ return new class extends Migration
             $table->unsignedBigInteger("ets_id");
             $table->unsignedBigInteger("emplacement_id");
             $table->unsignedBigInteger("client_id")->nullable();
-            $table->boolean('is_reserved')->default(false);
             $table->timestamps();
         });
     }

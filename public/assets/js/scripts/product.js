@@ -21,8 +21,9 @@ new Vue({
             },
 
             formProduct: {
-                code_barre: "BC-" + Math.floor(100000 + Math.random() * 900000), // GÉNÉRATION AUTO
-                reference: "REF-" + Math.floor(100000 + Math.random() * 900000), // GÉNÉRATION AUTO
+                code_barre: this.generateEAN13(), // GÉNÉRATION AUTO
+                reference:
+                    "PROD-" + Math.floor(100000 + Math.random() * 900000), // GÉNÉRATION AUTO
                 categorie_id: "",
                 libelle: "",
                 prix_unitaire: "",
@@ -30,6 +31,7 @@ new Vue({
                 seuil_reappro: "",
                 qte_init: "",
                 quantified: true,
+                tva: false,
                 emplacement_id: "", // AJOUT: Champ emplacement
             },
 
@@ -66,106 +68,121 @@ new Vue({
     methods: {
         //AFFICHE LA LISTE DES USERS
         supprimerCategorie(categorie) {
-        console.log("Suppression de la catégorie:", categorie);
-        
-        if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categorie.libelle}" ?\n\nAttention : Cette action supprimera également tous les produits de cette catégorie.`)) {
-            this.isLoading = true;
-            
-            postJson(`/categorie.delete`, { id: categorie.id })
-                .then(({ data: response, status }) => {
-                    this.isLoading = false;
-                    console.log("Réponse suppression catégorie:", response);
-                    
-                    if (response.status === "success") {
-                        $.toast({
-                            heading: "Succès",
-                            text: "Catégorie supprimée avec succès!",
-                            position: "top-right",
-                            loaderBg: "#49ff86ff",
-                            icon: "success",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
-                        // Recharger la liste des catégories
-                        this.viewAllCategories();
-                    } else {
+            console.log("Suppression de la catégorie:", categorie);
+
+            if (
+                confirm(
+                    `Êtes-vous sûr de vouloir supprimer la catégorie "${categorie.libelle}" ?\n\nAttention : Cette action supprimera également tous les produits de cette catégorie.`
+                )
+            ) {
+                this.isLoading = true;
+
+                postJson(`/categorie.delete`, { id: categorie.id })
+                    .then(({ data: response, status }) => {
+                        this.isLoading = false;
+                        console.log("Réponse suppression catégorie:", response);
+
+                        if (response.status === "success") {
+                            $.toast({
+                                heading: "Succès",
+                                text: "Catégorie supprimée avec succès!",
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            // Recharger la liste des catégories
+                            this.viewAllCategories();
+                        } else {
+                            $.toast({
+                                heading: "Erreur",
+                                text:
+                                    response.message ||
+                                    response.errors ||
+                                    "Erreur lors de la suppression",
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        console.error("Erreur suppression catégorie:", err);
                         $.toast({
                             heading: "Erreur",
-                            text: response.message || response.errors || "Erreur lors de la suppression",
+                            text: "Erreur lors de la suppression",
                             position: "top-right",
                             loaderBg: "#ff4949ff",
                             icon: "error",
                             hideAfter: 3000,
                             stack: 6,
                         });
-                    }
-                })
-                .catch((err) => {
-                    this.isLoading = false;
-                    console.error("Erreur suppression catégorie:", err);
-                    $.toast({
-                        heading: "Erreur",
-                        text: "Erreur lors de la suppression",
-                        position: "top-right",
-                        loaderBg: "#ff4949ff",
-                        icon: "error",
-                        hideAfter: 3000,
-                        stack: 6,
                     });
-                });
-        }
-    },
+            }
+        },
 
         supprimerProduit(produit) {
-        console.log("Suppression du produit:", produit);
-        
-        if (confirm(`Êtes-vous sûr de vouloir supprimer le produit "${produit.libelle}" ? Cette action est irréversible.`)) {
-            this.isLoading = true;
-            
-            postJson(`/product.delete`, { id: produit.id })
-                .then(({ data: response, status }) => {
-                    this.isLoading = false;
-                    console.log("Réponse suppression:", response);
-                    
-                    if (response.status === "success") {
-                        $.toast({
-                            heading: "Succès",
-                            text: "Produit supprimé avec succès!",
-                            position: "top-right",
-                            loaderBg: "#49ff86ff",
-                            icon: "success",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
-                        // Recharger la liste des produits
-                        this.viewAllProducts();
-                    } else {
+            console.log("Suppression du produit:", produit);
+
+            if (
+                confirm(
+                    `Êtes-vous sûr de vouloir supprimer le produit "${produit.libelle}" ? Cette action est irréversible.`
+                )
+            ) {
+                this.isLoading = true;
+
+                postJson(`/product.delete`, { id: produit.id })
+                    .then(({ data: response, status }) => {
+                        this.isLoading = false;
+                        console.log("Réponse suppression:", response);
+
+                        if (response.status === "success") {
+                            $.toast({
+                                heading: "Succès",
+                                text: "Produit supprimé avec succès!",
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            // Recharger la liste des produits
+                            this.viewAllProducts();
+                        } else {
+                            $.toast({
+                                heading: "Erreur",
+                                text:
+                                    response.message ||
+                                    response.errors ||
+                                    "Erreur lors de la suppression",
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        console.error("Erreur suppression:", err);
                         $.toast({
                             heading: "Erreur",
-                            text: response.message || response.errors || "Erreur lors de la suppression",
+                            text: "Erreur lors de la suppression",
                             position: "top-right",
                             loaderBg: "#ff4949ff",
                             icon: "error",
                             hideAfter: 3000,
                             stack: 6,
                         });
-                    }
-                })
-                .catch((err) => {
-                    this.isLoading = false;
-                    console.error("Erreur suppression:", err);
-                    $.toast({
-                        heading: "Erreur",
-                        text: "Erreur lors de la suppression",
-                        position: "top-right",
-                        loaderBg: "#ff4949ff",
-                        icon: "error",
-                        hideAfter: 3000,
-                        stack: 6,
                     });
-                });
-        }
-    },
+            }
+        },
+
         viewAllCategories() {
             const validPath = location.pathname === "/products.categories";
             if (validPath) {
@@ -191,8 +208,11 @@ new Vue({
                         this.products = data.produits;
                         this.emplacements = data.emplacements || []; // S'assurer que c'est un tableau
                         console.log("Produits chargés:", this.products.length);
-                        console.log("Emplacements chargés:", this.emplacements.length);
-                        console.log('produits:', JSON.stringify(this.products));
+                        console.log(
+                            "Emplacements chargés:",
+                            this.emplacements.length
+                        );
+                        console.log("produits:", JSON.stringify(this.products));
                     })
                     .catch((err) => {
                         this.isDataLoading = false;
@@ -216,7 +236,7 @@ new Vue({
                     });
             }
         },
-        
+
         //CREATE CATEGORIE
         submitCategorie() {
             this.isLoading = true;
@@ -418,8 +438,9 @@ new Vue({
             };
 
             this.formProduct = {
-                code_barre: "BC-" + Math.floor(100000 + Math.random() * 900000), // REGÉNÉRATION AUTO
-                reference: "REF-" + Math.floor(100000 + Math.random() * 900000), // REGÉNÉRATION AUTO
+                code_barre: this.generateEAN13(), // REGÉNÉRATION AUTO
+                reference:
+                    "PROD-" + Math.floor(100000 + Math.random() * 900000), // REGÉNÉRATION AUTO
                 categorie_id: "",
                 libelle: "",
                 prix_unitaire: "",
@@ -427,6 +448,7 @@ new Vue({
                 seuil_reappro: "",
                 qte_init: "",
                 quantified: true,
+                tva: false,
                 emplacement_id: "", // AJOUT: Réinitialiser emplacement
             };
 
@@ -452,6 +474,24 @@ new Vue({
                     self.resetAll();
                 });
             });
+        },
+
+        generateEAN13() {
+            // Générer les 12 premiers chiffres aléatoires
+            let digits = "";
+            for (let i = 0; i < 12; i++) {
+                digits += Math.floor(Math.random() * 10);
+            }
+
+            // Calcul du chiffre de contrôle
+            let sum = 0;
+            for (let i = 0; i < digits.length; i++) {
+                let num = parseInt(digits[i]);
+                sum += i % 2 === 0 ? num : num * 3;
+            }
+            let checkDigit = (10 - (sum % 10)) % 10;
+
+            return digits + checkDigit; // Code-barres EAN-13 valide
         },
     },
 

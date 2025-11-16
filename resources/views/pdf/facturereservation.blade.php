@@ -143,7 +143,8 @@
 <body>
     <div class="invoice-container">
         <div class="header">
-                        <h4>Facture de Réservation</h4>
+            <h1>{{$facture->emplacement->libelle}}</h1>
+            <h4>Facture de Réservation</h4>
             <p>Référence : #{{ $facture->numero_facture }}</p>
         </div>
 

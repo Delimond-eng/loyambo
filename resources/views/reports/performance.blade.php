@@ -18,8 +18,8 @@
             <div class="row">
                 <div class="col-12">
                     <div class="box">
-                        <div class="box-header with-border p-5 mt-5 text-center">
-                            <h4 class="box-title mt-5">Performance des ventes des employés</h4>
+                        <div class="box-header with-border p-5 text-center">
+                            <h4 class="box-title">Performance des ventes des employés</h4>
                             <p class="text-muted">Voir les performances de vente de tous les employés</p>
                         </div>
 
@@ -71,7 +71,7 @@
                         <!-- Statistiques globales -->
                         <div class="box-body">
                             <div class="row mb-4">
-                                <div class="col-xl-4 col-md-6">
+                                <div class="col-xl-3 col-md-6">
                                     <div class="box bg-primary text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ $totalEmployes }}</h2>
@@ -79,11 +79,7 @@
                                         </div>
                                     </div>
                                 </div>
-<<<<<<< HEAD
                                 <div class="col-xl-3 col-md-6">
-=======
-                                <div class="col-xl-4 col-md-6">
->>>>>>> 07123be (31/10/2025)
                                     <div class="box bg-success text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ $totalCommandes }}</h2>
@@ -91,15 +87,25 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-xl-4 col-md-6">
+                                <div class="col-xl-3 col-md-6">
                                     <div class="box bg-info text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ number_format($totalEncaissement, 0, ',', ' ') }}</h2>
-                                            <p class="mb-0">Total Encaissé ()</p>
+                                            <p class="mb-0">Total Encaissé (CDF)</p>
                                         </div>
                                     </div>
                                 </div>
-                               
+                                <div class="col-xl-3 col-md-6">
+                                    <div class="box bg-warning text-white">
+                                        <div class="box-body text-center">
+                                            @php
+                                                $panierMoyenGlobal = $totalCommandes > 0 ? $totalEncaissement / $totalCommandes : 0;
+                                            @endphp
+                                            <h2 class="mb-0">{{ number_format($panierMoyenGlobal, 0, ',', ' ') }}</h2>
+                                            <p class="mb-0">Panier Moyen (CDF)</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Tableau des performances -->
@@ -125,7 +131,7 @@
                                                             <th>Commandes Servies</th>
                                                             <th>Total Encaissé</th>
                                                             <th>Panier Moyen</th>
-                                                           
+                                                            <th>Performance</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -178,7 +184,21 @@
                                                                 <td class="text-end">
                                                                     {{ number_format($performance['panier_moyen'], 0, ',', ' ') }} {{ $performance['devise_principale'] }}
                                                                 </td>
-                                                                
+                                                                <td class="text-center">
+                                                                    <div class="progress" style="height: 20px;">
+                                                                        <div class="progress-bar bg-{{ $classPerformance }}" 
+                                                                             role="progressbar" 
+                                                                             style="width: {{ $pourcentagePerformance }}%"
+                                                                             aria-valuenow="{{ $pourcentagePerformance }}" 
+                                                                             aria-valuemin="0" 
+                                                                             aria-valuemax="100">
+                                                                            {{ number_format($pourcentagePerformance, 1) }}%
+                                                                        </div>
+                                                                    </div>
+                                                                    <small class="text-muted">
+                                                                        Basé sur le CA moyen
+                                                                    </small>
+                                                                </td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
@@ -189,7 +209,111 @@
                                 </div>
                             </div>
 
-                            
+                            <!-- Classement des meilleurs performeurs -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="box">
+                                        <div class="box-header">
+                                            <h4 class="box-title">Top 5 - Meilleurs Serveurs</h4>
+                                        </div>
+                                        <div class="box-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Serveur</th>
+                                                            <th>Statut</th>
+                                                            <th>Commandes</th>
+                                                            <th>CA (CDF)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                            $serveurs = collect($performances)
+                                                                ->filter(function($performance) {
+                                                                    return $performance['employe']->role === 'serveur';
+                                                                })
+                                                                ->sortByDesc('total_encaissement')
+                                                                ->take(5);
+                                                        @endphp
+                                                        @foreach($serveurs as $index => $performance)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <span class="badge badge-primary">{{ $index + 1 }}</span>
+                                                                </td>
+                                                                <td>{{ $performance['employe']->name }}</td>
+                                                                <td class="text-center">
+                                                                    @if($performance['est_actif'])
+                                                                        <span class="badge badge-success">Actif</span>
+                                                                    @else
+                                                                        <span class="badge badge-secondary">Inactif</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">{{ $performance['nombre_commandes'] }}</td>
+                                                                <td class="text-end text-success">
+                                                                    {{ number_format($performance['total_encaissement'], 0, ',', ' ') }} CDF
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="box">
+                                        <div class="box-header">
+                                            <h4 class="box-title">Top 5 - Meilleurs Caissiers</h4>
+                                        </div>
+                                        <div class="box-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Caissier</th>
+                                                            <th>Statut</th>
+                                                            <th>Transactions</th>
+                                                            <th>CA (CDF)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @php
+                                                            $caissiers = collect($performances)
+                                                                ->filter(function($performance) {
+                                                                    return $performance['employe']->role === 'caissier';
+                                                                })
+                                                                ->sortByDesc('total_encaissement')
+                                                                ->take(5);
+                                                        @endphp
+                                                        @foreach($caissiers as $index => $performance)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <span class="badge badge-success">{{ $index + 1 }}</span>
+                                                                </td>
+                                                                <td>{{ $performance['employe']->name }}</td>
+                                                                <td class="text-center">
+                                                                    @if($performance['est_actif'])
+                                                                        <span class="badge badge-success">Actif</span>
+                                                                    @else
+                                                                        <span class="badge badge-secondary">Inactif</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">{{ $performance['nombre_commandes'] }}</td>
+                                                                <td class="text-end text-success">
+                                                                    {{ number_format($performance['total_encaissement'], 0, ',', ' ') }} CDF
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

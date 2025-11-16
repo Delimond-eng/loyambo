@@ -41,13 +41,9 @@
 											</td>
 											<td class="d-flex align-items-center justify-content-end">
 												<div class="d-flex">
-													
+													<button type="button" class="btn btn-primary btn-xs me-1" data-bs-toggle="modal" data-bs-target="#addTablesModal" @click="formTable=[{numero:'', emplacement_id:data.id}]; selectedEmplacement=data"><i class="mdi mdi-plus"></i></button>
 													<button type="button" class="btn btn-primary-light btn-xs me-1"  data-bs-toggle="modal" data-bs-target="#emplacementModal" @click="formEmplacement = data"><i class="mdi mdi-pencil"></i></button>
-													<button type="button" 
-                                                             class="btn btn-danger-light btn-xs"
-                                                             @click="supprimerEmplacement(data.id)">
-                                                         <i class="mdi mdi-delete"></i>
-                                                     </button>
+													<button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-delete"></i></button>
 												</div>
 											</td>
 										</tr>
@@ -131,11 +127,7 @@
 										<input type="text" class="form-control ps-15 bg-transparent"
 											placeholder="Numéro..ex: 01" v-model="input.numero" required>
 										<button type="button" v-if="index===0" @click="formTable.push({numero:'', emplacement_id:selectedEmplacement.id})" class="btn btn-sm btn-primary"><i class="mdi mdi-plus"></i></button>
-										<button type="button" 
-                                                class="btn btn-danger-light btn-xs"
-                                                @click="supprimerEmplacement(data.id)">
-                                            <i class="mdi mdi-delete"></i>
-                                        </button>
+										<button type="button" v-else @click="formTable.splice(index, 1)" class="btn btn-sm btn-danger-light"><i class="mdi mdi-close"></i></button>
 									</div>
 								</div>
 							</div>
