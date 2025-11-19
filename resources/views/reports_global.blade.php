@@ -33,7 +33,7 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="(data, index) in allReports">
-                                            <td>@{{ data.sale_day.start_time }} <span v-if="data.sale_day.end_time"> au @{{ data.sale_day.end_time  }}</span><span class="text-success ms-2">Journée ouverte</span> </td>
+                                            <td>@{{ data.sale_day.start_time }} <span v-if="data.sale_day.end_time"> au @{{ data.sale_day.end_time  }}</span><spa v-else class="text-success ms-2">Journée ouverte</span> </td>
                                             <td>
                                                 <h6 class="mb-0">
                                                     <a href="#" class="fw-600">@{{ data.user.name }}</a>

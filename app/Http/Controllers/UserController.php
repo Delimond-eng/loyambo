@@ -91,7 +91,7 @@ class UserController extends Controller
             // Validation
             $data = $request->validate([
                 'name'=>'required|string',
-                'email'=>'required|email|unique:users,email',
+                'email'=>'required|email',
                 'password'=>'required|string',
                 'emplacement_id'=>'required|int|exists:emplacements,id',
                 'role'=>"required|string"
@@ -112,12 +112,13 @@ class UserController extends Controller
                 }
             }
             $data["ets_id"] = Auth::user()->ets_id;
+            $data["name"] = Str::upper($data["name"]);
             $data["password"] = bcrypt($data["password"]);
             $data["salaire"] = 0;
 
             // Création ou mise à jour
             $user = User::updateOrCreate(
-                ["id" => $request->id ?? null],
+                ["id" => $request->id ?? null, "email"=>$request->email ],
                 $data
             );
 
@@ -145,19 +146,19 @@ class UserController extends Controller
         }
     }
 
-    public function redirectToPayment($ets_id)
+    public function redirectToPayment()
     {
-        $etablissement = Etablissement::findOrFail($ets_id);
+        $user = Auth::user();
         // Nombre d'utilisateurs pour calculer le montant
-        $userCount = User::where('ets_id', $etablissement->id)->count();
+        $userCount = User::where('ets_id', $user->ets_id)->count();
         $amount = $userCount * 8; // 8$ par utilisateur
 
         // Générer un UUID unique pour le paiement
-        $uuid = (string) \Illuminate\Support\Str::uuid();
+        $uuid = (string) Str::uuid();
 
         // Créer une entrée dans licence_pay_requests
         $payRequest = LicencePayRequest::create([
-            'ets_id' => $etablissement->id,
+            'ets_id' => $user->ets_id,
             'uuid' => $uuid,
             'amount' => $amount,
             'status' => 'pending'
@@ -168,16 +169,42 @@ class UserController extends Controller
             'amount' => $amount,
             'currency' => 'USD',
             'uuid' => $uuid,
-            'phone' => $etablissement->telephone
+            'phone' => $user->etablissement->telephone
         ]);
 
         $secretKey = '9f8b7c3a2d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a';
         $hash = hash_hmac('sha256', $data, $secretKey);
         $payload = base64_encode($data . '::' . $hash);
 
-        $url = 'https://payment.milleniumhorizon.com?query=' . urlencode($payload);
+        $url = 'https://pay.milleniumhorizon.com?query=' . urlencode($payload);
 
-        return redirect($url);
+        return response()->json([
+            "status"=> "success",
+            "uuid"=>$uuid,
+            "url"=>$url
+        ]);
+    }
+    
+
+    public function confirmPayment(Request $request)
+    {
+        $user = Auth::user();
+        // Créer une entrée dans licence_pay_requests
+        $pay = LicencePayRequest::where( "uuid",$request->uuid)->latest()->first();
+        $pay->status = "valid";
+        $pay->save();
+
+        $licence = Licence::where('ets_id',$user->ets_id)->latest()->first();
+        $licence->type = "paid";
+        $licence->date_debut = now();
+        $licence->date_fin = now()->addMonth();
+        $licence->save();
+
+        return response()->json([
+            "status"=> "success",
+            "result"=> $pay,
+            "licence" => $licence
+        ]);
     }
 
 
@@ -193,7 +220,7 @@ class UserController extends Controller
         $data = json_encode([
             'amount' => $amount,
             'currency' => $currency,
-            "uuid" => (string) \Illuminate\Support\Str::uuid(),
+            "uuid" => (string) Str::uuid(),
             "phone" => $etablissement->telephone
         ]);
         $secretKey = '9f8b7c3a2d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a';
@@ -201,7 +228,7 @@ class UserController extends Controller
 
         $payload = base64_encode($data . '::' . $hash);
 
-        $url = 'https://payment.milleniumhorizon.com?query=' . urlencode($payload);
+        $url = 'https://pay.milleniumhorizon.com?query=' . urlencode($payload);
 
         return $url;
     }

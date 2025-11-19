@@ -171,6 +171,21 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-md-12" v-show="formProduct.qte_init !== ''">
+                                        <div class="form-group">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text bg-transparent"><i
+                                                        class="ti-home text-primary"></i></span>
+                                                <select class="form-control ps-15 bg-transparent" v-model="formProduct.emplacement_id">
+                                                    <option value="" selected hidden label="Emplacement du stock initial"></option>
+                                                    @foreach ($emplacements as $emp )
+                                                    <option value="{{ $emp->id }}">{{ $emp->libelle }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="row">

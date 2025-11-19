@@ -25,7 +25,8 @@ class Facture extends Model
         'statut_service',
         'ets_id',
         'emplacement_id',
-        'client_id'
+        'client_id',
+        'tva'
     ];
 
     // Relations

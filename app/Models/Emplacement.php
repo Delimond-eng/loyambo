@@ -26,4 +26,9 @@ class Emplacement extends Model
     {
         return $this->hasMany(Chambre::class, "emplacement_id", "id");
     }
+
+    public function mouvements()
+    {
+        return $this->hasMany(MouvementStock::class, 'emplacement_id');
+    }
 }

@@ -38,7 +38,7 @@
 
 		<section class="content" v-if="!isDataLoading">
 		  	<div>
-			  <!-- Default box -->
+			<!-- Default box -->
 			  	<div class="box bg-transparent no-shadow b-0">
 					<div class="box-body">
 						<div class="row d-flex justify-content-center">
@@ -46,6 +46,9 @@
 								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
 									<div class="box-body ribbon-box">
 										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
+										<div style="position: absolute; top: 10px; right: 10px;" v-if="table.commandes.length > 0 && checkServiceStatus(table.commandes)">
+											<span class="fs-18 mx-10 text-success icon-Dinner1"><span class="path1"></span><span class="path2"></span></span>
+										</div>
 										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
                                         <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
 										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
@@ -74,7 +77,7 @@
 						<div class="d-flex">
 							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
 							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20 me-2">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
-							<button v-if="selectedPendingTable.commandes.length > 1" class="btn btn-info btn-xs mb-20"><i class="mdi mdi-link me-1"></i>Fusionner les commandes</button>
+							<button v-if="selectedPendingTable.commandes.length > 1" class="btn btn-info btn-xs mb-20" @click="fusionnerCmds(selectedPendingTable.commandes)"><i class="mdi mdi-link me-1"></i>Fusionner les commandes</button>
 						</div>
 						<div class="row g-2">
 							<div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
@@ -241,7 +244,7 @@
 									<div>
 										<p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
 										<p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
-										<p>TVA  :  0</p>
+										<p>TVA  :  @{{ selectedFacture.tva }}</p>
 									</div>
 									<div class="total-payment">
 										<h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>

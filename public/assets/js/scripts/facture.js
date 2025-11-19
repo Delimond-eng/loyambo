@@ -66,75 +66,90 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
         },
 
         methods: {
-           removeCommande(data) {
-    console.log("🟡 ID à supprimer:", data.id);
-    
-    if (data.statut !== 'en_attente') {
-        $.toast({
-            heading: "Action impossible",
-            text: "Seules les commandes en attente peuvent être supprimées",
-            position: "top-right",
-            loaderBg: "#ffa500",
-            icon: "warning",
-            hideAfter: 3000,
-            stack: 6,
-        });
-        return;
-    }
-
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) {
-        this.isLoading = true;
-        
-        console.log("🟡 Envoi POST à /facture.delete avec ID:", data.id);
-        
-        postJson(`/facture.destroy`, { id: data.id })
-            .then((response) => {
-                this.isLoading = false;
-                console.log("🟢 Réponse complète:", response);
-                console.log("🟢 Data:", response.data);
-                console.log("🟢 Status:", response.status);
-                
-                if (response.data.status === "success") {
+            removeCommande(data) {
+                console.log("🟡 ID à supprimer:", data.id);
+                if (data.statut !== "en_attente") {
                     $.toast({
-                        heading: "Succès",
-                        text: "Commande supprimée avec succès!",
+                        heading: "Action impossible",
+                        text: "Seules les commandes en attente peuvent être supprimées",
                         position: "top-right",
-                        loaderBg: "#49ff86ff",
-                        icon: "success",
+                        loaderBg: "#ffa500",
+                        icon: "warning",
                         hideAfter: 3000,
                         stack: 6,
                     });
-                    this.viewAllFactures();
-                } else {
-                    console.log("🔴 Erreur réponse:", response.data);
-                    $.toast({
-                        heading: "Erreur",
-                        text: response.data.errors || response.data.message || "Erreur lors de la suppression",
-                        position: "top-right",
-                        loaderBg: "#ff4949ff",
-                        icon: "error",
-                        hideAfter: 3000,
-                        stack: 6,
-                    });
+                    return;
                 }
-            })
-            .catch((err) => {
-                this.isLoading = false;
-                console.error("🔴 Erreur catch:", err);
-                console.error("🔴 Response error:", err.response);
-                
-                $.toast({
-                    heading: "Erreur HTTP",
-                    text: "Erreur: " + (err.response?.status || "Network error"),
-                    position: "top-right",
-                    loaderBg: "#ff4949ff",
-                    icon: "error",
-                    hideAfter: 5000,
-                    stack: 6,
-                });
-            });
-    }
-},
+
+                if (
+                    confirm(
+                        "Êtes-vous sûr de vouloir supprimer cette commande ?"
+                    )
+                ) {
+                    this.isLoading = true;
+
+                    console.log(
+                        "🟡 Envoi POST à /facture.delete avec ID:",
+                        data.id
+                    );
+
+                    postJson(`/facture.destroy`, { id: data.id })
+                        .then((response) => {
+                            this.isLoading = false;
+                            console.log("🟢 Réponse complète:", response);
+                            console.log("🟢 Data:", response.data);
+                            console.log("🟢 Status:", response.status);
+
+                            if (response.data.status === "success") {
+                                $.toast({
+                                    heading: "Succès",
+                                    text: "Commande supprimée avec succès!",
+                                    position: "top-right",
+                                    loaderBg: "#49ff86ff",
+                                    icon: "success",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                                this.viewAllFactures();
+                            } else {
+                                console.log(
+                                    "🔴 Erreur réponse:",
+                                    response.data
+                                );
+                                $.toast({
+                                    heading: "Erreur",
+                                    text:
+                                        response.data.errors ||
+                                        response.data.message ||
+                                        "Erreur lors de la suppression",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            this.isLoading = false;
+                            console.error("🔴 Erreur catch:", err);
+                            console.error("🔴 Response error:", err.response);
+
+                            $.toast({
+                                heading: "Erreur HTTP",
+                                text:
+                                    "Erreur: " +
+                                    (err.response?.status || "Network error"),
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 5000,
+                                stack: 6,
+                            });
+                        });
+                }
+            },
+
             viewAllFactures() {
                 this.isDataLoading = true;
                 const url =
@@ -309,7 +324,7 @@ document.querySelectorAll(".AppFacture").forEach((el) => {
                 <hr/>
                 <p class="right">Total HT: ${facture.total_ht}</p>
                 <p class="right">Remise: ${facture.remise}%</p>
-                <p class="right">TVA: 0</p>
+                <p class="right">TVA: ${facture.tva}</p>
                 <h3 class="right">TOTAL TTC: ${facture.total_ttc}</h3>
                 <hr/>
                 <p class="center">Merci pour votre visite !</p>

@@ -32,7 +32,7 @@ new Vue({
                 qte_init: "",
                 quantified: true,
                 tva: false,
-                emplacement_id: "", // AJOUT: Champ emplacement
+                emplacement_id: "",
             },
 
             formMvt: {

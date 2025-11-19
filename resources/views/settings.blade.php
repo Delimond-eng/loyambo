@@ -39,17 +39,17 @@
                                 <h4 class="mb-0 text-black">{{ Auth::user()->etablissement->nom }},  {{ Auth::user()->etablissement->adresse }}</h4>
                             </div>
                         </div>
-                        <div class="box-body border-bottom">
+                        <div class="box-body border-bottom LicenceApp">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <i class="fa fa-key me-10 fs-24"></i>
                                     <h4 class="mb-0 text-black">Licence {{ auth()->user()->etablissement->licence->type }} -- <small class="text-primary">({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)</small></h4>
                                 </div>
-                                <a href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}" class="btn btn-xs btn-primary"> <i class="mdi mdi-key-plus me-1"></i> Activer </a>
+                                <button  @click="activeApp" class="btn btn-xs btn-primary"> <i class="mdi mdi-key-plus me-1"></i> Activer </button>
                             </div>
                         </div>
                         <div class="box-body">
-                            <h4 class="mb-10">Module de comptabilité </h4>
+                            <h4 class="mb-10">Module de comptabilité</h4>
                             <div class="d-lg-flex d-xl-flex d-xxxl-flex d-xxl-flex d-grid overflow-scroll justify-content-between align-items-center">
                                 <p class="text-success">{{ auth()->user()->etablissement->token }}</p>
                                 <button class="btn btn-xs btn-success"> <i class="mdi mdi-link me-1"></i> Lier au module comptable </button>
@@ -65,3 +65,7 @@
 </div>
   <!-- /.content-wrapper -->
 @endsection
+
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/licence.js") }}"></script>
+@endpush

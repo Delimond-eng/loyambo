@@ -39,7 +39,8 @@ use App\Http\Controllers\reservation\ChambrelibreController;
 Auth::routes();
 Route::post("/create.account", [UserController::class, "createEtsAccount"])->name("create.account");
 Route::middleware(["auth", "check.day.access"])->group(function(){
-    Route::get('/licence.payment/{ets_id}', [UserController::class, 'redirectToPayment'])->name('licence.payment');
+    Route::get('/licence.payment', [UserController::class, 'redirectToPayment'])->name('licence.payment');
+    Route::post('/licence.payment.confirm', [UserController::class, 'confirmPayment'])->name('licence.payment.confirm');
     Route::view('/', "home")->name("home");
     Route::view('/dashboard', "dashboard")->name("dashboard");
     Route::view('/settings', "settings")->name("settings");
@@ -58,42 +59,13 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/orders.interface', "orders_interface")->name("orders.interface");
     Route::view('/products.categories', "product_categories")->name("products.categories");
     Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->where("ets_id", Auth::user()->ets_id)->get(), "emplacements" => Emplacement::where("ets_id", Auth::user()->ets_id)->get()]))->name("products.mvts");
-    Route::get('/fiche_stock', function () {
-
-    // Récupération des produits avec leurs mouvements de stock + emplacement
-    $produits = Produit::where('ets_id', Auth::user()->ets_id)
-        ->orderBy('libelle')
-        ->get();
-
-        foreach ($produits as $produit) {
-            // Regrouper les mouvements du produit par type
-            $mouvements = MouvementStock::select(
-                    'produit_id',
-                    'emplacement_id',
-                    'type_mouvement',
-                    DB::raw('SUM(quantite) as total')
-                )
-                ->where('produit_id', $produit->id)
-                ->groupBy('produit_id', 'emplacement_id', 'type_mouvement')
-                ->with('emplacement:id,libelle')
-                ->get();
-
-            // On peut prendre l’emplacement principal (ex. du premier mouvement)
-            $produit->emplacement = $mouvements->first()->emplacement->libelle ?? '-';
-
-            // Calculs par type
-            $entree = $mouvements->firstWhere('type_mouvement', 'entrée')->total ?? 0;
-            $sortie = $mouvements->firstWhere('type_mouvement', 'sortie')->total ?? 0;
-
-            // Totaux
-            $produit->total_entree = $entree;
-            $produit->total_sortie = $sortie;
-            $produit->solde = ($produit->qte_init ?? 0) + $entree - $sortie;
-        }
-
-        return view('fiche_stock', compact('produits'));
-    })->name('fiche_stock');
-    Route::get('/products', fn()=>view("products", ["categories"=>Categorie::where("ets_id", Auth::user()->ets_id)->get()]))->name("products");
+    Route::get('/fiche_stock', [ProductController::class, 'getFicheStockData'])->name('fiche_stock');
+    Route::get('/fiche_stock.pdf', [ProductController::class, 'exportFicheStockToPDF'])->name('fiche_stock.pdf');
+    Route::get('/fiche_stock.excel', [ProductController::class, 'exportFicheStockToExcel'])->name('fiche_stock.excel');
+    Route::get('/products', fn()=>view("products", [
+        "categories"=>Categorie::where("ets_id", Auth::user()->ets_id)->get(),
+        "emplacements"=>Emplacement::where("ets_id", Auth::user()->ets_id)->whereNot("type", "hôtel")->get(),
+    ]))->name("products");
 
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");
     Route::view('/beds.occuped', "bedroom_occuped")->name("beds.occuped");
@@ -156,6 +128,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/reports.all", [AdminController::class, "viewGlobalReports"])->name("reports.all");
     Route::get("/report.detail", [AdminController::class, "showDaySaleFacturesByCaissier"])->name("report.detail");
     Route::post("/facture.create", [HomeController::class, "saveFacture"])->name("facture.create")->middleware("can:creer-factures");
+    Route::post("/factures.link", [HomeController::class, "linkFactures"])->name("factures.link")->middleware("can:creer-factures");
     Route::get("/factures.all", [HomeController::class, "getAllFacturesCmds"])->name("factures.all")->middleware("can:voir-factures");
     Route::get("/sells.all", [HomeController::class, "getAllSells"])->name("sells.all")->middleware("can:voir-ventes");
     Route::get("/counts.all", [HomeController::class, "dashboardCounter"])->name("counts.all");

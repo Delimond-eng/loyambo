@@ -41,10 +41,12 @@
                         @endcan
 
                         @can('voir-serveurs')
+                           @canCloseDay
                             <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/serveurs'">
                                 <img class="menu-icon" src="assets/icons/serving-dish.png" alt="Serveurs">
                                 <div class="menu-label">Serveurs</div>
                             </button>
+                            @endif
                         @endcan
 
 
@@ -93,14 +95,12 @@
                         @endcan
 
                         @can('voir-chambres')
-                            @canCloseDay
                                 @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
                                 <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/Reservations'">
                                     <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
                                     <div class="menu-label">Reservations</div>
                                 </button>
                                 @endif
-                            @endif
                         @endcan
 
 
@@ -125,31 +125,38 @@
 </div>
 
 <!-- Widget Licence -->
-@licenceActive
-<div class="license-widget {{ auth()->user()->etablissement->licence->type === 'trial' ? 'trial' : 'active' }}">
-    <div class="d-flex justify-content-between mb-2 align-items-center">
-        <h4 class="text-primary mb-0">Licence {{ auth()->user()->etablissement->licence->type }}</h4>
-        <a href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}" class="btn btn-sm btn-soft-primary">
-            Activer
-        </a>
-    </div>
-    <div class="license-status {{ auth()->user()->etablissement->licence->type === 'trial' ? 'status-trial' : 'status-active' }}">
-        Essai ({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)
-    </div>
-</div>
-@else
-<div class="row d-flex justify-content-center">
-    <div class="col-xl-4 col-12">
-        <div class="alert alert-danger text-center">
-            Votre licence a expiré. Veuillez <a href="{{ route('licence.payment', ['ets_id' => auth()->user()->ets_id]) }}">renouveler</a>.
+<div class="LicenceApp">
+    @licenceActive
+    <div class="license-widget {{ auth()->user()->etablissement->licence->type === 'trial' ? 'trial' : 'active' }}">
+        <div class="d-flex justify-content-between mb-2 align-items-center">
+            <h4 class="text-primary mb-0">Licence {{ auth()->user()->etablissement->licence->type }}</h4>
+
+            @if (auth()->user()->etablissement->licence->type === 'trial')
+                <button class="btn btn-sm btn-soft-primary" @click="activeApp">
+                    Activer
+                </button>
+            @endif
+            
+        </div>
+        <div class="license-status {{ auth()->user()->etablissement->licence->type === 'trial' ? 'status-trial' : 'status-active' }}">
+            Essai ({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)
         </div>
     </div>
+    @else
+    <div class="row d-flex justify-content-center">
+        <div class="col-xl-4 col-12">
+            <div class="alert alert-danger text-center">
+                Votre licence a expiré. Veuillez <a @click="activeApp" href="javascript:void(0);">renouveler</a>.
+            </div>
+        </div>
+    </div>
+    @endlicenceActive
 </div>
-@endlicenceActive
 
 
 @endsection
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>
+    <script type="module" src="{{ asset("assets/js/scripts/licence.js") }}"></script>
 @endpush

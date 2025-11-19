@@ -6,6 +6,7 @@ use App\Models\Currencie;
 use App\Models\Facture;
 use App\Models\FactureDetail;
 use App\Models\MouvementStock;
+use App\Models\Produit;
 use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
@@ -84,8 +85,17 @@ class HomeController extends Controller
                     return (int)$detail['quantite'] * (float)$detail['prix_unitaire'];
                 });
 
+                $details = $data["details"];
+                $tva = 0;
+                foreach($details as $d){
+                    $product = Produit::find((int)$d["produit_id"]);
+                    if($product->tva){
+                        $tva += ((float)$d["prix_unitaire"] * (int)$d["quantite"]) * 0.16;
+                    }
+                }
                 $facture->total_ht = $total_ht;
-                $facture->total_ttc = $total_ht - $facture->remise;
+                $facture->tva = $tva;
+                $facture->total_ttc = $total_ht - $facture->remise + $tva;
                 $facture->save();
 
                 // ✅ Créer ou mettre à jour chaque détail en fonction de facture_id + produit_id
@@ -115,7 +125,6 @@ class HomeController extends Controller
                         'statut' => 'occupée',
                     ]);
                 }
-
                 return $facture;
             });
 
@@ -137,6 +146,110 @@ class HomeController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+    
+    public function linkFactures(Request $request)
+    {
+        try {
+
+            $data = $request->validate([
+                'factures' => 'required|array|min:2',
+                'factures.*' => 'required|exists:factures,id',
+                'user_id' => 'nullable|exists:users,id'
+            ]);
+
+            $user = Auth::user();
+            $serveur = User::find($data['user_id'] ?? null) ?? $user;
+
+            $saleDay = SaleDay::whereNull('end_time')
+                ->where('ets_id', $user->ets_id)
+                ->latest()
+                ->first();
+
+            $facture = DB::transaction(function () use ($data, $serveur, $saleDay) {
+
+                // 🎯 Choisir une facture principale aléatoirement
+                $facturePrincipaleId = collect($data['factures'])->random();
+                $facturePrincipale = Facture::with('details')->findOrFail($facturePrincipaleId);
+
+                // Liste des autres factures à fusionner
+                $facturesAFusionner = collect($data['factures'])
+                    ->filter(fn($id) => $id != $facturePrincipaleId)
+                    ->values()
+                    ->all();
+
+                $factures = Facture::with('details')->whereIn('id', $facturesAFusionner)->get();
+
+                $total_ht = $facturePrincipale->total_ht;
+                $tva = $facturePrincipale->tva;
+
+                foreach ($factures as $f) {
+                    foreach ($f->details as $d) {
+
+                        $pid = $d->produit_id;
+                        $quantiteFusion = $d->quantite;
+                        $prixUnit = $d->prix_unitaire;
+                        $lineTotal = $quantiteFusion * $prixUnit;
+
+                        // Vérifier si le produit existe déjà dans la facture principale
+                        $existingDetail = FactureDetail::where('facture_id', $facturePrincipaleId)
+                            ->where('produit_id', $pid)
+                            ->first();
+
+                        if ($existingDetail) {
+                            // 🔁 Incrémenter la quantité au lieu de créer une nouvelle ligne
+                            $existingDetail->update([
+                                'quantite' => $existingDetail->quantite + $quantiteFusion,
+                                'total_ligne' => ($existingDetail->quantite + $quantiteFusion) * $prixUnit,
+                            ]);
+                        } else {
+                            // ➕ Ajouter un nouveau produit
+                            FactureDetail::create([
+                                'facture_id' => $facturePrincipaleId,
+                                'produit_id' => $pid,
+                                'quantite' => $quantiteFusion,
+                                'prix_unitaire' => $prixUnit,
+                                'total_ligne' => $lineTotal,
+                            ]);
+                        }
+
+                        // Recalcul total HT + TVA
+                        $total_ht += $lineTotal;
+
+                        $product = Produit::find($pid);
+                        if ($product && $product->tva) {
+                            $tva += ($lineTotal * 0.16);
+                        }
+                    }
+                }
+                // Mise à jour des totaux
+                $facturePrincipale->update([
+                    'total_ht' => $total_ht,
+                    'tva' => $tva,
+                    'total_ttc' => $total_ht + $tva,
+                ]);
+
+                // 🗑 Supprimer les anciennes factures
+                FactureDetail::whereIn('facture_id', $facturesAFusionner)->delete();
+                Facture::whereIn('id', $facturesAFusionner)->delete();
+
+                return $facturePrincipale;
+            });
+
+            $facture->load("details.produit");
+
+            return response()->json([
+                'status' => 'success',
+                'result' => $facture,
+                'message' => "Factures fusionnées avec succès !"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()], 500);
+        }
+    }
+
+
+
 
     /**
      * Affiche toutes les factures et commande

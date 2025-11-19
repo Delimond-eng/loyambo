@@ -167,7 +167,7 @@
                                         <div>
                                             <p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
                                             <p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
-                                            <p>TVA  :  0</p>
+                                            <p>TVA  :  @{{ selectedFacture.tva }}</p>
                                         </div>
                                         <div class="total-payment">
                                             <h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>

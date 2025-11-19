@@ -123,6 +123,8 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                         title: "Succès",
                                         text: data.message,
                                         confirmButtonText: "Fermer",
+                                    }).then((res) => {
+                                        location.href = "/";
                                     });
                                     window.open(
                                         "/" + data.report_url,
@@ -340,6 +342,55 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     });
             },
 
+            fusionnerCmds(cmds) {
+                let factures = [];
+                cmds.forEach((f) => {
+                    factures.push(f.id);
+                });
+                const self = this;
+                Swal.fire({
+                    title: "Confirmation ?",
+                    text: "Confirmez la fusion des commandes",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "Confirmer",
+                    cancelButtonText: "Annuler",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        const user = JSON.parse(localStorage.getItem("user"));
+                        postJson("/factures.link", {
+                            factures: factures,
+                            user_id: user ? user.id : null,
+                        })
+                            .then(({ data, status }) => {
+                                self.viewAllTables();
+                                $(".modal-commande").modal("hide");
+                                $.toast({
+                                    heading: "Fusion des commandes reussie",
+                                    text: "Commandes fusionnées avec succès !",
+                                    position: "top-right",
+                                    loaderBg: "#49ff73ff",
+                                    icon: "success",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            })
+                            .catch((err) => {
+                                this.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plus tard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            });
+                    }
+                });
+            },
+
             triggerSendServeurReport(e) {
                 const reportData = this.selectedData;
                 this.form.serveur_id = reportData.user.id;
@@ -450,7 +501,9 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             //GET ALL AGENTS SERVEUR
             getAllServeursServices() {
-                this.isDataLoading = true;
+                if (location.pathname === "/serveurs") {
+                    this.isDataLoading = true;
+                }
                 if (location.pathname === "/serveurs") {
                     get("/serveurs.all")
                         .then(({ data, status }) => {
@@ -473,6 +526,9 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             viewAllTables() {
+                if (location.pathname === "/orders.portal") {
+                    this.isDataLoading = true;
+                }
                 this.refreshUserOrderSession();
                 const validPath = true;
                 if (validPath) {
@@ -480,7 +536,6 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     let url = session
                         ? `/tables.all?place=${session.emplacement_id}`
                         : "/tables.all";
-                    this.isDataLoading = true;
                     get(url)
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
@@ -544,7 +599,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                     stack: 6,
                                 });
                             } else {
-                                this.triggerOperation({
+                                this.triggerOperaation({
                                     op: "combiner",
                                     table1_id: tablesOccupees[0].id,
                                     table2_id: tablesOccupees[1].id,
@@ -588,7 +643,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             viewAllCategories() {
-                const validPath = location.pathname !== "/serveurs";
+                const validPath = location.pathname === "/orders.interface";
                 if (validPath) {
                     this.isDataLoading = true;
                     get("/categories.all")
@@ -603,9 +658,8 @@ document.querySelectorAll(".AppService").forEach((el) => {
             },
 
             viewAllProducts() {
-                const validPath = location.pathname !== "/serveurs";
+                const validPath = location.pathname === "/orders.interface";
                 if (validPath) {
-                    this.isDataLoading = true;
                     get("/products.all")
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
@@ -725,7 +779,7 @@ document.querySelectorAll(".AppService").forEach((el) => {
                 <hr/>
                 <p class="right">Total HT: ${facture.total_ht}</p>
                 <p class="right">Remise: ${facture.remise}%</p>
-                <p class="right">TVA: 0</p>
+                <p class="right">TVA:  ${facture.tva}</p>
                 <h3 class="right">TOTAL TTC: ${facture.total_ttc}</h3>
                 <hr/>
                 <p class="center">Merci pour votre visite !</p>
@@ -889,6 +943,14 @@ document.querySelectorAll(".AppService").forEach((el) => {
                     let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
 
                     return luminance > 186 ? "#000000" : "#ffffff";
+                };
+            },
+
+            checkServiceStatus() {
+                return (cmds) => {
+                    return cmds.some(
+                        (item) => item.statut_service === "servie"
+                    );
                 };
             },
         },

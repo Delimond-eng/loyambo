@@ -26,7 +26,7 @@
                                 <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(data, index) in allServeurs" :key="index">
                                     <a href="#" @click="goToUserOrderSession(data)" class="box box-body d-flex flex-column justify-content-center align-items-center py-30 box-inverse bg-indigo-500">
                                         <img class="avatar avatar-xxl" src="assets/images/serveur.png" alt="">
-                                        <h5 class="mt-10 mb-1"><span class="text-white hover-danger fw-700">@{{ data.name }}</span></h5>
+                                        <h5 class="mt-10 mb-1"><span class="text-white hover-danger text-truncate fw-700">@{{ data.name }}</span></h5>
                                         <p class="text-white">--- @{{ data.role }} ---</p>
                                     </a>
                                 </div>

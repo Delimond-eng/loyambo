@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('produit_id')->constrained('produits')->cascadeOnDelete();
             $table->unsignedBigInteger("numdoc")->nullable();
-            $table->enum('type_mouvement', ['entrée', 'sortie', 'transfert','vente']);
+            $table->enum('type_mouvement', ['entrée', 'sortie', 'transfert','vente', 'ajustement']);
             $table->integer('quantite');
             $table->unsignedBigInteger('source')->nullable();
             $table->unsignedBigInteger('destination')->nullable();

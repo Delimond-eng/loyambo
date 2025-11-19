@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('sale_day_id');
             $table->decimal('total_ht', 15, 2);
             $table->decimal('remise', 15, 2)->default(0);
+            $table->decimal('tva', 15, 2)->default(0);
             $table->decimal('total_ttc', 15, 2);
             $table->string('devise')->default("CDF");
             $table->enum('statut', ['en_attente', 'payée', 'annulée'])->default('en_attente');

@@ -9,6 +9,12 @@ use App\Models\Stock;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductController extends Controller
 {
@@ -25,6 +31,7 @@ class ProductController extends Controller
                 "type_service"=>"required|string",
                 "couleur"=>"required|string"
             ]);
+            $data["libelle"] = Str::upper($data["libelle"]);
             // Génération d'un code unique : 6 caractères alphanumériques
             $data["code"] = strtoupper(substr(uniqid(), -6));
             $data["ets_id"] = Auth::user()->ets_id;
@@ -67,12 +74,15 @@ class ProductController extends Controller
                 "code_barre"=>"required|string",
                 "reference"=>"required|string",
                 "categorie_id"=>"required|int|exists:categories,id",
+                "emplacement_id"=>"nullable|int|exists:emplacements,id",
                 "libelle"=>"required|string",
                 "prix_unitaire"=>"required|string",
                 "unite"=>"nullable|string",
                 "seuil_reappro"=>"nullable|int",
                 "qte_init"=>"nullable|int"
             ]);
+
+            $data["libelle"] = Str::upper($data["libelle"]);
 
             if ($request->hasFile('image')) {
                 $file = $request->file('photo');
@@ -101,7 +111,7 @@ class ProductController extends Controller
                     "date_mouvement"=> Carbon::now()->setTimezone("Africa/Kinshasa"),
                     "user_id"=>Auth::id(),
                     "ets_id"=>$user->ets_id,
-                    "emplacement_id"=>$user->emplacement_id ?? null
+                    "emplacement_id"=> $data["emplacement_id"] ?? null
                 ]);
             }
             return response()->json([
@@ -214,5 +224,129 @@ class ProductController extends Controller
             "mouvements"=>$mvts
         ]);
     }
+
+
+
+    //Afficher les données d'une fiche de stock...
+    public function getFicheStockData()
+    {
+        $ets_id = Auth::user()->ets_id;
+
+        $stocks = MouvementStock::select(
+                'produit_id',
+                'emplacement_id',
+
+                // Stock initial = entrée sans document
+                DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NULL OR numdoc = 0) THEN quantite ELSE 0 END) as stock_initial"),
+
+                // Entrées réelles (approvisionnement)
+                DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NOT NULL AND numdoc != 0) THEN quantite ELSE 0 END) as total_entree"),
+
+                DB::raw("SUM(CASE WHEN type_mouvement = 'sortie' THEN quantite ELSE 0 END) as total_sortie"),
+                DB::raw("SUM(CASE WHEN type_mouvement = 'vente' THEN quantite ELSE 0 END) as total_vente"),
+
+                DB::raw("SUM(CASE WHEN type_mouvement = 'transfert' AND destination = emplacement_id THEN quantite ELSE 0 END) as total_transfert_entree"),
+                DB::raw("SUM(CASE WHEN type_mouvement = 'transfert' AND source = emplacement_id THEN quantite ELSE 0 END) as total_transfert_sortie"),
+
+                DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite > 0 THEN quantite ELSE 0 END) as ajustement_plus"),
+                DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite < 0 THEN ABS(quantite) ELSE 0 END) as ajustement_moins")
+            )
+            ->with('produit:id,libelle')
+            ->with('emplacement:id,libelle')
+            ->where('ets_id', $ets_id)
+            ->groupBy('produit_id', 'emplacement_id')
+            ->get()
+            ->map(function ($s) {
+                // Calcul du solde réel (final)
+                $s->solde =
+                    $s->stock_initial +
+                    $s->total_entree +
+                    $s->total_transfert_entree +
+                    $s->ajustement_plus -
+                    $s->total_sortie -
+                    $s->total_vente -
+                    $s->total_transfert_sortie -
+                    $s->ajustement_moins;
+                return $s;
+            });
+
+        return view('fiche_stock', compact('stocks'));
+    }
+
+    public function exportFicheStockToExcel(){
+        $stocks = $this->getFicheDatas();
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle("Fiche Stock");
+        // En-têtes
+        $headers = ["Produit","Emplacement","Stock Initial","Entrée","Sortie","Transf. +","Transf. -","Vente","Ajust. +","Ajust. -","Solde Final"];
+        $col = "A";
+        foreach($headers as $header){
+            $sheet->setCellValue($col."1", $header);
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
+
+        // Données
+        $row = 2;
+        foreach($stocks as $s){
+            $sheet->setCellValue("A$row", $s->produit->libelle);
+            $sheet->setCellValue("B$row", $s->emplacement->libelle ?? '-');
+            $sheet->setCellValue("C$row", $s->stock_initial);
+            $sheet->setCellValue("D$row", $s->total_entree);
+            $sheet->setCellValue("E$row", $s->total_sortie);
+            $sheet->setCellValue("F$row", $s->total_transfert_entree);
+            $sheet->setCellValue("G$row", $s->total_transfert_sortie);
+            $sheet->setCellValue("H$row", $s->total_vente);
+            $sheet->setCellValue("I$row", $s->ajustement_plus);
+            $sheet->setCellValue("J$row", $s->ajustement_moins);
+            $sheet->setCellValue("K$row", $s->solde);
+            $row++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'fiche_stock_' . date('Ymd_His') . '.xlsx';
+
+        return new StreamedResponse(function() use ($writer){
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"$filename\""
+        ]);
+    }
+    public function exportFicheStockToPDF(){
+        $stocks = $this->getFicheDatas();
+        $pdf = PDF::loadView('pdf.fiche_stock_pdf', compact('stocks'))
+              ->setPaper('A4', 'landscape');
+        return $pdf->download('fiche_stock_' . date('Ymd_His') . '.pdf');
+    }
+
+    private function getFicheDatas(){
+        $stocks = MouvementStock::select(
+            'produit_id',
+            'emplacement_id',
+            DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NULL OR numdoc = 0) THEN quantite ELSE 0 END) as stock_initial"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NOT NULL AND numdoc != 0) THEN quantite ELSE 0 END) as total_entree"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'sortie' THEN quantite ELSE 0 END) as total_sortie"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'vente' THEN quantite ELSE 0 END) as total_vente"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'transfert' AND destination = emplacement_id THEN quantite ELSE 0 END) as total_transfert_entree"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'transfert' AND source = emplacement_id THEN quantite ELSE 0 END) as total_transfert_sortie"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite > 0 THEN quantite ELSE 0 END) as ajustement_plus"),
+            DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite < 0 THEN ABS(quantite) ELSE 0 END) as ajustement_moins")
+        )
+        ->with('produit:id,libelle')
+        ->with('emplacement:id,libelle')
+        ->where('ets_id', Auth::user()->ets_id)
+        ->groupBy('produit_id', 'emplacement_id')
+        ->get()
+        ->map(function ($s) {
+            $s->solde = $s->stock_initial + $s->total_entree + $s->total_transfert_entree + $s->ajustement_plus
+                        - $s->total_sortie - $s->total_vente - $s->total_transfert_sortie - $s->ajustement_moins;
+            return $s;
+        });
+
+        return $stocks;
+    }
+
 
 }
