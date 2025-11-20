@@ -16,6 +16,7 @@ document.querySelectorAll(".LicenceApp").forEach((el) => {
                 isDataLoading: false,
                 store: Store,
                 search: "",
+                months: "",
                 payIntervall: null,
                 paymentHandled: false, // <==== Flag ajouté
             };
@@ -23,30 +24,58 @@ document.querySelectorAll(".LicenceApp").forEach((el) => {
 
         methods: {
             activeApp() {
+                if (this.months === "") {
+                    $.toast({
+                        heading: "Nombre des mois requis",
+                        text: "Veuillez renseigner le nombre des mois à activer !",
+                        position: "top-right",
+                        loaderBg: "#ff4949ff",
+                        icon: "error",
+                        hideAfter: 3000,
+                        stack: 6,
+                    });
+                    return;
+                }
                 if (this.isLoading) return;
 
                 this.paymentHandled = false; // <==== reset flag
 
                 this.isLoading = true;
-                get("/licence.payment")
+                get(`/licence.payment?months=${this.months}`)
                     .then(({ data }) => {
                         this.isLoading = false;
+                        $(".app-active-modal").modal("hide");
 
-                        if (data.status === "success") {
-                            window.open(data.url, "_blank");
-                            this.checkPayStatus(data.uuid);
-                        } else {
-                            Swal.fire(
-                                "Erreur",
-                                "Impossible de lancer le paiement",
-                                "error"
-                            );
-                        }
+                        Swal.fire({
+                            title: `${data.amount} $`,
+                            text: `A payer pour ${data.months} mois`,
+                            icon: "success",
+                            showCancelButton: true,
+                            confirmButtonText: "Continuer le paiement",
+                            cancelButtonText: "Annuler",
+                        }).then((res) => {
+                            if (res.isConfirmed) {
+                                if (data.status === "success") {
+                                    window.open(data.url, "_blank");
+                                    this.checkPayStatus(data.uuid);
+                                } else {
+                                    Swal.fire(
+                                        "Erreur",
+                                        "Impossible de lancer le paiement",
+                                        "error"
+                                    );
+                                }
+                            }
+                        });
                     })
                     .catch(() => {
                         this.isLoading = false;
                         Swal.fire("Erreur", "Une erreur est survenue", "error");
                     });
+            },
+
+            openActiveAppModal() {
+                $(".app-active-modal").modal("show");
             },
 
             checkPayStatus(uuid) {

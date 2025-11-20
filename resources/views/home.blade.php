@@ -96,7 +96,7 @@
 
                         @can('voir-chambres')
                                 @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
-                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/Reservations'">
+                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/reservations'">
                                     <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
                                     <div class="menu-label">Reservations</div>
                                 </button>
@@ -132,7 +132,7 @@
             <h4 class="text-primary mb-0">Licence {{ auth()->user()->etablissement->licence->type }}</h4>
 
             @if (auth()->user()->etablissement->licence->type === 'trial')
-                <button class="btn btn-sm btn-soft-primary" @click="activeApp">
+                <button class="btn btn-sm btn-soft-primary" @click="openActiveAppModal">
                     Activer
                 </button>
             @endif
@@ -151,6 +151,26 @@
         </div>
     </div>
     @endlicenceActive
+
+    <div class="modal fade app-active-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Activation Licence</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger">Veuillez renseigner le nombre de mois à activer !</p>
+                    <div class="d-flex">
+                        <input type="number" v-model="months" class="form-control me-2" placeholder="Nombre des mois à activer.. ex:2">
+                        <button class="btn btn-primary btn-sm" @click="activeApp"><i class="mdi mdi-key-plus me-1"></i>Activer</button>
+                    </div>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
 </div>
 
 

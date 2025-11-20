@@ -153,11 +153,33 @@ class ProductController extends Controller
     //ALL PRODUCT
     public function getAllProducts(){
         $user = Auth::user();
-        $products = Produit::with(["categorie", "stocks"])
+        $products = Produit::with("categorie")
             ->where("ets_id", $user->ets_id)
-            ->orderBy("libelle")->get();
-        return response()->json(["produits"=>$products]);
+            ->select("produits.*")
+            ->selectRaw("
+                (
+                    SELECT SUM(
+                        CASE
+                            WHEN type_mouvement = 'entrée' THEN quantite
+                            WHEN type_mouvement = 'sortie' THEN -quantite
+                            WHEN type_mouvement = 'vente' THEN -quantite
+                            WHEN type_mouvement = 'transfert' AND destination IS NOT NULL THEN quantite
+                            WHEN type_mouvement = 'transfert' AND source IS NOT NULL THEN -quantite
+                            WHEN type_mouvement = 'ajustement' AND quantite > 0 THEN quantite
+                            WHEN type_mouvement = 'ajustement' AND quantite < 0 THEN quantite
+                            ELSE 0
+                        END
+                    )
+                    FROM mouvement_stocks
+                    WHERE mouvement_stocks.produit_id = produits.id
+                ) AS stock_actuel
+            ")
+            ->orderBy("libelle")
+            ->get();
+
+        return response()->json(["produits" => $products]);
     }
+
 
 
     /**

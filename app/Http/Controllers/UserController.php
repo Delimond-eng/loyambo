@@ -146,12 +146,13 @@ class UserController extends Controller
         }
     }
 
-    public function redirectToPayment()
+    public function redirectToPayment(Request $request)
     {
+        $months = $request->query("months", 1);
         $user = Auth::user();
         // Nombre d'utilisateurs pour calculer le montant
         $userCount = User::where('ets_id', $user->ets_id)->count();
-        $amount = $userCount * 8; // 8$ par utilisateur
+        $amount = $userCount * 8 * (int)$months; // 8$ par utilisateur
 
         // Générer un UUID unique pour le paiement
         $uuid = (string) Str::uuid();
@@ -161,6 +162,7 @@ class UserController extends Controller
             'ets_id' => $user->ets_id,
             'uuid' => $uuid,
             'amount' => $amount,
+            'months' => $months,
             'status' => 'pending'
         ]);
 
@@ -181,7 +183,9 @@ class UserController extends Controller
         return response()->json([
             "status"=> "success",
             "uuid"=>$uuid,
-            "url"=>$url
+            "url"=>$url,
+            "months"=>$months,
+            "amount"=>$amount
         ]);
     }
     
@@ -197,7 +201,7 @@ class UserController extends Controller
         $licence = Licence::where('ets_id',$user->ets_id)->latest()->first();
         $licence->type = "paid";
         $licence->date_debut = now();
-        $licence->date_fin = now()->addMonth();
+        $licence->date_fin = now()->addMonths($pay->months);
         $licence->save();
 
         return response()->json([

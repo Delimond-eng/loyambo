@@ -162,8 +162,15 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get('/reports.finances', [financeController::class, 'finances'])->name('reports.finances');
     Route::get('/reports/payment-details/{id}', [financeController::class, 'getPaymentDetails'])->name('reports.payment-details');
     //=============Reservation Hotel =============//
+
+
     //Reservations
-    Route::get('/Reservations', [ReservationController::class, "viewReservations"])->name("Reservations");
+    Route::get('/reservations', function(){
+        $places = Emplacement::where("ets_id", Auth::user()->ets_id)->where("type", "hôtel")->get();
+        return view('reservation.reservations', [
+            "emplacements"=> $places
+        ]);
+    })->name("reservations");
     //reservation.created
     Route::get('/reservation.created', [ReservationController::class, "createReservationView"])->name("reservation.created");
     //reservation.create

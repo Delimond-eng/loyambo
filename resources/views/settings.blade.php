@@ -45,7 +45,26 @@
                                     <i class="fa fa-key me-10 fs-24"></i>
                                     <h4 class="mb-0 text-black">Licence {{ auth()->user()->etablissement->licence->type }} -- <small class="text-primary">({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)</small></h4>
                                 </div>
-                                <button  @click="activeApp" class="btn btn-xs btn-primary"> <i class="mdi mdi-key-plus me-1"></i> Activer </button>
+                                <button  @click="openActiveAppModal" class="btn btn-xs btn-primary"> <i class="mdi mdi-key-plus me-1"></i> Activer </button>
+                            </div>
+                            <div class="modal fade app-active-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="myModalLabel">Activation Licence</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-danger">Veuillez renseigner le nombre de mois à activer !</p>
+                                            <div class="d-flex">
+                                                <input type="number" v-model="months" class="form-control me-2" placeholder="Nombre des mois à activer.. ex:2">
+                                                <button class="btn btn-primary btn-sm" @click="activeApp"><i class="mdi mdi-key-plus me-1"></i>Activer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
                             </div>
                         </div>
                         <div class="box-body">

@@ -448,46 +448,48 @@ document.querySelectorAll(".AppService").forEach((el) => {
 
             //ADD TO CART
             addToCart(product) {
-                product.qte = 1;
                 const found = this.cart.find((p) => p.id === product.id);
+                // Stock indisponible
+                if (product.stock_actuel <= 0) {
+                    Swal.fire({
+                        title: "Stock insuffisant !",
+                        text:
+                            "Impossible d'ajouter ce produit. Stock actuel : " +
+                            product.stock_actuel,
+                        icon: "warning",
+                        timer: 3000,
+                        showConfirmButton: false,
+                    });
+                    return;
+                }
+                // Déjà dans le panier
                 if (found) {
-                    /* if (found.quantity > product.stock) {
-                        new Swal({
+                    if (found.qte + 1 > product.stock_actuel) {
+                        Swal.fire({
                             title: "Stock insuffisant !",
-                            text:
-                                "Impossible d'ajouter un produit au panier, stock insuffisant ! Stock actuel : " +
-                                product.stock,
+                            text: "Stock actuel : " + product.stock_actuel,
                             icon: "warning",
                             timer: 3000,
-                            showConfirmButton: !1,
+                            showConfirmButton: false,
                         });
-                        if (product.stock == 0) {
+
+                        // Si stock = 0, retire le produit du panier
+                        if (product.stock_actuel <= 0) {
                             this.cart = this.cart.filter(
                                 (p) => p.id !== product.id
                             );
                         } else {
-                            found.quantity = product.stock;
+                            found.qte = product.stock_actuel; // limite à la quantité max en stock
                         }
                         return;
-                    } */
+                    }
+                    // Sinon on ajoute +1
                     found.qte += 1;
                 } else {
-                    /* if (product.stock == 0) {
-                        new Swal({
-                            title: "Stock insuffisant !",
-                            text:
-                                "Impossible d'ajouter un produit au panier, stock insuffisant. stock actuel : " +
-                                product.stock,
-                            icon: "warning",
-                            timer: 3000,
-                            showConfirmButton: !1,
-                        });
-                        return;
-                    } */
+                    // Ajout premier au panier
                     this.cart.push({ ...product, qte: 1 });
                 }
             },
-
             //REMOVE ITEM
             removeFromCart(product) {
                 this.store.cart = this.store.cart.filter(

@@ -1,7 +1,7 @@
 <div class="menu-tabs-wrapper">
     <div class="menu-tabs">
-        <button class="menu-tab {{ Route::is('Reservations') ? 'active' : '' }}" 
-                onclick="location.href='{{ route('Reservations') }}'">
+        <button class="menu-tab {{ Route::is('reservations') ? 'active' : '' }}" 
+                onclick="location.href='{{ route('reservations') }}'">
             Réservations
         </button>
         <button class="menu-tab {{ Route::is('Reservations.libres') ? 'active' : '' }}" 

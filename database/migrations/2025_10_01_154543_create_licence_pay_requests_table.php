@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('ets_id');
             $table->string("uuid")->unique();
             $table->float("amount");
+            $table->integer("months")->default(1);
             $table->enum("status", ["pending", "valid"])->default("pending");
             $table->timestamps();
 

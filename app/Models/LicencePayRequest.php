@@ -12,6 +12,7 @@ class LicencePayRequest extends Model
         'ets_id',
         'uuid',
         'amount',
+        'months',
         'status'
     ];
 }
