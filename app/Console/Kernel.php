@@ -18,18 +18,18 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->command('reservations:update')->dailyAt('00:05');
         // $schedule->command('inspire')->hourly();
         // Verifie l'expiration d'une licence en cours
         $schedule->call(function () {
-        Licence::where('status', 'available')
+            Licence::where('status', 'available')
                 ->where('date_fin', '<', now())
                 ->update(['status' => 'expired']);
         })->daily(); 
 
 
         //Permet de modifier le status de paiement pour valider l'activation de la licence
-        $schedule->call(function () {
-            // Récupère toutes les pay requests en attente, les plus récentes en premier
+        /*$schedule->call(function () {
             $pendingRequests = LicencePayRequest::where('status', 'pending')
                                 ->orderByDesc('created_at')
                                 ->get();
@@ -62,7 +62,7 @@ class Kernel extends ConsoleKernel
                     \Log::error("Erreur lors de la vérification du paiement UUID {$request->uuid}: " . $e->getMessage());
                 }
             }
-        })->everyMinute();
+        })->everyMinute();*/
     }
 
     /**

@@ -172,13 +172,32 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
         ]);
     })->name("reservations");
     //reservation.created
+    Route::get('/reservations.all', [ReservationController::class, "viewAllReservations"])->name("reservations.all");
+    
     Route::get('/reservation.created', [ReservationController::class, "createReservationView"])->name("reservation.created");
     //reservation.create
-    Route::get('/reservation/create/{chambre_id}', [ReservationController::class, "createReservation"])->name("reservation.create");
-    //reservation.store
-    Route::post('/reservation/store', [ReservationController::class, "storeReservation"])->name("reservation.store");
+    Route::post('/reservation.create', [ReservationController::class, "reserverChambre"])->name("reservation.create");
+
+    Route::post('/reservation.update', [ReservationController::class, "modifierReservation"])->name("reservation.update");
+    
+    // Ajoute des jours à une reservation des chambres existantes
+    Route::post('/reservation.extend', [ReservationController::class, "extendReservationDay"])->name("reservation.extend");
+
+    Route::post('/reservation.pay', [ReservationController::class, "payerReservation"])->name("reservation.pay");
+
+    Route::get('/reservation.cancel/{id}', [ReservationController::class, "annulerReservation"])->name("reservation.cancel");
+
+
+    Route::get('/chambre.occuper/{chambreId}', [ReservationController::class, "occupeChambre"])->name("chambre.occuper");
+    
+    Route::get("/chambres/{name}", function($name){
+        request()->route()->name("chambres.$name");
+        return view("reservation.chambres", compact("name"));
+    })->whereIn("name", ["libre", "occupee", "reservee", "all"]);
+    
     //inventaires.create
     Route::get('/inventaires.create', [InventaireController::class, 'create'])->name('inventaires.create');
+
     Route::post('/inventaire/store', [InventaireController::class, 'store'])->name('inventaire.store');
     //inventaire.historiques
     Route::get('/inventaire.historiques', [InventaireController::class, 'historiques'])->name('inventaire.historiques');
@@ -186,26 +205,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
 
     // Route pour traiter le réajustement
     Route::post('/inventaire/{id}/reajuster', [InventaireController::class, 'processReajustement'])->name('inventaire.process-reajustement');
-    //reservations.edit
-    Route::get('/reservations.edit/{id}', [ReservationController::class, "editReservationView"])->name("reservations.edit"); 
-    Route::put('/reservation/{reservation_id}/update', [ReservationController::class, 'updateReservation'])->name('reservation.update');
-    //reservations.paie
-    Route::get('/reservations.paie/{id}', [ReservationController::class, "payReservationView"])->name("reservations.paie"); 
-    //reservation.occupe.chambre
-    Route::get('/reservation/occupe/chambre/{id}', [ReservationController::class, "occupeChambre"])->name("reservation.occupe.chambre");  
-    //reservation.delete
-    Route::get('/reservation/annulee/{id}', [ReservationController::class, "annuleReseervation"])->name("reservation.delete"); 
-    //reservation.autorise
-    Route::get('/reservation/reactivee/{id}', [ReservationController::class, "reactiveReseervation"])->name("reservation.autorise"); 
-    //reservations.see
-    Route::get('/reservation/voir/{id}', [ReservationController::class, "voirReseervation"])->name("reservations.see");
-    //Reservations.libres
-    Route::get('/Reservations.libres', [ChambrelibreController::class, "chambreLibre"])->name("Reservations.libres");
-    //Reservations.occupees
-    Route::get('/Reservations.occupees', [ChambrelibreController::class, "chambreOccupee"])->name("Reservations.occupees");
-    //Reservations.reserve
-    Route::get('/Reservations.reserve', [ChambrelibreController::class, "chambreReserve"])->name("Reservations.reserve");
-    //commandes
+
     Route::get('/commandes', [commandesController::class, "index"])->name("commandes");
     //servir.ok
     Route::get('/commandes/servir/{id}', [commandesController::class, "servir"])->name("servir.ok");

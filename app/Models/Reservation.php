@@ -17,17 +17,33 @@ class Reservation extends Model
         "date_debut",
         "date_fin",
         "statut",
-        "ets_id"
+        "ets_id",
+        "emplacement_id"
     ];
 
+
+    protected $casts = [
+        'created_at'=>'datetime:d/m/Y H:i',
+        'date_debut'=>'date:Y-m-d',
+        'date_fin'=>'date:Y-m-d',
+    ];
+
+
     public function chambre(){
-        return $this->belongsTo(Chambre::class, "chambre_id");
-    }
+       return $this->belongsTo(Chambre::class, "chambre_id");
+    } 
     public function table(){
         return $this->belongsTo(RestaurantTable::class, "table_id");
+    }
+    
+    public function facture(){
+        return $this->hasOne(Facture::class, "reservation_id", "id");
     }
 
     public function client(){
         return $this->belongsTo(Client::class, "client_id");
     }
+
+    
+
 }

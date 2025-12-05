@@ -477,6 +477,7 @@ class AdminController extends Controller
             "chambres"=> $chambres,
         ]);
     }
+
     public function getAllChambres(Request $request)
     {
         $user = Auth::user();
@@ -487,114 +488,6 @@ class AdminController extends Controller
             "chambres" => $chambres
         ]);
     }
-
-
-    public function reserverChambreOrTable(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                'client.nom'          => 'required|string',
-                'client.telephone'    => 'nullable|string|max:20',
-                'client.email'        => 'nullable|email',
-                'client.identite'     => 'required|string',
-                'client.identite_type'=> 'required|string',
-                'chambre_id'          => 'nullable|exists:chambres,id',
-                'date_debut'          => 'required|date|after_or_equal:today',
-                'date_fin'            => 'required|date|after:date_debut',
-            ]);
-
-            $saleDay = SaleDay::whereNull("end_time")->where("ets_id", Auth::user()->ets_id)->latest()->first();
-
-            if (!$data['chambre_id'] && !$data['table_id']) {
-                return response()->json([
-                    'errors' => 'Veuillez sélectionner une chambre.'
-                ]);
-            }
-            $clientData = $data['client'];
-
-            $client = Client::firstOrCreate(
-                ['identite' => $clientData['identite']],
-                [
-                    'nom'           => $clientData['nom'],
-                    'telephone'     => $clientData['telephone'] ?? null,
-                    'email'         => $clientData['email'] ?? null,
-                    'identite_type' => $clientData['identite_type'],
-                ]
-            );
-            $reservation = DB::transaction(function () use ($data, $client, $saleDay) {
-
-                $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
-               /*  $table   = $data['table_id']  ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null; */
-
-                // Vérifier la disponibilité
-                $query = Reservation::where('statut', 'confirmée')
-                    ->where(function ($q) use ($data) {
-                        $q->whereBetween('date_debut', [$data['date_debut'], $data['date_fin']])
-                        ->orWhereBetween('date_fin', [$data['date_debut'], $data['date_fin']])
-                        ->orWhere(function ($q2) use ($data) {
-                            $q2->where('date_debut', '<=', $data['date_debut'])
-                                ->where('date_fin', '>=', $data['date_fin']);
-                        });
-                    });
-
-                if ($chambre) $query->where('chambre_id', $chambre->id);
-                /* if ($table)   $query->where('table_id', $table->id); */
-
-                if ($query->exists()) {
-                    throw new \Exception('Cette chambre est déjà réservée sur cette période.');
-                }
-                // Créer la réservation
-                $reservation = Reservation::create([
-                    'chambre_id' => $chambre?->id ,
-                    'client_id'  => $client->id,
-                    'date_debut' => $data['date_debut'],
-                    'date_fin'   => $data['date_fin'],
-                    'sale_day_id'=> $saleDay->id,
-                    'statut'     => 'confirmée',
-                    'ets_id'     => auth()->user()->ets_id ?? null,
-                ]);
-
-                // Mettre à jour le statut de la ressource
-                if ($chambre) $chambre->update(['statut' => 'réservée']);
-                /* if ($table)   $table->update(['statut' => 'réservée']); */
-
-                if($reservation){
-                    Facture::create([
-                        'numero_facture'=>'FAC-' . time(),
-                        'user_id'=>Auth::id(),
-                        'chambre_id'=> $reservation?->chambre_id,
-                        'sale_day_id'=> $saleDay->id,
-                        'total_ht'=>$chambre->prix ?? 0,
-                        'remise'=>0,
-                        'total_ttc'=>$chambre->prix ?? 0,
-                        'devise'=>$chambre->prix_devise,
-                        'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
-                        'ets_id'=>Auth::user()->ets_id,
-                        'emplacement_id'=>Auth::user()->emplacement_id,
-                    ]);
-                }
-                return $reservation;
-            });
-            return response()->json([
-                'message' => 'Réservation créée avec succès.',
-                'status'=>"success",
-                'result' => $reservation
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'errors' => $e->validator->errors()->all()
-            ]);
-        } catch (\Exception $e) {
-            // Log interne pour debugging
-            \Log::error('Erreur réservation : '.$e->getMessage());
-            return response()->json([
-                'errors' => $e->getMessage()
-            ]);
-        }
-    }
-
-
 
     public function triggerTableOperation(Request $request)
     {
@@ -671,6 +564,7 @@ class AdminController extends Controller
             "errors" => "Opération inconnue ou non supportée."
         ]);
     }
+
     public function libererTable(Request $request)
     {
         $table = RestaurantTable::find((int)$request->table_id);

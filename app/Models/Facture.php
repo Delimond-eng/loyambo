@@ -16,6 +16,7 @@ class Facture extends Model
         'table_id',
         'chambre_id',
         'sale_day_id',
+        'reservation_id',
         'total_ht',
         'remise',
         'total_ttc',

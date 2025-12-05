@@ -19,7 +19,7 @@ class Payments extends Model
         "facture_id",
         "table_id",
         "chambre_id",
-        "caisse_id",
+        "caissier_id",
         "sale_day_id",
         "user_id",
         "ets_id",

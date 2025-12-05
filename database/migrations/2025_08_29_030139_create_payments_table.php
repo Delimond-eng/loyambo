@@ -22,7 +22,7 @@ return new class extends Migration
             $table->dateTime("pay_date");
             $table->unsignedBigInteger("emplacement_id")->nullable();
             $table->unsignedBigInteger("facture_id");
-            $table->unsignedBigInteger("table_id");
+            $table->unsignedBigInteger("table_id")->nullable();
             $table->unsignedBigInteger("chambre_id")->nullable();
             $table->unsignedBigInteger("caissier_id")->nullable();
             $table->unsignedBigInteger("sale_day_id")->nullable();

@@ -4,16 +4,20 @@
                 onclick="location.href='{{ route('reservations') }}'">
             Réservations
         </button>
-        <button class="menu-tab {{ Route::is('Reservations.libres') ? 'active' : '' }}" 
-                onclick="location.href='Reservations.libres'">
+        <button class="menu-tab {{ Route::is('chambres.all') ? 'active' : '' }}" 
+                onclick="location.href='/chambres/all'">
+            Toutes les chambres
+        </button>
+        <button class="menu-tab {{ Route::is('chambres.libre') ? 'active' : '' }}" 
+                onclick="location.href='/chambres/libre'">
             Chambres libres
         </button>
-        <button class="menu-tab {{ Route::is('Reservations.occupees') ? 'active' : '' }}" 
-                onclick="location.href='Reservations.occupees'">
+        <button class="menu-tab {{ Route::is('chambres.occupee') ? 'active' : '' }}" 
+                onclick="location.href='/chambres/occupee'">
             Chambres occupées
         </button>
-        <button class="menu-tab {{ Route::is('Reservations.reserve') ? 'active' : '' }}" 
-                onclick="location.href='Reservations.reserve'">
+        <button class="menu-tab {{ Route::is('chambres.reservee') ? 'active' : '' }}" 
+                onclick="location.href='/chambres/reservee'">
             Chambres réservées
         </button>
     </div>

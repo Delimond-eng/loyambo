@@ -21,8 +21,9 @@ return new class extends Migration
             $table->unsignedBigInteger('sale_day_id')->nullable();
             $table->date('date_debut');
             $table->date('date_fin');
-            $table->enum('statut', ['en_attente', 'confirmée', 'annulée'])->default('en_attente');
+            $table->enum('statut', ['en_attente', 'confirmée', 'annulée', 'terminée'])->default('en_attente');
             $table->unsignedBigInteger('ets_id');
+            $table->unsignedBigInteger('emplacement_id')->nullable();
             $table->timestamps();
         });
     }

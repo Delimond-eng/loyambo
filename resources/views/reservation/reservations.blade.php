@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('content')
    <div class="content-wrapper">
-    <div class="container-full AppReport">
+    <div class="container-full AppReservation">
         <!-- Content Header (Page header) -->
         <div class="content-header">
         </div>
@@ -9,7 +9,7 @@
         <section class="content">
             <div class="row d-flex justify-content-center align-items-center">
                 <div class="col-xl-12">
-                    @include('components.menus.reservations')
+                    @include("components.menus.reservations")
                 </div>
                 <div class="col-xl-12">
                     <div class="box">
@@ -47,15 +47,15 @@
                                 
                                 <div class="col-md-2">
                                     <label class="form-label">Statut</label>
-                                    <select name="statut" class="form-control">
-                                        <option value="tous" {{ request('statut') == 'tous' ? 'selected' : '' }}>Tous les statuts</option>
-                                        <option value="en_attente" {{ request('statut') == 'en_attente' ? 'selected' : '' }}>En attente</option>
-                                        <option value="confirmée" {{ request('statut') == 'confirmée' ? 'selected' : '' }}>Confirmée</option>
-                                        <option value="terminée" {{ request('statut') == 'terminée' ? 'selected' : '' }}>Terminée</option>
-                                        <option value="annulée" {{ request('statut') == 'annulée' ? 'selected' : '' }}>Annulée</option>
+                                    <select name="statut" v-model="filter" class="form-control">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="en_attente">En attente</option>
+                                        <option value="confirmée">Confirmée</option>
+                                        <option value="terminée">Terminée</option>
+                                        <option value="annulée">Annulée</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">Actions</label>
                                     <div class="d-flex">
@@ -71,7 +71,7 @@
                         </div>
 
                         <!-- Statistiques -->
-                        <div class="box-body">
+                        <div class="box-body" v-cloak>
                             <!-- Liste des réservations -->
                             <div class="table-responsive">
                                 <table class="table table-striped no-border">
@@ -83,30 +83,40 @@
                                         <th>Période</th>
                                         <th>Durée</th>
                                         <th>Tarif jour</th>
+                                        <th>Total</th>
                                         <th>Statut</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                   <!-- <tr class="be-3 border-warning">
-                                        <th scope="row">10/02/2025</th>
-                                        <td>Hyppo Kayembe</td>
-                                        <td>CH-002</td>
-                                        <td>10/02/2025 - 11/02/2025</td>
-                                        <td>01 j</td>
-                                        <td>40$</td>
-                                        <td><span class="badge badge-pill badge-warning-light">En attente</span></td>
+                                   <tr :class="{'be-3 border-warning':data.statut === 'en_attente', 'be-3 border-success':data.statut === 'confirmée', 'be-3 border-primary':data.statut === 'terminée', 'bs-3 border-danger':data.statut === 'annulée'}" v-for="(data, index) in allReservations">
+                                        <th scope="row">@{{ data.created_at }}</th>
+                                        <td>@{{data.client.nom }}</td>
+                                        <td>CH-@{{data.chambre.numero }}</td>
+                                        <td>@{{ formateDate(data.date_debut) }} - @{{formateDate(data.date_fin) }}</td>
+                                        <td>@{{ getDays(data.date_debut, data.date_fin)}} j</td>
+                                        <td>@{{data.chambre.prix }} <small>@{{data.chambre.prix_devise }}</small></td>
+                                        <td>@{{parseFloat(data.chambre.prix) * getDays(data.date_debut, data.date_fin) }} <small>@{{data.chambre.prix_devise }}</small></td>
+                                        <td><span class="badge badge-pill" :class="{'badge-warning': data.statut === 'en_attente', 'badge-success': data.statut === 'confirmée', 'badge-primary': data.statut === 'terminée', 'badge-danger': data.statut === 'annulée'}" >@{{data.statut.replaceAll("_", " ") }}</span></td>
                                         <td>
                                             <div class="d-flex">
-                                                <button type="button" class="btn btn-success btn-xs me-1"><i class="mdi mdi-pencil"></i></button>
+                                                <button type="button" v-if="data.statut !== 'confirmée' && data.statut !== 'terminée' && data.statut !== 'annulée'" @click="triggerOpenPaymentModal(data)" class="btn btn-success btn-xs me-1"><i class="fa fa-money"></i></button>
+                                                <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" class="btn btn-info btn-xs me-1" @click="triggerOpenUpdateReservationModal(data)"><i class="mdi mdi-pencil"></i></button>
+                                                <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" @click="triggerExtendDayModal(data)" class="btn btn-primary-light btn-xs me-1"><i class="mdi mdi-plus"></i></button>
                                                 <button type="button" class="btn btn-primary btn-xs me-1"><i class="mdi mdi-eye"></i></button>
-                                                <button type="button" class="btn btn-danger-light btn-xs"><i class="mdi mdi-cancel"></i></button>
+                                                <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" @click="cancelReservation(data.id)" class="btn btn-danger-light btn-xs">
+                                                    <span v-if="cancel_id === data.id" class="spinner-border spinner-border-sm"></span>
+                                                    <i v-else class="mdi mdi-cancel"></i>
+                                                </button>
                                             </div>
                                         </td>
-                                    </tr>-->
-                                    <tr>
-                                        <td colspan="8" class="text-center py-4">
-                                            <div class="text-muted">
+                                    </tr>
+                                    <tr v-if="allReservations.length === 0">
+                                        <td colspan="10" class="text-center py-4">
+                                            <div class="py-50" v-if="isDataLoading">
+                                                <span class="spinner-border"></span>
+                                            </div>
+                                            <div v-else class="text-muted" >
                                                 <i class="fa fa-bed fa-2x mb-2"></i>
                                                 <p>
                                                     Aucune réservation trouvée
@@ -123,147 +133,378 @@
                 </div>
             </div>
         </section>
-    </div>
-</div>
 
-<!-- Modal de paiement -->
-<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="paymentModalLabel">Choisir le mode de paiement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-2 text-center">
-            @php
-                $paymentModes = [
-                                    'cash' => ['icon' => 'fa fa-money', 'label' => 'Espèces'],
-                                    'mobile' => ['icon' => 'fa fa-mobile', 'label' => 'Mobile'],
-                                    'cheque' => ['icon' => 'fa fa-file-text', 'label' => 'Chèque'],
-                                    'virement' => ['icon' => 'fa fa-university', 'label' => 'Virement'],
-                                    'card' => ['icon' => 'fa fa-credit-card', 'label' => 'Carte']
-                                ];
 
-            @endphp
+        <!-- Modal de paiement -->
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="paymentModalLabel">Choisir un mode de paiement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-2 text-center">
+                            <div class="col-4 mb-3" v-for="(data, mode) in modes" :key="mode">
+                                <button @click="selectedMode = mode"
+                                        class="btn btn-outline-primary payment-mode-btn w-100 h-100 py-3"
+                                        :data-mode="mode">
+                                    <i :class="data.icon + ' fa-2x mb-2'"></i><br>
+                                    <span class="small">@{{ data.label }}</span>
+                                </button>
+                            </div>
 
-            @foreach($paymentModes as $mode => $data)
-                <div class="col-4 mb-3">
-                    <button class="btn btn-outline-primary payment-mode-btn w-100 h-100 py-3" 
-                            data-mode="{{ $mode }}">
-                        <i class="{{ $data['icon'] }} fa-2x mb-2"></i><br>
-                        <span class="small">{{ $data['label'] }}</span>
-                    </button>
+                            <div class="col-12 col-md-12" v-if="selectedMode">
+                                <label class="mb-2 fw-500 text-left">Montant à payer <span v-if="selectedMode !== 'cash'">& Réference de paiement</span></label>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <input type="number" v-model="formPay.amount" readonly class="form-control fw-900 text-primary me-2" placeholder="Montant...">
+                                    <input type="text" v-model="formPay.devise" readonly class="form-control me-2  w-50" placeholder="$">
+                                    <!-- afficher le champ uniquement si le mode n'est pas cash -->
+                                    <input type="text" v-model="formPay.mode_ref" v-if="selectedMode !== 'cash'" class="form-control me-2"
+                                        placeholder="Saisir la référence de paiement...">
+                                    <button class="btn btn-success btn-sm" @click="payReservation"  :disabled="isLoading">Confirmer <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            @endforeach
+            </div>
         </div>
-      </div>
+
+
+        <div class="modal fade modal-reservation-create" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <form class="modal-content" @submit.prevent="extendReservation">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Réservation chambre</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" v-if="selectedChambre">
+                        <!-- Info Chambre -->
+                        <div class="d-flex flex-wrap align-items-center">
+                            <div class="me-25 bg-danger-light h-80 w-80 l-h-80 rounded text-center">
+                                <img :src="selectedChambre.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'"
+                                    class="h-50" alt="">
+                            </div>
+                            <div class="d-flex flex-column flex-grow-1 my-lg-0 my-10 pe-15">
+                                <a href="#" class="text-dark fw-600 fs-18">
+                                    CH-@{{ selectedChambre.numero }} <br>
+                                    Type : @{{ selectedChambre.type }}
+                                </a>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-fade fw-600 fs-16">
+                                        Capacité : @{{ selectedChambre.capacite }}
+                                    </span>
+                                    <span class="fw-600 fs-16">
+                                        Statut :
+                                        <span class="badge badge-pill"
+                                            :class="selectedChambre.statut==='libre' ? 'badge-primary' : 'badge-warning'">
+                                            @{{ selectedChambre.statut }}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stepper -->
+                        <div class="mt-3">
+                            <ol class="c-progress-steps">
+                                <li @click="goToStep(1)" class="c-progress-steps__step"
+                                    :class="{ current: step===1, done: step>1 }">
+                                    <span>Réservation</span>
+                                </li>
+
+                                <li class="c-progress-steps__step"
+                                    :class="{ current: step===2, done: step>2 }">
+                                    <span>Paiement <small>(facultatif)</small></span>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <!-- STEP 1 : RESERVATION -->
+                        <div v-if="step === 1">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Type pièce <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.identite_type" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">N° pièce <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.identite" readonly>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label">Nom complet <sup>*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.nom" readonly >
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">E-mail <sup class="text-danger">(Facultatif)</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.email"  placeholder="Ex. exemple@domain ..." readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Téléphone <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.telephone"  placeholder="Ex. +243 ..." readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    
+                                    <label class="form-label">Date début <sup class="text-danger">*</sup></label>
+                                    <input type="date" class="form-control" v-model="form.date_debut" required readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Date fin   <sup class="text-danger">*</sup></label>
+                                    <input type="date" class="form-control" v-model="form.date_fin" required>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- STEP 2 : PAIEMENT -->
+                        <div v-if="step === 2">
+                            
+                            <div class="row mt-3 g-3">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="col b-r text-center">
+                                            <h6>Nombre des jours</h6>
+                                            <h2 class="font-light">@{{ getDays(form.date_debut, form.date_fin) }} Jrs</h2>
+                                        </div>
+                                        <div class="col b-r text-center">
+                                            <h6>Prix journalier</h6>
+                                            <h2 class="font-light" v-if="selectedChambre"> @{{ selectedChambre.prix }} <small>@{{ selectedChambre.prix_devise }}</small></h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Mode de paiement -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Mode de paiement</label>
+                                    <select class="form-select" v-model="form.paiement.mode">
+                                        <option hidden value="">--Choisissez un mode--</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="mobile">Mobile Money</option>
+                                        <option value="virement">Banque</option>
+                                        <option value="card">Carte bancaire</option>
+                                    </select>
+                                </div>
+                                <!-- Montant -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Montant</label>
+                                    <input type="number" class="form-control" v-model="form.paiement.amount"  placeholder="Ex. 0.00 ..." 
+                                    :required="form.paiement.mode !== ''" readonly>
+                                </div>
+                                <!-- Devise -->
+                                <div class="col-md-2">
+                                    <label class="form-label">Devise</label>
+                                    <input type="text" class="form-control" v-model="form.paiement.devise"  placeholder="Ex. USD." 
+                                    :required="form.paiement.mode !== ''" readonly>
+                                </div>
+
+                                <!-- Référence du paiement -->
+                                <div class="col-md-12" v-if="form.paiement.mode !== '' && form.paiement.mode !== 'cash'">
+                                    <label class="form-label">Référence paiement <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.paiement.mode_ref"
+                                        placeholder="Ex: ID Mobile Money, n° reçu, transaction..." 
+                                        :required ="form.paiement.mode !== '' && form.paiement.mode !== 'cash'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer d-flex">
+                        <button type="button" class="btn btn-danger me-2"
+                                data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit"
+                                class="btn"  :class="{ 'btn-success': step===2, 'btn-primary': step===1 }" :disabled="isLoading">
+                            @{{ step=== 1 ? 'Suivant' : 'Valider et soumettre' }} <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+
+        <div class="modal fade modal-reservation-update" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <form class="modal-content" @submit.prevent="updateReservation">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Modification Réservation chambre</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" v-if="selectedChambre">
+                        <!-- Info Chambre -->
+                        <div class="d-flex flex-wrap align-items-center">
+                            <div class="me-25 bg-danger-light h-80 w-80 l-h-80 rounded text-center">
+                                <img :src="selectedChambre.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'"
+                                    class="h-50" alt="">
+                            </div>
+                            <div class="d-flex flex-column flex-grow-1 my-lg-0 my-10 pe-15">
+                                <a href="#" class="text-dark fw-600 fs-18">
+                                    CH-@{{ selectedChambre.numero }} <br>
+                                    Type : @{{ selectedChambre.type }}
+                                </a>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-fade fw-600 fs-16">
+                                        Capacité : @{{ selectedChambre.capacite }}
+                                    </span>
+                                    <span class="fw-600 fs-16">
+                                        Statut :
+                                        <span class="badge badge-pill"
+                                            :class="selectedChambre.statut==='libre' ? 'badge-primary' : 'badge-warning'">
+                                            @{{ selectedChambre.statut }}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stepper -->
+                        <div class="mt-3">
+                            <ol class="c-progress-steps">
+                                <li @click="goToStep(1)" class="c-progress-steps__step"
+                                    :class="{ current: step===1, done: step>1 }">
+                                    <span>Réservation</span>
+                                </li>
+
+                                <li class="c-progress-steps__step"
+                                    :class="{ current: step===2, done: step>2 }">
+                                    <span>Paiement <small>(facultatif)</small></span>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <!-- STEP 1 : RESERVATION -->
+                        <div v-if="step === 1">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Type pièce <sup class="text-danger">*</sup></label>
+                                    <select class="form-select" v-model="form.client.identite_type" required>
+                                        <option hidden value="">--Sélectionnez--</option>
+                                        <option>Carte d'Identité</option>
+                                        <option>Carte de service</option>
+                                        <option>Carte d'Electeur</option>
+                                        <option>Passeport</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">N° pièce <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.identite" placeholder="NID....." required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Chambre<sup>*</sup></label>
+                                    <select class="form-select" v-model="form.chambre_id" required>
+                                        <option hidden value="">--Sélectionnez--</option>
+                                        <option v-for="(data, index) in allChambres" :value="data.id">CH-@{{ data.numero}}</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Nom complet <sup>*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.nom" placeholder="Ex. Gaston Delimond ..." required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">E-mail <sup class="text-danger">(Facultatif)</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.email"  placeholder="Ex. exemple@domain ...">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Téléphone <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.client.telephone"  placeholder="Ex. +243 ..." required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Date début  <sup class="text-danger">*</sup></label>
+                                    <input type="date" class="form-control" v-model="form.date_debut" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Date fin  <sup class="text-danger">*</sup></label>
+                                    <input type="date" class="form-control" v-model="form.date_fin" required>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- STEP 2 : PAIEMENT -->
+                        <div v-if="step === 2">
+                            
+                            <div class="row mt-3 g-3">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="col b-r text-center">
+                                            <h6>Nombre des jours</h6>
+                                            <h2 class="font-light">@{{ getDays(form.date_debut, form.date_fin) }} Jrs</h2>
+                                        </div>
+                                        <div class="col b-r text-center">
+                                            <h6>Prix journalier</h6>
+                                            <h2 class="font-light" v-if="selectedChambre"> @{{ selectedChambre.prix }} <small>@{{ selectedChambre.prix_devise }}</small></h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Mode de paiement -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Mode de paiement</label>
+                                    <select class="form-select" v-model="form.paiement.mode">
+                                        <option hidden value="">--Choisissez un mode--</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="mobile">Mobile Money</option>
+                                        <option value="virement">Banque</option>
+                                        <option value="card">Carte bancaire</option>
+                                    </select>
+                                </div>
+                                <!-- Montant -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Montant</label>
+                                    <input type="number" class="form-control" v-model="form.paiement.amount"  placeholder="Ex. 0.00 ..." 
+                                    :required="form.paiement.mode !== ''" readonly>
+                                </div>
+                                <!-- Devise -->
+                                <div class="col-md-2">
+                                    <label class="form-label">Devise</label>
+                                    <input type="text" class="form-control" v-model="form.paiement.devise"  placeholder="Ex. USD." 
+                                    :required="form.paiement.mode !== ''" readonly>
+                                </div>
+
+                                <!-- Référence du paiement -->
+                                <div class="col-md-12" v-if="form.paiement.mode !== '' && form.paiement.mode !== 'cash'">
+                                    <label class="form-label">Référence paiement <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control" v-model="form.paiement.mode_ref"
+                                        placeholder="Ex: ID Mobile Money, n° reçu, transaction..." 
+                                        :required ="form.paiement.mode !== '' && form.paiement.mode !== 'cash'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer d-flex">
+                        <button type="button" class="btn btn-danger me-2"
+                                data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit"
+                                class="btn"  :class="{ 'btn-info': step===2, 'btn-primary': step===1 }" :disabled="isLoading">
+                            @{{ step=== 1 ? 'Suivant' : 'Enregistrer les modifications' }} <span v-if="isLoading" class="spinner-border spinner-border-sm ms-2"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
     </div>
-  </div>
 </div>
+
+
 @endsection
 
 @push('scripts')
-<script>
-let currentReservationId = null;
-
-// Gestion du paiement
-document.querySelectorAll('.payment-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        currentReservationId = this.dataset.reservationId;
-    });
-});
-
-document.querySelectorAll('.payment-mode-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const mode = this.dataset.mode;
-        if(currentReservationId) {
-            // Fermer le modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
-            modal.hide();
-            
-            // Rediriger vers la page de paiement
-            window.location.href = `/reservations.paie/${currentReservationId}?mode=${mode}`;
-
-        }
-    });
-});
-
-// Gestion du check-in
-document.querySelectorAll('.checkin-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const reservationId = this.dataset.reservationId;
-        if(confirm('Confirmer le check-in pour cette réservation ?')) {
-            window.location.href = `/reservations/${reservationId}/checkin`;
-        }
-    });
-});
-
-// Gestion du check-out
-document.querySelectorAll('.checkout-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const reservationId = this.dataset.reservationId;
-        if(confirm('Confirmer le check-out pour cette réservation ?')) {
-            window.location.href = `/reservations/${reservationId}/checkout`;
-        }
-    });
-});
-
-// Gestion de l'annulation
-document.querySelectorAll('.cancel-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const reservationId = this.dataset.reservationId;
-        if(confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
-            window.location.href = `/reservations/${reservationId}/annuler`;
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser les tooltips Bootstrap
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-</script>
-
-<style>
-.card {
-    transition: transform 0.2s;
-}
-.card:hover {
-    transform: translateY(-2px);
-}
-.btn-group .btn {
-    padding: 0.25rem 0.5rem;
-}
-.payment-mode-btn {
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-.badge[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 1000;
-}
-/* Styles pour les filtres */
-.form-label {
-    font-weight: 500;
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-</style>
+<script type="module" src="{{ asset("assets/js/scripts/reservation.js") }}"></script>	
 @endpush
+
+

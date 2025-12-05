@@ -20,7 +20,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->unsignedBigInteger('table_id')->nullable();
             $table->unsignedBigInteger('chambre_id')->nullable();
-            $table->unsignedBigInteger('sale_day_id');
+            $table->unsignedBigInteger('reservation_id')->nullable();
+            $table->unsignedBigInteger('sale_day_id')->nullable();
             $table->decimal('total_ht', 15, 2);
             $table->decimal('remise', 15, 2)->default(0);
             $table->decimal('tva', 15, 2)->default(0);
