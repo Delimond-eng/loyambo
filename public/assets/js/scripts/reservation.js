@@ -1,7 +1,11 @@
 import { post, get, postJson } from "../modules/http.js";
+import Paginator from "../components/pagination.js";
 document.querySelectorAll(".AppReservation").forEach((el) => {
     new Vue({
         el: el,
+        components: {
+            Paginator,
+        },
         data() {
             return {
                 error: null,
@@ -11,6 +15,12 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                 step: 1,
                 chambres: [],
                 reservations: [],
+                pagination: {
+                    current_page: 1,
+                    last_page: 1,
+                    total: 0,
+                    per_page: 10,
+                },
                 form: {
                     chambre_id: "",
                     date_debut: "",
@@ -49,9 +59,9 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                     reservation_id: "",
                 },
                 cancel_id: "",
+                bed_id: "",
             };
         },
-
         mounted() {
             this.viewAllReservations();
             this.viewAllChambres();
@@ -93,16 +103,43 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                 const allowData = location.pathname === "/reservations";
                 if (allowData) {
                     this.isDataLoading = true;
-                    get("/reservations.all")
+                    get(
+                        `/reservations.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                    )
                         .then(({ data, status }) => {
                             console.log(data);
                             this.isDataLoading = false;
-                            this.reservations = data.reservations;
+                            this.reservations = data.reservations.data;
+                            this.pagination = {
+                                current_page: data.reservations.current_page,
+                                last_page: data.reservations.last_page,
+                                total: data.reservations.total,
+                                per_page: data.reservations.per_page,
+                            };
                         })
                         .catch((err) => {
                             this.isDataLoading = false;
                         });
                 }
+            },
+
+            changePage(page) {
+                this.pagination.current_page = page;
+                this.viewAllReservations();
+            },
+
+            onPerPageChange(perPage) {
+                this.pagination.per_page = perPage;
+                this.pagination.current_page = 1;
+                this.viewAllReservations();
+            },
+
+            viewReservation(data) {
+                let url = `/reservation.details/${data.facture.id}`;
+                document.getElementById("detailIframe").src = url;
+                setTimeout(() => {
+                    $("#reservationDetailsModal").modal("show");
+                }, 500);
             },
 
             goToStep(num) {
@@ -207,12 +244,21 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                                         showCancelButton: false,
                                         timer: 3000,
                                     });
-                                    $(".modal-reservation-create").modal(
-                                        "hide"
-                                    );
-                                    setTimeout(() => {
-                                        location.href = "/reservations";
-                                    }, 3000);
+                                    if (data.facture_url !== undefined) {
+                                        document.getElementById(
+                                            "factureIframe"
+                                        ).src = data.facture_url;
+                                        $(".modal-reservation-create").modal(
+                                            "hide"
+                                        );
+                                        setTimeout(() => {
+                                            $("#factureModal").modal("show");
+                                        }, 500);
+                                    } else {
+                                        $(".modal-reservation-create").modal(
+                                            "hide"
+                                        );
+                                    }
                                 }
                             })
                             .catch((err) => {
@@ -380,20 +426,32 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
 
             occuperChambre(chambre) {
                 const self = this;
+                let title =
+                    chambre.statut === "occupée"
+                        ? "Libération de la chambre"
+                        : "Occupation de la chambre";
+
+                let msg =
+                    chambre.statut === "occupée"
+                        ? `Êtes-vous sûr de vouloir libérer la chambre N° ${chambre.numero} ?`
+                        : `Êtes-vous sûr de vouloir occuper la chambre N° ${chambre.numero} ?`;
                 Swal.fire({
                     icon: "question",
-                    title: `Occupation de la chambre`,
-                    text: `Voulez-vs vraiment occuper la chambre NO.${chambre.numero} ?`,
-                    confirmButtonText: "Oui,Confirmer",
+                    title: title,
+                    text: msg,
+                    confirmButtonText: "Oui,Occuper",
                     cancelButtonText: "Non, Annuler",
                     showCancelButton: 1,
                     showConfirmButton: 1,
                 }).then((res) => {
                     if (res.isConfirmed) {
                         self.isLoading = true;
+                        self.bed_id = chambre.id;
                         get(`/chambre.occuper/${chambre.id}`)
                             .then(({ data, status }) => {
                                 self.isLoading = false;
+                                self.bed_id = "";
+                                $(".modal-reservation-action").modal("hide");
                                 // Gestion des erreurs
                                 if (data.errors !== undefined) {
                                     self.error = data.errors;
@@ -434,10 +492,12 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                                     });
 
                                     self.viewAllChambres();
+                                    self.viewAllReservations();
                                 }
                             })
                             .catch((err) => {
                                 self.isLoading = false;
+                                self.bed_id = "";
                                 $.toast({
                                     heading: "Echec de traitement",
                                     text: "Veuillez réessayer plutard !",
@@ -506,6 +566,13 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                             });
                             $(".modal-reservation-create").modal("hide");
                             this.viewAllReservations();
+                            if (data.facture_url !== undefined) {
+                                document.getElementById("factureIframe").src =
+                                    data.facture_url;
+                                setTimeout(() => {
+                                    $("#factureModal").modal("show");
+                                }, 500);
+                            }
                         }
                     })
                     .catch((err) => {
@@ -556,6 +623,13 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                                 timer: 3000,
                             });
                             $("#paymentModal").modal("hide");
+                            if (data.facture_url !== undefined) {
+                                document.getElementById("factureIframe").src =
+                                    data.facture_url;
+                                setTimeout(() => {
+                                    $("#factureModal").modal("show");
+                                }, 500);
+                            }
                         }
                     })
                     .catch((err) => {
@@ -731,6 +805,15 @@ document.querySelectorAll(".AppReservation").forEach((el) => {
                         .locale("fr")
                         .format("DD MMMM YYYY hh:mm");
                 // ex: "03:13 AM"
+            },
+
+            isDateAvailable() {
+                return (startedAt, endedAt) => {
+                    const now = moment();
+                    const start = moment(startedAt, "YYYY-MM-DD");
+                    const end = moment(endedAt, "YYYY-MM-DD");
+                    return start.isSameOrBefore(now) && end.isSameOrAfter(now);
+                };
             },
         },
     });

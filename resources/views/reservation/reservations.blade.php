@@ -32,7 +32,7 @@
                                            placeholder="Client, Chambre, Facture..." 
                                            value="{{ request('search') }}">
                                 </div>
-                                
+
                                 <div class="col-md-2">
                                     <label class="form-label">Date début</label>
                                     <input type="date" name="date_debut" class="form-control" 
@@ -100,10 +100,14 @@
                                         <td><span class="badge badge-pill" :class="{'badge-warning': data.statut === 'en_attente', 'badge-success': data.statut === 'confirmée', 'badge-primary': data.statut === 'terminée', 'badge-danger': data.statut === 'annulée'}" >@{{data.statut.replaceAll("_", " ") }}</span></td>
                                         <td>
                                             <div class="d-flex">
+                                                <button type="button" v-if="data.statut === 'confirmée' && data.chambre.statut !== 'occupée' && isDateAvailable(data.date_debut, data.date_fin)" @click="occuperChambre(data.chambre)" class="btn btn-warning btn-xs me-1">
+                                                    <span v-if="bed_id === data.chambre.id" class="spinner-border spinner-border-sm"></span>
+                                                    <i v-else class="fa fa-bed"></i>
+                                                </button>
                                                 <button type="button" v-if="data.statut !== 'confirmée' && data.statut !== 'terminée' && data.statut !== 'annulée'" @click="triggerOpenPaymentModal(data)" class="btn btn-success btn-xs me-1"><i class="fa fa-money"></i></button>
                                                 <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" class="btn btn-info btn-xs me-1" @click="triggerOpenUpdateReservationModal(data)"><i class="mdi mdi-pencil"></i></button>
                                                 <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" @click="triggerExtendDayModal(data)" class="btn btn-primary-light btn-xs me-1"><i class="mdi mdi-plus"></i></button>
-                                                <button type="button" class="btn btn-primary btn-xs me-1"><i class="mdi mdi-eye"></i></button>
+                                                <button type="button" v-if="data.statut === 'confirmée' || data.statut === 'terminée'" class="btn btn-primary btn-xs me-1" @click="viewReservation(data)"><i class="mdi mdi-eye"></i></button>
                                                 <button type="button" v-if="data.statut !== 'terminée' && data.statut !== 'annulée'" @click="cancelReservation(data.id)" class="btn btn-danger-light btn-xs">
                                                     <span v-if="cancel_id === data.id" class="spinner-border spinner-border-sm"></span>
                                                     <i v-else class="mdi mdi-cancel"></i>
@@ -128,12 +132,20 @@
                                 </tbody>
                                 </table>
                             </div>
+                            
+                            <Paginator
+                                :current-page="pagination.current_page"
+                                :last-page="pagination.last_page"
+                                :total-items="pagination.total"
+                                :per-page="pagination.per_page"
+                                @page-changed="changePage"
+                                @per-page-changed="onPerPageChange">
+                            </Paginator>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
 
         <!-- Modal de paiement -->
         <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
@@ -198,7 +210,7 @@
                                     <span class="fw-600 fs-16">
                                         Statut :
                                         <span class="badge badge-pill"
-                                            :class="selectedChambre.statut==='libre' ? 'badge-primary' : 'badge-warning'">
+                                            :class="{'badge-primary' : selectedChambre.statut==='libre','badge-danger':selectedChambre.statut==='réservée', 'badge-danger':selectedChambre.statut==='occupée'}">
                                             @{{ selectedChambre.statut }}
                                         </span>
                                     </span>
@@ -497,6 +509,9 @@
             </div>
             <!-- /.modal-dialog -->
         </div>
+
+        @include('components.modals.facture')
+        @include('components.modals.reservation')
     </div>
 </div>
 

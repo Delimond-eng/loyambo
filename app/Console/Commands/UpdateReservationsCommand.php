@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\Chambre;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use function PHPUnit\Framework\isEmpty;
 
 class UpdateReservationsCommand extends Command
 {
@@ -25,7 +26,6 @@ class UpdateReservationsCommand extends Command
             $expired = Reservation::where('statut', 'confirmée')
                 ->where('date_fin', '<', $today)
                 ->get();
-
             $this->info($expired->count() . " réservations expirées trouvées.");
 
             foreach ($expired as $reservation) {

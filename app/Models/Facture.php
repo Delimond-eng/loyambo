@@ -30,6 +30,7 @@ class Facture extends Model
         'tva'
     ];
 
+    protected $dates = ["date_facture"];
     // Relations
 
     // Facture appartient à un utilisateur

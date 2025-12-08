@@ -45,7 +45,7 @@
                     <div class="tab-content tabcontent-border">
                         <div class="row d-flex justify-content-center pt-20" v-if="allChambres.length > 0">
                             <div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(chambre, i) in allChambres">
-                                <a href="#" @click="triggerOpenCreateReservationModal(chambre)" class="box box-shadowed b-3 border-primary">
+                                <a href="#" @click="chambre.statut === 'réservée' || chambre.statut === 'occupée' ?  triggerActionReservationModal(chambre) : triggerOpenCreateReservationModal(chambre)"class="box box-shadowed b-3 border-primary">
                                     <div class="box-body ribbon-box">
                                         <div class="ribbon-two" :class="{'ribbon-two-danger': chambre.statut==='occupée', 'ribbon-two-success':chambre.statut==='libre','ribbon-two-warning':chambre.statut==='réservée' }"><span>@{{ chambre.statut }}</span></div>
                                         <img :src="chambre.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid">
@@ -83,6 +83,35 @@
             
         </section>
 
+        <div class="modal fade modal-reservation-action" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Sélectionnez une action !</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="flexbox flex-justified text-center" v-if="selectedChambre">
+                            <button @click="triggerOpenCreateReservationModal(selectedChambre)" class="b-2 btn rounded border-primary text-primary py-20">
+                                <p class="mb-0 fa-3x"><i class="mdi mdi-plus"></i></p>
+                                <p class="mb-0 fw-300">Nouvelle reservation</p>
+                            </button>
+                            <button @click="occuperChambre(selectedChambre)" :class="{'border-danger text-danger':selectedChambre.statut === 'réservée', 'border-success text-success':selectedChambre.statut === 'occupée',}" class="b-2 rounded  btn py-20">
+                                <p class="mb-0 fa-3x">
+                                    <span v-if="isLoading" class="spinner-border"></span>
+                                    <i v-else class="fa fa-bed"></i>
+                                </p>
+                                <p class="mb-0 fw-300" v-if="selectedChambre.statut === 'réservée'">Occuper chambre</p>
+                                <p class="mb-0 fw-300" v-if="selectedChambre.statut === 'occupée'">Libérer chambre</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
         <div class="modal fade modal-reservation-create" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
             <div class="modal-dialog modal-lg">
                 <form class="modal-content" @submit.prevent="createReservation">
@@ -109,7 +138,7 @@
                                     <span class="fw-600 fs-16">
                                         Statut :
                                         <span class="badge badge-pill"
-                                            :class="selectedChambre.statut==='libre' ? 'badge-primary' : 'badge-warning'">
+                                            :class="{'badge-primary' : selectedChambre.statut==='libre','badge-danger':selectedChambre.statut==='réservée', 'badge-danger':selectedChambre.statut==='occupée'}">
                                             @{{ selectedChambre.statut }}
                                         </span>
                                     </span>
@@ -243,6 +272,8 @@
             </div>
             <!-- /.modal-dialog -->
         </div>
+
+        @include('components.modals.facture')
     </div>
 </div>
 @endsection

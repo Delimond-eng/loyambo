@@ -8,15 +8,15 @@ use App\Models\Facture;
 use App\Models\Payments;
 use App\Models\Reservation;
 use App\Models\SaleDay;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Log;
-use Pdf;
 
 class ReservationController extends Controller
 {
@@ -44,9 +44,17 @@ class ReservationController extends Controller
 
             DB::transaction(function () use ($reservation, $chambre) {
                 // 3. Mettre la chambre en statut occupée
-                $chambre->update([
-                    'statut' => 'occupée'
-                ]);
+                if($chambre->statut === 'occupée'){
+                    $chambre->update([
+                        'statut' => 'libre'
+                    ]);
+                }
+                else{
+                    $chambre->update([
+                        'statut' => 'occupée'
+                    ]);
+                }
+                
             });
 
             return response()->json([
@@ -63,7 +71,6 @@ class ReservationController extends Controller
             ]);
         }
     }
-
 
 
     public function createReservationView()
@@ -108,7 +115,9 @@ class ReservationController extends Controller
                     'identite_type' => $clientData['identite_type'],
                 ]
             );
-            $reservation = DB::transaction(function () use ($data, $client, $saleDay) {
+            $factureUrl = null;
+
+            $reservation = DB::transaction(function () use ($data, $client, $saleDay, &$factureUrl) {
                 $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
                 /*  $table   = $data['table_id']  ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null; */
                 // Vérifier la disponibilité
@@ -148,7 +157,6 @@ class ReservationController extends Controller
                     $prixJ = (float)$reservation->chambre->prix;
                     $nbreJrs = $reservation->date_debut->diffInDays($reservation->date_fin); // Correction
                     $tot_ht = $prixJ * $nbreJrs;
-
                     // --- Vérification du montant ---
                     $amount = (float)$paiement["amount"];
                     // --- Création facture ---
@@ -170,7 +178,7 @@ class ReservationController extends Controller
 
                     // --- Paiement ---
                     Payments::create([
-                        "amount"=>$amount,
+                        "amount"=>$tot_ht,
                         "devise"=>$reservation->chambre->prix_devise,
                         "mode"=>$paiement["mode"],
                         "mode_ref"=>$paiement["mode_ref"],
@@ -185,14 +193,21 @@ class ReservationController extends Controller
                     ]);
                     $reservation->statut = "confirmée";
                     $reservation->save();
+                    $factureUrl = "/reservation.facture/{$facture->id}";
                 }
                 return $reservation;
             });
-            return response()->json([
+
+            $response = [
                 'message' => 'Réservation créée avec succès.',
-                'status'=>"success",
-                'result' => $reservation
-            ]);
+                'status'  => 'success',
+                'result'  => $reservation,
+            ];
+
+            if ($factureUrl) {
+                $response['facture_url'] = $factureUrl;
+            }
+            return response()->json($response);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'errors' => $e->validator->errors()->all()
@@ -204,6 +219,85 @@ class ReservationController extends Controller
                 'reserved' => $e->getMessage()
             ]);
         }
+    }
+
+    public function getReservationFacture(int $id)
+    {
+        $facture = Facture::with(['chambre','user', 'payments'])->find($id);
+
+        if (!$facture) {
+            throw new NotFoundHttpException("Facture introuvable.");
+        }
+
+        $reservation = Reservation::where('chambre_id', $facture->chambre_id)
+            ->where('sale_day_id', $facture->sale_day_id)
+            ->with(['client','chambre'])
+            ->latest()
+            ->first();
+
+        if (!$reservation) {
+            throw new NotFoundHttpException("Réservation introuvable.");
+        }
+
+        $totalPaye = $facture->payments->sum('amount');
+        $resteAPayer = $facture->total_ttc - $totalPaye;
+
+        $data = [
+            'facture'       => $facture,
+            'reservation'   => $reservation,
+            'total_paye'    => $totalPaye,
+            'reste_a_payer' => $resteAPayer,
+            'date_entree'   => $reservation->date_debut,
+            'date_sortie'   => $reservation->date_fin,
+            'ets_nom'       => optional(Auth::user()->emplacement)->libelle,
+            'ets_adresse'   => optional(Auth::user()->etablissement)->adresse,
+            'ets_tel'       => optional(Auth::user()->etablissement)->telephone,
+        ];
+
+        return Pdf::loadView('pdf.reservation_facture', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont'            => 'dejavu sans',
+                'isHtml5ParserEnabled'   => true,
+                'isRemoteEnabled'        => true,
+            ])
+            ->stream("facture-{$facture->numero_facture}.pdf");
+    }
+    
+    public function getReservationDetails(int $id)
+    {
+        $facture = Facture::with(['chambre','user', 'payments'])->find($id);
+
+        if (!$facture) {
+            throw new NotFoundHttpException("Facture introuvable.");
+        }
+
+        $reservation = Reservation::where('chambre_id', $facture->chambre_id)
+            ->where('sale_day_id', $facture->sale_day_id)
+            ->with(['client','chambre'])
+            ->latest()
+            ->first();
+
+        if (!$reservation) {
+            throw new NotFoundHttpException("Réservation introuvable.");
+        }
+
+        $totalPaye = $facture->payments->sum('amount');
+        $resteAPayer = $facture->total_ttc - $totalPaye;
+
+        $data = [
+            'facture'       => $facture,
+            'reservation'   => $reservation,
+            'total_paye'    => $totalPaye,
+            'reste_a_payer' => $resteAPayer,
+            'date_entree'   => $reservation->date_debut,
+            'date_sortie'   => $reservation->date_fin,
+            'ets_nom'       => optional(Auth::user()->emplacement)->libelle,
+            'ets_adresse'   => optional(Auth::user()->etablissement)->adresse,
+            'ets_tel'       => optional(Auth::user()->etablissement)->telephone,
+        ];
+
+        return view("reservation.reservation_details", $data);
     }
 
     public function modifierReservation(Request $request)
@@ -218,10 +312,11 @@ class ReservationController extends Controller
                 'paiement.mode'   => 'nullable|in:cash,mobile,cheque,virement,card',
                 'paiement.mode_ref'=> 'nullable|string',
             ]);
+            $factureUrl = null;
 
             $reservation = Reservation::with(['facture', 'chambre'])->findOrFail((int) $data['reservation_id']);
 
-            DB::transaction(function () use ($reservation, $data) {
+            DB::transaction(function () use ($reservation, $data, &$factureUrl) {
 
                 /**
                  * 1. Vérification disponibilité
@@ -304,7 +399,7 @@ class ReservationController extends Controller
 
                         // recréer le paiement
                         Payments::create([
-                            'amount'       => $paiement['amount'],
+                            'amount'       => $total,
                             'devise'       => $reservation->chambre->prix_devise,
                             'mode'         => $paiement['mode'],
                             'mode_ref'     => $paiement['mode_ref'] ?? null,
@@ -334,7 +429,7 @@ class ReservationController extends Controller
                         ]);
 
                         Payments::create([
-                            'amount'        => $paiement['amount'],
+                            'amount'        => $total,
                             'devise'        => $reservation->chambre->prix_devise,
                             'mode'          => $paiement['mode'],
                             'mode_ref'      => $paiement['mode_ref'] ?? null,
@@ -346,6 +441,7 @@ class ReservationController extends Controller
                             'emplacement_id'=> Auth::user()->emplacement_id,
                         ]);
                     }
+                    $factureUrl = "/reservation.facture/{$facture->id}";
                 }
 
                 /**
@@ -360,11 +456,17 @@ class ReservationController extends Controller
                 }
             });
 
-            return response()->json([
+
+            $response = [
                 'status'  => 'success',
                 'message' => 'Réservation modifiée avec succès',
                 'data'    => $reservation
-            ]);
+            ];
+
+            if ($factureUrl) {
+                $response['facture_url'] = $factureUrl;
+            }
+            return response()->json($response);
 
         } catch (\Exception $e) {
             Log::error("Erreur modification réservation : ".$e->getMessage());
@@ -435,8 +537,10 @@ class ReservationController extends Controller
             $prixJour = (float) $reservation->chambre->prix;
             $totalHT = $prixJour * $daysAdded;
 
+            $factureUrl = null;
+
             // transaction automatique (rollback si exception)
-            DB::transaction(function () use ($reservation, $newDateFin, $saleDay, $data, $totalHT, $daysAdded) {
+            DB::transaction(function () use ($reservation, $newDateFin, $saleDay, $data, $totalHT, $daysAdded, &$factureUrl) {
 
                 // 1. Mise à jour de la date de fin
                 $reservation->update([
@@ -460,7 +564,7 @@ class ReservationController extends Controller
                     // → Si mode paiement fourni → ajouter un paiement (ne supprime pas les anciens paiements)
                     if ($hasPaymentMode) {
                         Payments::create([
-                            "amount" => $paiement['amount'],
+                            "amount" => $totalHT,
                             "devise" => $reservation->chambre->prix_devise,
                             "mode" => $paiement['mode'],
                             "mode_ref" => $paiement['mode_ref'] ?? null,
@@ -492,11 +596,11 @@ class ReservationController extends Controller
                         'statut' => $hasPaymentMode ? 'payée' : 'en_attente',
                         'reservation_id' => $reservation->id,
                     ]);
-
+                    $factureUrl = "/reservation.facture/{$facture->id}";
                     // Paiement si mode renseigné
                     if ($hasPaymentMode) {
                         Payments::create([
-                            "amount" => $paiement['amount'],
+                            "amount" => $totalHT,
                             "devise" => $reservation->chambre->prix_devise,
                             "mode" => $paiement['mode'],
                             "mode_ref" => $paiement['mode_ref'] ?? null,
@@ -511,20 +615,24 @@ class ReservationController extends Controller
                         ]);
                     }
                 }
-
                 // 3. Réactiver / confirmer la réservation
                 $reservation->update(['statut' => "confirmée"]);
             });
 
-            return response()->json([
+
+            $response = [
                 'status' => 'success',
                 'message' => 'Prolongation effectuée avec succès.',
                 'days_added' => $daysAdded,
                 'new_date_fin' => $newDateFin->toDateString(),
-            ]);
+            ];
+
+            if ($factureUrl) {
+                $response['facture_url'] = $factureUrl;
+            }
+            return response()->json($response);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-
             return response()->json([
                 'errors' => $e->validator->errors()->all()
             ]);
@@ -590,7 +698,7 @@ class ReservationController extends Controller
 
             // --- Paiement ---
             $payment = Payments::create([
-                "amount"=>$amount,
+                "amount"=>$tot_ht,
                 "devise"=>$reservation->chambre->prix_devise,
                 "mode"=>$data["mode"],
                 "mode_ref"=>$data["mode_ref"],
@@ -607,12 +715,14 @@ class ReservationController extends Controller
             $reservation->statut = "confirmée";
             $reservation->save();
 
-
-            return response()->json([
+            $response = [
                 'message' => 'Paiement effectué avec succès.',
                 'status'=>"success",
-                'result' => $payment
-            ]);
+                'result' => $payment,
+                'facture_url' => "/reservation.facture/{$facture->id}",
+            ];
+
+            return response()->json($response);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -668,11 +778,11 @@ class ReservationController extends Controller
     public function viewAllReservations(Request $request){
         Artisan::call('reservations:update');
         $user = Auth::user();
-        $reservations = Reservation::with(["chambre", "client"])
+        $reservations = Reservation::with(["chambre","facture.payments", "client"])
                         ->where("ets_id", $user->ets_id)
                         ->where("emplacement_id", $user->emplacement_id)
                         ->orderByDesc("created_at")
-                        ->get();
+                        ->paginate(5);
 
         return response()->json([
             "status"=>"success",

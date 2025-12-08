@@ -66,6 +66,7 @@
                                 </div>
                                 <!-- /.modal-dialog -->
                             </div>
+                            @include("components.modals.modal_licence")
                         </div>
                         <div class="box-body">
                             <h4 class="mb-10">Module de comptabilité</h4>

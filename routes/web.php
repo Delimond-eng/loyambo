@@ -187,6 +187,10 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
 
     Route::get('/reservation.cancel/{id}', [ReservationController::class, "annulerReservation"])->name("reservation.cancel");
 
+    Route::get('/reservation.facture/{id}', [ReservationController::class, "getReservationFacture"])->name("reservation.facture");
+
+    Route::get('/reservation.details/{id}', [ReservationController::class, "getReservationDetails"])->name("reservation.details");
+
 
     Route::get('/chambre.occuper/{chambreId}', [ReservationController::class, "occupeChambre"])->name("chambre.occuper");
     

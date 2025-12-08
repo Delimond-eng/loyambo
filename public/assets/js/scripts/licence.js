@@ -49,15 +49,23 @@ document.querySelectorAll(".LicenceApp").forEach((el) => {
                         Swal.fire({
                             title: `${data.amount} $`,
                             text: `A payer pour ${data.months} mois`,
-                            icon: "success",
+                            icon: "info",
                             showCancelButton: true,
                             confirmButtonText: "Continuer le paiement",
                             cancelButtonText: "Annuler",
                         }).then((res) => {
                             if (res.isConfirmed) {
                                 if (data.status === "success") {
-                                    window.open(data.url, "_blank");
-                                    this.checkPayStatus(data.uuid);
+                                    document.getElementById(
+                                        "licenceIframe"
+                                    ).src = data.url;
+                                    document.getElementById(
+                                        "uuid"
+                                    ).textContent = data.uuid;
+                                    setTimeout(() => {
+                                        $("#licenceModal").modal("show");
+                                        this.checkPayStatus(data.uuid);
+                                    }, 1000);
                                 } else {
                                     Swal.fire(
                                         "Erreur",

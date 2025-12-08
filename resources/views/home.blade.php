@@ -171,7 +171,10 @@
         </div>
         <!-- /.modal-dialog -->
     </div>
+
+    @include("components.modals.modal_licence")
 </div>
+
 
 
 @endsection

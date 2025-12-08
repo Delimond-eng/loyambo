@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\AccessAllow;
+use App\Models\Licence;
 use App\Models\SaleDay;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -57,7 +58,7 @@ class AppServiceProvider extends ServiceProvider
             if (!$user || !$user->etablissement || !$user->etablissement->licence) {
                 return false; // pas de licence → bloqué
             }
-            $licence = $user->etablissement->licence;
+            $licence = Licence::where("ets_id", $user->ets_id)->first();
             // Vérifie si la licence est encore valide
             return $licence->status === 'available' && now()->lessThanOrEqualTo($licence->date_fin);
         });
