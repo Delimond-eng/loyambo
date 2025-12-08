@@ -124,12 +124,14 @@ document.querySelectorAll(".AppService").forEach((el) => {
                                         text: data.message,
                                         confirmButtonText: "Fermer",
                                     }).then((res) => {
-                                        location.href = "/";
+                                        let url = "/" + data.report_url;
+                                        document.getElementById(
+                                            "reportIframe"
+                                        ).src = url;
+                                        setTimeout(() => {
+                                            $("#reportModal").modal("show");
+                                        }, 500);
                                     });
-                                    window.open(
-                                        "/" + data.report_url,
-                                        "_blank"
-                                    );
                                 } else {
                                     new Swal({
                                         icon: "error",

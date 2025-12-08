@@ -98,6 +98,7 @@
 				</div>
 				<!-- /.modal-dialog -->
 			</div>
+			@include("components.modals.day_report")
 		</section>
 	  </div>
   </div>

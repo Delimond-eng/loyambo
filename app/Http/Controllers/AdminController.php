@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Models\UserLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -480,6 +481,7 @@ class AdminController extends Controller
 
     public function getAllChambres(Request $request)
     {
+        Artisan::call('reservations:update');
         $user = Auth::user();
         $chambres = Chambre::with(["emplacement", "reservations.client"])->where("emplacement_id", $user->emplacement_id)->get();
 

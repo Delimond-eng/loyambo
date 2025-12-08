@@ -62,7 +62,7 @@
                                         <button type="submit" class="btn btn-primary btn-sm me-2">
                                             <i class="fa fa-search"></i> Filtrer
                                         </button>
-                                        <a href="#" class="btn btn-secondary btn-sm">
+                                        <a href="" class="btn btn-secondary btn-sm">
                                             <i class="fa fa-refresh"></i> Réinitialiser
                                         </a>
                                     </div>
