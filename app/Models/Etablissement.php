@@ -29,4 +29,8 @@ class Etablissement extends Model
     public function licence(){
         return $this->hasOne(Licence::class, "ets_id", "id");
     }
+
+    public function liaison(){
+        return $this->hasOne(LiaisonData::class, "ets_id", "id");
+    }
 }

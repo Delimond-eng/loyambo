@@ -55,10 +55,10 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p class="text-danger">Veuillez renseigner le nombre de mois à activer !</p>
-                                            <div class="d-flex">
+                                            <p class="text-danger"><small>Veuillez renseigner le nombre de mois à activer !</small></p>
+                                            <div class="input-group">
                                                 <input type="number" v-model="months" class="form-control me-2" placeholder="Nombre des mois à activer.. ex:2">
-                                                <button class="btn btn-primary btn-sm" @click="activeApp"><i class="mdi mdi-key-plus me-1"></i>Activer</button>
+                                                <button class="btn btn-primary btn-sm w-150" @click="activeApp"><i class="mdi mdi-key-plus me-1"></i>Activer <span v-if="isLoading" class="spinner-border spinner-border-sm ms-1"></span></button>
                                             </div>
                                         </div>
                                     </div>
@@ -68,11 +68,31 @@
                             </div>
                             @include("components.modals.modal_licence")
                         </div>
-                        <div class="box-body">
-                            <h4 class="mb-10">Module de comptabilité</h4>
+                        <div class="box-body ConfigApp">
+                            <h4 class="mb-10">Module de comptabilité  <small v-if="getMessage !== ''"><span class="badge ms-3" :class="getStatus === 1 ? 'badge-warning-light' :'badge-success-light'">@{{ getMessage }}</span></small></h4>
                             <div class="d-lg-flex d-xl-flex d-xxxl-flex d-xxl-flex d-grid overflow-scroll justify-content-between align-items-center">
                                 <p class="text-success">{{ auth()->user()->etablissement->token }}</p>
-                                <button class="btn btn-xs btn-success"> <i class="mdi mdi-link me-1"></i> Lier au module comptable </button>
+                                <button v-if="getStatus === '' || getStatus === 1 " class="btn btn-xs" :class="getStatus === '' ? 'btn-success' : 'btn-warning'" @click="openConfigModal"> <i class="mdi mdi-link me-1"></i> Lier au module comptable </button>
+                            </div>
+
+                            <div class="modal fade config-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="myModalLabel">Liaison avec la comptabilité   <small v-if="getMessage !== ''"><span class="badge ms-3" :class="getStatus === 1 ? 'badge-warning-light' :'badge-success-light'">@{{ getMessage }}</span></small></h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="text-danger"><small>Veuillez renseigner le code société fourni par l'application de la comptabilité !</small></p>
+                                            <div class="input-group">
+                                                <input type="text" v-model="code" class="form-control me-2" placeholder="Entrer le code société...">
+                                                <button class="btn btn-primary btn-sm" @click="sendRequest" :disabled="isLoading"><i class="mdi mdi-link me-1"></i>Envoyer la demande <span v-if="isLoading" class="spinner-border spinner-border-sm ms-1"></span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
                             </div>
                         </div>
                     </div>
@@ -88,4 +108,5 @@
 
 @push("scripts")
     <script type="module" src="{{ asset("assets/js/scripts/licence.js") }}"></script>
+    <script type="module" src="{{ asset("assets/js/scripts/config.js") }}"></script>
 @endpush

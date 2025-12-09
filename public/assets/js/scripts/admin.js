@@ -69,6 +69,7 @@ new Vue({
             this.form.role = user.role;
             this.form.email = user.email;
         },
+
         deleteUser(user) {
             const self = this;
             Swal.fire({
@@ -222,8 +223,8 @@ new Vue({
                             stack: 6,
                         });
                         $("body").toggleClass("right-bar-toggle");
-                        setInterval(() => {
-                            location.reload();
+                        setTimeout(() => {
+                            location.href = "/";
                         }, 1000);
                     }
                 })

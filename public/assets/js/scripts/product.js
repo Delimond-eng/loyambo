@@ -44,6 +44,11 @@ new Vue({
                 destination: "",
                 date_mouvement: "",
             },
+            formEntree: {
+                produit_id: "",
+                emplacement_id: "",
+                quantite: "",
+            },
         };
     },
 
@@ -56,6 +61,7 @@ new Vue({
                 })
                 .on("select2:select", function (e) {
                     self.formMvt.produit_id = e.params.data.id;
+                    self.formEntree.produit_id = e.params.data.id;
                 });
         }
 
@@ -462,6 +468,52 @@ new Vue({
                 });
         },
 
+        //Entree stock
+        submitStockMvt() {
+            this.isLoading = true;
+            postJson("/mvt.entree", this.formEntree)
+                .then(({ data, status }) => {
+                    this.isLoading = false;
+                    // Gestion des erreurs
+                    if (data.errors !== undefined) {
+                        this.error = data.errors;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: `${data.errors}`,
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    }
+                    if (data.status === "success") {
+                        this.error = null;
+                        this.result = data.result;
+                        Swal.fire({
+                            title: "Opération effectuée",
+                            text: "Mouvement stock effectué avec succès !",
+                            icon: "success",
+                            showConfirmButton: !1,
+                            timer: 3000,
+                        });
+                        this.resetAll();
+                    }
+                })
+                .catch((err) => {
+                    this.isLoading = false;
+                    $.toast({
+                        heading: "Echec de traitement",
+                        text: "Veuillez réessayer plutard !",
+                        position: "top-right",
+                        loaderBg: "#ff4949ff",
+                        icon: "error",
+                        hideAfter: 3000,
+                        stack: 6,
+                    });
+                });
+        },
+
         editMvt(data) {
             this.formMvt = data;
             $(".select2").val(data.produit_id).trigger("change");
@@ -498,6 +550,11 @@ new Vue({
                 source: "",
                 destination: "",
                 date_mouvement: "",
+            };
+            this.formEntree = {
+                produit_id: "",
+                emplacement_id: "",
+                quantite: "",
             };
             if ($(".select2").length) {
                 $(".select2").val(null).trigger("change");

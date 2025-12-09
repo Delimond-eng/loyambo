@@ -217,6 +217,43 @@ class ProductController extends Controller
             $mvt = MouvementStock::updateOrCreate(["id"=>$request->id ?? null],$data);
 
             return response()->json([
+                "status"=> "success",
+                "result"=> $mvt
+            ]);
+        }
+        
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+    }
+
+
+    /**
+     * create Mouvement stock
+     * @param Request $request
+     * @return mixed
+    */
+    public function entreeStockMvt(Request $request){
+        try{
+            $data = $request->validate([
+                "produit_id"=>"required|int|exists:produits,id",
+                "emplacement_id"=>"required|int|exists:emplacements,id",
+                "quantite"=>"required|int",
+            ]);
+            $user = Auth::user();
+            $data["date_mouvement"] = Carbon::now()->setTimezone("Africa/Kinshasa");
+            $data["user_id"] =$user->id;
+            $data["destination"] = $data["emplacement_id"];
+            $data["ets_id"] = $user->ets_id;
+            $mvt = MouvementStock::create($data);
+
+            return response()->json([
                 "status"=>"success",
                 "result"=>$mvt
             ]);
@@ -258,11 +295,8 @@ class ProductController extends Controller
                 'produit_id',
                 'emplacement_id',
 
-                // Stock initial = entrée sans document
-                DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NULL OR numdoc = 0) THEN quantite ELSE 0 END) as stock_initial"),
-
-                // Entrées réelles (approvisionnement)
-                DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' AND (numdoc IS NOT NULL AND numdoc != 0) THEN quantite ELSE 0 END) as total_entree"),
+                // Entrées (approvisionnements uniquement)
+                DB::raw("SUM(CASE WHEN type_mouvement = 'entrée' THEN quantite ELSE 0 END) as total_entree"),
 
                 DB::raw("SUM(CASE WHEN type_mouvement = 'sortie' THEN quantite ELSE 0 END) as total_sortie"),
                 DB::raw("SUM(CASE WHEN type_mouvement = 'vente' THEN quantite ELSE 0 END) as total_vente"),
@@ -273,13 +307,17 @@ class ProductController extends Controller
                 DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite > 0 THEN quantite ELSE 0 END) as ajustement_plus"),
                 DB::raw("SUM(CASE WHEN type_mouvement = 'ajustement' AND quantite < 0 THEN ABS(quantite) ELSE 0 END) as ajustement_moins")
             )
-            ->with('produit:id,libelle')
+            ->with('produit:id,libelle,qte_init')
             ->with('emplacement:id,libelle')
             ->where('ets_id', $ets_id)
             ->groupBy('produit_id', 'emplacement_id')
             ->get()
             ->map(function ($s) {
-                // Calcul du solde réel (final)
+
+                // Stock initial vient de la table PRODUITS
+                $s->stock_initial = (float) ($s->produit->qte_init ?? 0);
+
+                // Calcul du stock final
                 $s->solde =
                     $s->stock_initial +
                     $s->total_entree +
@@ -289,11 +327,13 @@ class ProductController extends Controller
                     $s->total_vente -
                     $s->total_transfert_sortie -
                     $s->ajustement_moins;
+
                 return $s;
             });
 
         return view('fiche_stock', compact('stocks'));
     }
+
 
     public function exportFicheStockToExcel(){
         $stocks = $this->getFicheDatas();

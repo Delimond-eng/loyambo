@@ -17,13 +17,19 @@ document.querySelectorAll(".ConfigApp").forEach((el) => {
                 store: Store,
                 search: "",
                 code: "",
+                message: "",
+                status: "",
                 payIntervall: null,
-                paymentHandled: false, // <==== Flag ajouté
+                paymentHandled: false, // <==== Flag ajouté,
             };
         },
 
+        mounted() {
+            this.checkStatus();
+        },
+
         methods: {
-            activeApp() {
+            sendRequest() {
                 if (this.code === "") {
                     $.toast({
                         heading: "Code de société requis !",
@@ -32,83 +38,16 @@ document.querySelectorAll(".ConfigApp").forEach((el) => {
                         loaderBg: "#ff4949ff",
                         icon: "error",
                         hideAfter: 3000,
-                        stack: 6,
+                        stack: 10,
                     });
                     return;
                 }
-                if (this.isLoading) return;
-            },
-
-            openActiveAppModal() {
-                $(".app-active-modal").modal("show");
-            },
-
-            checkPayStatus(uuid) {
-                // Empêcher de recréer un interval s'il existe déjà
-                if (this.payIntervall !== null) return;
-
-                this.payIntervall = setInterval(() => {
-                    get(
-                        `https://testled.milleniumhorizon.com/check_paie.php?uuid=${uuid}`
-                    )
-                        .then(({ data }) => {
-                            if (
-                                data?.flexpay_raw &&
-                                data.flexpay_raw.transaction
-                            ) {
-                                const status =
-                                    data.flexpay_raw.transaction.status;
-                                // Paiement OK
-                                if (status === "0") {
-                                    this.paymentHandled = true;
-                                    this.stopInterval();
-                                    this.confirmPayment(uuid);
-                                    return;
-                                } else {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Échec du paiement",
-                                        text: "Le paiement a échoué. Veuillez réessayer.",
-                                    });
-                                    this.paymentHandled = true;
-                                    this.stopInterval();
-                                    setTimeout(() => {
-                                        location.reload();
-                                    }, 2000);
-                                    return;
-                                }
-                            }
-                        })
-                        .catch(() => {
-                            if (!this.paymentHandled) {
-                                this.paymentHandled = true;
-                                this.stopInterval();
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Erreur",
-                                    text: "Impossible de vérifier le statut du paiement.",
-                                });
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 1500);
-                            }
-                        });
-                }, 3000);
-            },
-
-            stopInterval() {
-                if (this.payIntervall) {
-                    clearInterval(this.payIntervall);
-                    this.payIntervall = null;
-                }
-            },
-
-            confirmPayment(uuid) {
-                postJson("/licence.payment.confirm", { uuid })
+                this.isLoading = true;
+                postJson("/link.request", { code_societe: this.code })
                     .then(({ data }) => {
-                        if (!this.paymentHandled) this.paymentHandled = true;
-
-                        if (data.status === "success") {
+                        this.isLoading = false;
+                        console.log(JSON.stringify(data));
+                        /* if (data.status === "success") {
                             Swal.fire({
                                 icon: "success",
                                 title: "Succès",
@@ -127,14 +66,46 @@ document.querySelectorAll(".ConfigApp").forEach((el) => {
                             setTimeout(() => {
                                 location.reload();
                             }, 1500);
+                        } */
+                    })
+                    .catch((e) => {
+                        this.isLoading = false;
+                        console.error("Erreur de d'envoie => ", e);
+                    });
+            },
+
+            openConfigModal() {
+                $(".config-modal").modal("show");
+            },
+
+            checkStatus() {
+                // Empêcher de recréer un interval s'il existe déjà
+                get(`/link.check`)
+                    .then(({ data }) => {
+                        if (data.success) {
+                            this.message = data.data.message;
+                            this.status = data.data.statut;
                         }
                     })
-                    .catch(() => {
-                        Swal.fire("Erreur", "Erreur de confirmation", "error");
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
+                    .catch((e) => {
+                        console.error("Erreur de traitement => ", e);
                     });
+            },
+
+            stopInterval() {
+                if (this.payIntervall) {
+                    clearInterval(this.payIntervall);
+                    this.payIntervall = null;
+                }
+            },
+        },
+
+        computed: {
+            getMessage() {
+                return this.message;
+            },
+            getStatus() {
+                return this.status;
             },
         },
     });
