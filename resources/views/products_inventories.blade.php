@@ -15,22 +15,18 @@
                 </div>
 
                 <div class="col-md-12">
-                    <div class="box">
-                        <div class="box-header with-border text-center p-3">
-                            <h4 class="box-title">Inventaire des produits</h4>
-                            <h6 class="box-subtitle">Chaque inventaire doit concerner un emplacement bien spécifique !</h6>
-                        </div>
-                        <!-- /.box-header -->
-                        <div class="box-body">
-                            <!-- Nav tabs -->
-                            <ul class="nav nav-tabs nav-fill" role="tablist">
-                                <li class="nav-item"> <a class="nav-link active" data-bs-toggle="tab" href="#histories" role="tab"><span><i class="ion-folder"></i></span> <span class="hidden-xs-down ms-15">Historique des inventaires</span></a> </li>
-                                <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#inventories" role="tab"><span><i class="ion-plus"></i></span> <span class="hidden-xs-down ms-15">Nouvel inventaire</span></a> </li>
-                            </ul>
-                            <!-- Tab panes -->
-                            <div class="tab-content">
-                                <div class="tab-pane active" id="histories" role="tabpanel">
-                                    <div class="table-responsive">
+                    <ul class="nav nav-tabs nav-fill" role="tablist">
+                        <li class="nav-item"> <a class="nav-link active" data-bs-toggle="tab" href="#histories" role="tab"><span><i class="ion-folder"></i></span> <span class="hidden-xs-down ms-15">Historique des inventaires</span></a> </li>
+                        <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#inventories" role="tab"><span><i class="ion-plus"></i></span> <span class="hidden-xs-down ms-15">Nouvel inventaire</span></a> </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="histories" role="tabpanel">
+                            <div class="box">
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <!-- Nav tabs -->
+                                     <div class="table-responsive">
                                         <table class="table table-striped no-border">
                                         <thead>
                                             <tr class="bb-3 border-primary">
@@ -74,7 +70,7 @@
                                         </tbody>
                                         </table>
                                     </div>
-                            
+                    
                                     <Paginator
                                         :current-page="pagination.current_page"
                                         :last-page="pagination.last_page"
@@ -83,128 +79,150 @@
                                         @page-changed="changePage"
                                         @per-page-changed="onPerPageChange">
                                     </Paginator>
+                                    <!-- Tab panes -->
                                 </div>
-                                <div class="tab-pane" id="inventories" role="tabpanel">
-                                    <div class="p-20">
-                                        <div class="row d-flex justify-content-center" v-if="!currentInventory">
-                                            <div class="col-md-12">
-                                                <div class="text-center p-50">
-                                                    <div v-if="!isDataLoading">
-                                                        <p class="mb-1">
-                                                            <img style="width:100px" src="{{ asset("assets/images/inventory.png") }}" alt="">
-                                                        </p>
-                                                        <p class="fs-14">Cliquez pour commencer un nouvel inventaire !</p>
-                                                        @if (Auth::user()->role=="admin")
-                                                        <button :disabled="isLoading" @click.prevent="openStartModal" class="btn btn-primary btn-xs"> <i class="mdi mdi-plus"></i> Commencer inventaire <span v-if="isLoading"
-                                                                class="spinner-border spinner-border-sm ms-2"
-                                                                style="height:12px; width:12px"></span></button>
-                                                        @endif
-                                                    </div>
-                                                    <div v-else>
-                                                        <div class="d-flex justify-content-center align-items-center p-5">
-                                                            <span class="spinner-border text-primary"></span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
+                                <!-- /.box-body -->
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="inventories" role="tabpanel">
+                            <div class="py-20">
+                                <div class="row d-flex justify-content-center" v-if="!currentInventory">
+                                    <div class="col-md-12">
+                                        <div class="text-center p-50">
+                                            <div v-if="!isDataLoading">
+                                                <p class="mb-1">
+                                                    <img style="width:100px" src="{{ asset("assets/images/inventory.png") }}" alt="">
+                                                </p>
+                                                <p class="fs-14">Cliquez pour commencer un nouvel inventaire !</p>
+                                                @if (Auth::user()->role=="admin")
+                                                <button :disabled="isLoading" @click.prevent="openStartModal" class="btn btn-primary btn-xs"> <i class="mdi mdi-plus"></i> Commencer inventaire <span v-if="isLoading"
+                                                        class="spinner-border spinner-border-sm ms-2"
+                                                        style="height:12px; width:12px"></span></button>
+                                                @endif
                                             </div>
-                                        </div>
-                                        <div class="row" v-else>
-                                            <div class="col-xl-4">
-                                                <div class="input-group mb-2">
-                                                    <span class="input-group-text bg-transparent"><i
-                                                        class="ti-search text-primary"></i>
-                                                    </span>
-                                                    <input type="text" class="form-control" v-model="search" placeholder="Recherche produit...">
-                                                </div>
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item"
-                                                        v-for="(data, i) in allProducts"
-                                                        :key="i">
-                                                        <div class="demo-checkbox">
-                                                            <label :for="`Checked-${data.id}`" class="mb-0 fw-bold">
-                                                                @{{ data.libelle }}
-                                                            </label>
-                                                            <input
-                                                                class="filled-in chk-col-primary"
-                                                                type="checkbox"
-                                                                :id="`Checked-${data.id}`"
-                                                                :checked="selectedProductIds.includes(data.id)"
-                                                                @change="toggleProductSelection(data)"
-                                                            >
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="col-xl-8">
-                                                <div class="table-responsive">
-                                                    <table class="table text-nowrap table-hover">
-                                                        <thead>
-                                                            <tr class="bb-3 border-primary">
-                                                                <th scope="col">#</th>
-                                                                <th scope="col">Produit</th>
-                                                                <th scope="col">Qté théorique</th>
-                                                                <th scope="col">Qté physique</th>
-                                                                <th scope="col">Ecart</th>
-                                                                <th scope="col">Valeur</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr v-for="(line, i) in inventoryLines" :key="line.id">
-                                                                <td>@{{ i + 1 }}</td>
-                                                                <td>@{{ line.libelle }}</td>
-                                                                <td>@{{ line.stock_global ?? 0 }}</td>
-                                                                <td>
-                                                                    <input
-                                                                        type="number"
-                                                                        placeholder="0"
-                                                                        class="form-control form-control-sm w-150"
-                                                                        v-model.number="line.real_quantity" @input="() => {}">
-                                                                </td>
-                                                                <td>
-                                                                    <span :class="{'text-success': getInventoryGap(line) > 0,'text-danger': getInventoryGap(line) < 0,}">@{{ getInventoryGap(line) }}</span>
-                                                                </td>
-                                                                <td>
-                                                                    @{{ getInventoryValue(line) }}F
-                                                                </td>
-                                                            </tr>
-                                                            <tr v-if="inventoryLines.length === 0">
-                                                                <td colspan="10" class="text-center py-4">
-                                                                    <div>
-                                                                        <img style="width:50px" src="{{ asset("assets/images/inventory.png") }}" alt="">
-                                                                        <p>
-                                                                            Veuillez sélectionner le produit à inventoriser.
-                                                                        </p>
-
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-
-                                                <div class="d-flex flex-wrap align-items-center justify-content-between"  v-if="inventoryLines.length > 0">
-                                                    <div>
-                                                        <div class="d-flex flex-column">
-                                                            <span>Total écart : <strong>@{{ getTotalGap() }}</strong> </span>
-                                                            <span>Valeur totale : <strong>@{{ getTotalValue() }}</strong> F</span>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <button type="button" @click.prevent="inventoryLines=[]; selectedProductIds=[]" class="btn btn-dark-light bg-dark">Annuler</button>
-                                                        <button type="button" @click.prevent="validateInventory" :disabled="isLoading" class="btn btn-success">Valider & Ajuster <span v-if="isLoading"
-                                                            class="spinner-border spinner-border-sm ms-2"></span></button>
-                                                    </div>
+                                            <div v-else>
+                                                <div class="d-flex justify-content-center align-items-center p-5">
+                                                    <span class="spinner-border text-primary"></span>
                                                 </div>
                                             </div>
                                         </div>
+
+                                    </div>
+                                </div>
+                                <div class="row" v-else>
+                                    <div class="col-xl-4">
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-transparent"><i
+                                                class="ti-search text-primary"></i>
+                                            </span>
+                                            <input type="text" class="form-control" v-model="search" placeholder="Recherche produit...">
+                                        </div>
+                                        <div class="products-section">
+                                            <h2>Liste des Produits</h2>
+                                            <div class="product-list">
+                                                <div class="product-item"
+                                                    v-for="(data, i) in allProducts"
+                                                    :key="data.id"
+                                                    :class="{ selected: selectedProductIds.includes(data.id) }"
+                                                    @click="toggleProductSelection(data)"> 
+
+                                                <input
+                                                    type="checkbox"
+                                                    class="product-checkbox"
+                                                    :id="`Checked-${data.id}`"
+                                                    :checked="selectedProductIds.includes(data.id)"
+                                                    @change.stop="toggleProductSelection(data)"   
+                                                    @click.stop                                   
+                                                >
+
+                                                <div class="product-info">
+                                                    <label :for="`Checked-${data.id}`" class="product-name">
+                                                    @{{ data.libelle }}
+                                                    </label>
+
+                                                    <div class="product-meta">
+                                                    @{{ data.categorie.libelle ?? '—' }}
+                                                    </div>
+                                                </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="no-results" v-if="allProducts.length === 0">
+                                                Aucun produit trouvé
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-8">
+                                        <div class="box">
+                                            <div class="table-responsive">
+                                                <table class="table text-nowrap table-hover table-borderless">
+                                                    <thead>
+                                                        <tr class="bb-3 border-primary">
+                                                            <th scope="col">#</th>
+                                                            <th scope="col">Produit</th>
+                                                            <th scope="col">Qté théorique</th>
+                                                            <th scope="col">Qté physique</th>
+                                                            <th scope="col">Ecart</th>
+                                                            <th scope="col">Valeur</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="(line, i) in inventoryLines" :key="line.id">
+                                                            <td>@{{ i + 1 }}</td>
+                                                            <td>@{{ line.libelle }}</td>
+                                                            <td>@{{ line.stock_global ?? 0 }}</td>
+                                                            <td>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="0"
+                                                                    class="form-control form-control-sm w-150"
+                                                                    v-model.number="line.real_quantity" @input="() => {}">
+                                                            </td>
+                                                            <td>
+                                                                <span :class="{'text-success': getInventoryGap(line) > 0,'text-danger': getInventoryGap(line) < 0,}">@{{ getInventoryGap(line) }}</span>
+                                                            </td>
+                                                            <td>
+                                                                @{{ getInventoryValue(line) }}F
+                                                            </td>
+                                                        </tr>
+                                                        <tr v-if="inventoryLines.length === 0">
+                                                            <td colspan="10" class="text-center py-4">
+                                                                <div>
+                                                                    <img style="width:50px" src="{{ asset("assets/images/inventory.png") }}" alt="">
+                                                                    <p>
+                                                                        Veuillez sélectionner le produit à inventoriser.
+                                                                    </p>
+
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="box-footer d-flex flex-wrap align-items-center justify-content-between"  v-if="inventoryLines.length > 0">
+                                                <div>
+                                                    <div class="d-flex flex-column">
+                                                        <span>Total écart : <strong>@{{ getTotalGap() }}</strong> </span>
+                                                        <span>Valeur totale : <strong>@{{ getTotalValue() }}</strong> F</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <button type="button" @click.prevent="inventoryLines=[]; selectedProductIds=[]" class="btn btn-dark-light bg-dark">Annuler</button>
+                                                    <button type="button" @click.prevent="validateInventory" :disabled="isLoading" class="btn btn-success">Valider & Ajuster <span v-if="isLoading"
+                                                        class="spinner-border spinner-border-sm ms-2"></span></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- /.box-body -->
                     </div>
+                    
                 </div>
 		    </div>
 
@@ -246,9 +264,83 @@
 
     
 @endsection
-
 @push("scripts")
-    @push("scripts")
-        <script type="module" src="{{ asset("assets/js/scripts/inventories.js") }}"></script>
-    @endpush
+    <script type="module" src="{{ asset("assets/js/scripts/inventories.js") }}"></script>
+@endpush
+@push("styles")
+<style>
+.products-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-right: 2px solid #e9ecef;
+    overflow-y: auto;
+    max-height: 700px;
+}
+
+.products-section h2 {
+    font-size: 20px;
+    color: #2d3748;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-item {
+    background: white;
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.product-item:hover {
+    transform: translateX(4px);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.product-item.selected {
+    transform: translateX(4px);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.product-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.product-meta {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+    font-size: 15px;
+}
+</style>
 @endpush
