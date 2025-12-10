@@ -15,8 +15,10 @@
             Fiche de stock
         </button>
 
-        <button class="menu-tab" onclick="location.href='/products.mvts'">
-            Inventaires
-        </button>
+        @if (Auth::user()->role === "admin")
+            <button class="menu-tab {{ Route::is("products.inventories") ? 'active' : '' }}" onclick="location.href='/products.inventories'">
+                Inventaires
+            </button>
+        @endif
     </div>
 </div>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
@@ -68,6 +69,10 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
         "emplacements"=>Emplacement::where("ets_id", Auth::user()->ets_id)->whereNot("type", "hôtel")->get(),
     ]))->name("products");
 
+    Route::get('/products.inventories', fn()=>view("products_inventories", [
+        "emplacements"=>Emplacement::where("ets_id", Auth::user()->ets_id)->whereNot("type", "hôtel")->get()
+    ]))->name("products.inventories");
+
     Route::view('/tables.occuped', "tables_occuped")->name("tables.occuped");
     Route::view('/beds.occuped', "bedroom_occuped")->name("beds.occuped");
     Route::view('/tables.emplacements', "emplacements")->name("tables.emplacements");
@@ -121,6 +126,13 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::post("/mvt.entree", [ProductController::class, "entreeStockMvt"])->name("mvt.entree")->middleware("can:creer-mouvements-stock");
     Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("products.all")->middleware("can:voir-mouvements-stock");
 
+    ///==========EMPLACEMENTS & TABLES MANAGEMENTS=======/
+    Route::post("/inventory.start", [InventoryController::class, "startInventory"])->name("inventory.start");
+    Route::get("/inventories.all", [InventoryController::class, "getInventoriesHistory"])->name("inventories.all");
+    Route::get("/inventory.current", [InventoryController::class, "getCurrentInventory"])->name("inventory.current");
+    Route::post("/inventory.delete", [InventoryController::class, "deleteInventory"])->name("inventory.delete");
+    Route::get("/inventory.products", [InventoryController::class, "getAllProductsWithStock"])->name("inventory.products");
+    
     ///==========EMPLACEMENTS & TABLES MANAGEMENTS=======//
     Route::post("/emplacement.create", [AdminController::class, "createEmplacement"])->name("emplacement.create")->middleware("can:creer-emplacements");
     Route::get("/emplacements.all", [AdminController::class, "getAllEmplacements"])->name("emplacements.all")->middleware("can:voir-emplacements");
@@ -206,17 +218,6 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
         return view("reservation.chambres", compact("name"));
     })->whereIn("name", ["libre", "occupee", "reservee", "all"]);
     
-    //inventaires.create
-    Route::get('/inventaires.create', [InventaireController::class, 'create'])->name('inventaires.create');
-
-    Route::post('/inventaire/store', [InventaireController::class, 'store'])->name('inventaire.store');
-    //inventaire.historiques
-    Route::get('/inventaire.historiques', [InventaireController::class, 'historiques'])->name('inventaire.historiques');
-    Route::get('/inventaire/{id}/reajuster', [InventaireController::class, 'showReajustement'])->name('inventaire.reajuster');
-
-    // Route pour traiter le réajustement
-    Route::post('/inventaire/{id}/reajuster', [InventaireController::class, 'processReajustement'])->name('inventaire.process-reajustement');
-
     Route::get('/commandes', [commandesController::class, "index"])->name("commandes");
     //servir.ok
     Route::get('/commandes/servir/{id}', [commandesController::class, "servir"])->name("servir.ok");

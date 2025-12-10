@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('inventaires', function (Blueprint $table) {
             $table->id();
-            $table->date("date_debut");
-            $table->date("date_fin")->nullable();
+            $table->dateTime("date_debut");
+            $table->dateTime("date_fin")->nullable();
             $table->unsignedBigInteger("admin_id");
             $table->unsignedBigInteger('ets_id');
             $table->unsignedBigInteger('emplacement_id')->nullable();
