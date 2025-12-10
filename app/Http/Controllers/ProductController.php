@@ -151,12 +151,16 @@ class ProductController extends Controller
     }
 
     //ALL PRODUCT
-    public function getAllProducts(){
-        $user = Auth::user();
+    public function getAllProducts(Request $request)
+    {
+        $empId = $request->query("emp_id");
+        $user  = Auth::user();
+
         $products = Produit::with("categorie")
             ->where("ets_id", $user->ets_id)
             ->select("produits.*")
-            ->selectRaw("(
+            ->selectRaw(
+                "(
                     SELECT SUM(
                         CASE
                             WHEN type_mouvement = 'entrée' THEN quantite
@@ -172,13 +176,18 @@ class ProductController extends Controller
                     FROM mouvement_stocks
                     WHERE mouvement_stocks.produit_id = produits.id
                     AND mouvement_stocks.ets_id = ?
-                ) AS stock_actuel
-            ", [$user->ets_id])
+                    " . ($empId ? "AND mouvement_stocks.emplacement_id = ?" : "") . "
+                ) AS stock_actuel",
+                $empId ? [$user->ets_id, $empId] : [$user->ets_id]
+            )
             ->orderBy("libelle")
             ->get();
 
-        return response()->json(["produits" => $products]);
+        return response()->json([
+            "produits" => $products
+        ]);
     }
+
 
 
 

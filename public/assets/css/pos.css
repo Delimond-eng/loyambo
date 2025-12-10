@@ -149,6 +149,7 @@
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
+
 }
 
 /* Product Card */
@@ -242,19 +243,29 @@
         font-size: 0.8125rem;
     }
 
-    .products-grid {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1rem;
-    }
-
     .cart-actions {
         flex-direction: column;
     }
 }
 
-@media (max-width: 480px) {
+/* Petits écrans (mobile) → 3 colonnes */
+@media (max-width: 768px) {
     .products-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Écrans moyens (tablettes) → toujours 3 colonnes */
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Grands écrans (PC) → retour au mode auto */
+@media (min-width: 1025px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
 

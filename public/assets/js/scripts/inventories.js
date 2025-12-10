@@ -37,7 +37,6 @@ new Vue({
     },
 
     mounted() {
-        this.viewAllProducts();
         this.loadCurrentInventory();
         this.viewInventoriesHistory();
     },
@@ -81,6 +80,7 @@ new Vue({
                     this.isDataLoading = false;
                     if (res.data.status === "success" && res.data.inventory) {
                         this.store.currentInventory = res.data.inventory;
+                        this.viewAllProducts(res.data.inventory.emplacement_id);
                         this.loadInventoryFromCache(); // Restaurer depuis le cache
                     }
                 })
@@ -94,9 +94,9 @@ new Vue({
         },
 
         // Voir tous les produits
-        viewAllProducts() {
+        viewAllProducts(id) {
             this.isDataLoading = true;
-            get("/inventory.products")
+            get(`/inventory.products?emp_id=${id}`)
                 .then((res) => {
                     this.isDataLoading = false;
                     this.products = res.data.products;
@@ -204,16 +204,26 @@ new Vue({
                 items: items,
             };
             this.isLoading = true;
-            postJson("/inventories.validate", formData)
+            postJson("/inventory.validate", formData)
                 .then(({ data }) => {
                     this.isLoading = false;
                     if (data.errors !== undefined) {
                         this.error = data.errors;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: data.errors.toString(),
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
                     }
                     if (data.result !== undefined) {
                         this.loadCurrentInventory();
                         this.clearAll();
-                        new Swal({
+                        this.viewInventoriesHistory();
+                        Swal.fire({
                             title: data.result,
                             icon: "success",
                             timer: 3000,
@@ -326,9 +336,9 @@ new Vue({
         },
         formateDate() {
             return (date) =>
-                moment(date, "DD/MM/YYYY HH:mm")
+                moment(date, "YYYY-MM-DD HH:mm")
                     .locale("fr")
-                    .format("DD MMMM YYYY");
+                    .format("DD MMM YYYY HH:mm");
             // ex: "14 avril 2021"
         },
 

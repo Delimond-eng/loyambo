@@ -673,7 +673,9 @@ document.querySelectorAll(".AppService").forEach((el) => {
             viewAllProducts() {
                 const validPath = location.pathname === "/orders.interface";
                 if (validPath) {
-                    get("/products.all")
+                    const data = localStorage.getItem("user");
+                    const u = JSON.parse(data);
+                    get(`/products.all?emp_id=${u.emplacement_id}`)
                         .then(({ data, status }) => {
                             this.isDataLoading = false;
                             this.products = data.produits;

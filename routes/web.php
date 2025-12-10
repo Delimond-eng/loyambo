@@ -129,6 +129,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     ///==========EMPLACEMENTS & TABLES MANAGEMENTS=======/
     Route::post("/inventory.start", [InventoryController::class, "startInventory"])->name("inventory.start");
     Route::get("/inventories.all", [InventoryController::class, "getInventoriesHistory"])->name("inventories.all");
+    Route::post("/inventory.validate", [InventoryController::class, "validateInventory"])->name("inventory.validate");
     Route::get("/inventory.current", [InventoryController::class, "getCurrentInventory"])->name("inventory.current");
     Route::post("/inventory.delete", [InventoryController::class, "deleteInventory"])->name("inventory.delete");
     Route::get("/inventory.products", [InventoryController::class, "getAllProductsWithStock"])->name("inventory.products");

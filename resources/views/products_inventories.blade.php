@@ -28,49 +28,82 @@
                                     <!-- Nav tabs -->
                                      <div class="table-responsive">
                                         <table class="table table-striped no-border">
-                                        <thead>
-                                            <tr class="bb-3 border-primary">
-                                                <th>Date début</th>
-                                                <th>Date Fin</th>
-                                                <th>Gérant</th>
-                                                <th>Emplacement</th>
-                                                <th>Statut</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(data, index) in allInventories">
-                                                <th scope="row">@{{ data.date_debut }}</th>
-                                                <th scope="row">@{{ data.date_fin }}</th>
-                                                <td>@{{data.admin.name }}</td>
-                                                <td>@{{data.emplacement.libelle }}</td>
-                                                
-                                                <td><span class="badge badge-pill" :class="{'badge-warning': data.status === 'pending', 'badge-success': data.status === 'closed'}"> @{{getStatus(data.status) }}</span></td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <button type="button"  class="btn btn-primary btn-xs me-1"><i class="fa fa-eye"></i></button>
-                                                        <button type="button" class="btn btn-info btn-xs me-1"><i class="mdi mdi-delete"></i></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr v-if="allInventories.length === 0">
-                                                <td colspan="10" class="text-center py-4">
-                                                    <div class="py-50" v-if="isDataLoading">
-                                                        <span class="spinner-border"></span>
-                                                    </div>
-                                                    <div v-else class="text-muted" >
-                                                        <i class="fa fa-folder-open fa-2x mb-2"></i>
-                                                        <p>
-                                                            Aucune historique d'inventaire répertorié !
-                                                        </p>
+                                            <thead>
+                                                <tr class="bb-3 border-primary">
+                                                    <th>Date début</th>
+                                                    <th>Date Fin</th>
+                                                    <th>Gérant</th>
+                                                    <th>Emplacement</th>
+                                                    <th>Statut</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template v-for="(data, index) in allInventories" :key="data.id">
+                                                    <tr>
+                                                        <th scope="row">@{{ formateDate(data.date_debut)  }}</th>
+                                                        <th scope="row">@{{ formateDate(data.date_fin) }}</th>
+                                                        <td>@{{data.admin.name }}</td>
+                                                        <td>@{{data.emplacement.libelle }}</td>
+                                                        <td><span class="badge badge-pill" :class="{'badge-warning': data.status === 'pending', 'badge-success': data.status === 'closed'}"> @{{getStatus(data.status) }}</span></td>
+                                                        <td>
+                                                            <div class="d-flex">
+                                                                <button type="button" data-bs-toggle="collapse"
+                                                                    :data-bs-target="'#details-' + data.id"
+                                                                    :aria-controls="'details-' + data.id"  
+                                                                    class="btn btn-primary btn-xs me-1">
+                                                                    <i class="fa fa-eye"></i>
+                                                                </button>
+                                                                <button type="button" v-if="data.status==='pending'" @click="deleteInventory(data.id)" class="btn btn-danger btn-xs me-1">
+                                                                    <i v-if="load_id === data.id" class="spinner-border spinner-border-sm"></i>
+                                                                    <i v-else class="mdi mdi-delete"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
 
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
+                                                    <!-- Ligne de détails collapsible -->
+                                                    <tr :id="`details-${data.id}`" class="collapse animated-collapse">
+                                                        <td colspan="10">
+                                                            <table class="table table-striped mb-0">
+                                                                <thead>
+                                                                    <tr class="bb-3 border-info">
+                                                                        <th>Produit</th>
+                                                                        <th>Qté théorique</th>
+                                                                        <th>Qté Physique</th>
+                                                                        <th>Ecart</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr v-for="item in data.details" :key="item.id">
+                                                                        <td>@{{ item.produit.libelle }}</td>
+                                                                        <td>@{{ item.quantite_theorique }}</td>
+                                                                        <td>@{{ item.quantite_physique }}</td>
+                                                                        <td>@{{ item.ecart }}</td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr v-if="allInventories.length === 0">
+                                                        <td colspan="10" class="text-center py-4">
+                                                            <div class="py-50" v-if="isDataLoading">
+                                                                <span class="spinner-border"></span>
+                                                            </div>
+                                                            <div v-else class="text-muted" >
+                                                                <i class="fa fa-folder-open fa-2x mb-2"></i>
+                                                                <p>
+                                                                    Aucune historique d'inventaire répertorié !
+                                                                </p>
+
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
                                         </table>
                                     </div>
-                    
                                     <Paginator
                                         :current-page="pagination.current_page"
                                         :last-page="pagination.last_page"

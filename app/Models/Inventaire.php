@@ -32,4 +32,9 @@ class Inventaire extends Model
         return $this->belongsTo(Emplacement::class, 'emplacement_id');
     }
 
+
+    public function details(){
+        return $this->hasMany(InventoryDetail::class, "inventory_id", "id");
+    }
+
 }

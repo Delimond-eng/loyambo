@@ -22,7 +22,7 @@ class InventoryController extends Controller
             ->where('ets_id', $user->ets_id)
             ->orderByRaw("
                 CASE 
-                    WHEN statut = 'pending' THEN 0 
+                    WHEN status = 'pending' THEN 0 
                     ELSE 1 
                 END
             ")
@@ -89,15 +89,16 @@ class InventoryController extends Controller
     }
 
 
-    public function getAllProductsWithStock()
+    public function getAllProductsWithStock(Request $request)
     {
         $ets_id = Auth::user()->ets_id;
+        $empId = $request->query('emp_id');
 
         $products = Produit::with('categorie')
             ->get()
-            ->map(function ($product) use ($ets_id) {
+            ->map(function ($product) use ($ets_id, $empId) {
 
-                $mouvements = $product->stocks()->where('ets_id', $ets_id)->get();
+                $mouvements = $product->stocks()->where('ets_id', $ets_id)->where("emplacement_id", $empId)->get();
 
                 $total_entree = $mouvements->where('type_mouvement', 'entrée')->sum('quantite');
                 $total_sortie = $mouvements->where('type_mouvement', 'sortie')->sum('quantite');
@@ -137,7 +138,7 @@ class InventoryController extends Controller
     {
         try{
             $data = $request->validate([
-                'inventory_id'=>'required|int|exists:inventories,id'
+                'inventory_id'=>'required|int|exists:inventaires,id'
             ]);
             $inventory = Inventaire::where("id", $data["inventory_id"])->delete();
             return response()->json([
@@ -168,14 +169,20 @@ class InventoryController extends Controller
             $validated = $request->validate([
                 'inventory_id' => 'required|exists:inventaires,id',
                 'items' => 'required|array|min:1',
-                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.product_id' => 'required|exists:produits,id',
                 'items.*.real_quantity' => 'required|integer',
                 'items.*.theoretical_quantity' => 'required|integer'
+            ], [
+                'items'=>'vous devez sélectionner les produits.',
+                'items.*.real_quantity'=>'la quantité physique doit etre renseignée.',
             ]);
     
             return DB::transaction(function () use ($validated) {
                 $inventory = Inventaire::findOrFail($validated['inventory_id']);
-                $inventory->update(['status' => 'closed']);
+                $inventory->update([
+                    'status' => 'closed', 
+                    'date_fin' => Carbon::now('Africa/Kinshasa'), 
+                ]);
 
                 foreach ($validated['items'] as $item) {
 
@@ -199,6 +206,7 @@ class InventoryController extends Controller
                             'user_id'=> Auth::id(),
                             'ets_id'=> Auth::user()->ets_id,
                             'emplacement_id'=> $inventory->emplacement_id,
+                            'date_mouvement' => Carbon::today(),
                         ]);
                     }
                 }

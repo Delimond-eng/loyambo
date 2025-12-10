@@ -5,12 +5,14 @@
 	<div class="container-full">
 
 		<section class="content">
-			<div class="row d-flex justify-content-center g-4">
-
+			<div class="row d-flex justify-content-center g-2">
+				<div class="col-xl-12">
+                    @include("components.menus.products")
+                </div>
 				<div class="col-md-12">
-					<div class="box shadow-none rounded-0">
+					<div class="box shadow-none">
 
-						<div class="box-header d-flex justify-content-between align-items-center py-3 px-10 bg-primary text-white rounded-top">
+						<div class="box-header d-flex justify-content-between align-items-center py-3 px-10 bg-light text-dark rounded-top">
 							<h4 class="fw-bold text-uppercase">FICHE DE STOCK</h4>
 
 							<div>
