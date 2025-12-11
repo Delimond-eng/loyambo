@@ -196,7 +196,7 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="d-flex">
-                                                    <button type="button" class="btn btn-primary-light btn-xs me-1" @click="editMvt(data)"><i class="mdi mdi-pencil"></i></button>
+                                                    <button v-if="data.type_mouvement !== 'vente' && data.type_mouvement !=='ajustement'" type="button" class="btn btn-primary-light btn-xs me-1" @click="editMvt(data)"><i class="mdi mdi-pencil"></i></button>
                                                     <button v-if="data.type_mouvement !== 'ajustement' || data.type_mouvement === 'vente'" type="button" @click="deleteMvt(data)" class="btn btn-danger-light btn-xs">
                                                         <i class="spinner-border spinner-border-sm" v-if="load_id===data.id"></i>
                                                         <i class="mdi mdi-delete" v-else></i>
@@ -204,7 +204,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr v-if="mouvements.length === 0">
                                             <td colspan="10" class="text-center py-4">
                                                 <div class="py-50" v-if="isDataLoading">
