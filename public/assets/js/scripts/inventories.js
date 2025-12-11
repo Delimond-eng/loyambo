@@ -44,7 +44,9 @@ new Vue({
     methods: {
         viewInventoriesHistory() {
             this.isDataLoading = true;
-            get("/inventories.all")
+            get(
+                `/inventories.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
                 .then(({ data, status }) => {
                     this.isDataLoading = false;
                     this.inventories = data.inventories.data;

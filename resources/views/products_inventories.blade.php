@@ -121,25 +121,26 @@
                             <div class="py-20">
                                 <div class="row d-flex justify-content-center" v-if="!currentInventory">
                                     <div class="col-md-12">
-                                        <div class="text-center p-50">
-                                            <div v-if="!isDataLoading">
-                                                <p class="mb-1">
-                                                    <img style="width:100px" src="{{ asset("assets/images/inventory.png") }}" alt="">
-                                                </p>
-                                                <p class="fs-14">Cliquez pour commencer un nouvel inventaire !</p>
-                                                @if (Auth::user()->role=="admin")
-                                                <button :disabled="isLoading" @click.prevent="openStartModal" class="btn btn-primary btn-xs"> <i class="mdi mdi-plus"></i> Commencer inventaire <span v-if="isLoading"
-                                                        class="spinner-border spinner-border-sm ms-2"
-                                                        style="height:12px; width:12px"></span></button>
-                                                @endif
-                                            </div>
-                                            <div v-else>
-                                                <div class="d-flex justify-content-center align-items-center p-5">
-                                                    <span class="spinner-border text-primary"></span>
+                                        <div class="box">
+                                            <div class="text-center p-50">
+                                                <div v-if="!isDataLoading">
+                                                    <p class="mb-1">
+                                                        <img style="width:100px" src="{{ asset("assets/images/inventory.png") }}" alt="">
+                                                    </p>
+                                                    <p class="fs-14">Cliquez pour commencer un nouvel inventaire !</p>
+                                                    @if (Auth::user()->role=="admin")
+                                                    <button :disabled="isLoading" @click.prevent="openStartModal" class="btn btn-primary btn-xs"> <i class="mdi mdi-plus"></i> Commencer inventaire <span v-if="isLoading"
+                                                            class="spinner-border spinner-border-sm ms-2"
+                                                            style="height:12px; width:12px"></span></button>
+                                                    @endif
+                                                </div>
+                                                <div v-else>
+                                                    <div class="d-flex justify-content-center align-items-center p-5">
+                                                        <span class="spinner-border text-primary"></span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                                 <div class="row" v-else>

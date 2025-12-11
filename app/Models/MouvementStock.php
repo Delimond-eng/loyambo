@@ -52,6 +52,7 @@ class MouvementStock extends Model
     protected $casts = [
         'created_at'=>'datetime:d/m/Y H:i',
         'updated_at'=>'datetime:d/m/Y H:i',
+        'date_mouvement'=>'datetime:Y-m-d',
     ];
 
     

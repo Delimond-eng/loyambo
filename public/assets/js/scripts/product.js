@@ -1,7 +1,11 @@
 import { post, get, postJson } from "../modules/http.js";
+import Paginator from "../components/pagination.js";
 
 new Vue({
     el: "#AppProduct",
+    components: {
+        Paginator,
+    },
     data() {
         return {
             error: null,
@@ -13,6 +17,16 @@ new Vue({
             emplacements: [], // AJOUT: Liste des emplacements
             mouvements: [],
             selectedCategory: null,
+            load_id: "",
+            filter_type: "",
+            filter_date1: "",
+            filter_date2: "",
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 10,
+                per_page: 10,
+            },
             formCategory: {
                 libelle: "",
                 code: "",
@@ -49,6 +63,7 @@ new Vue({
                 emplacement_id: "",
                 quantite: "",
             },
+            disabled: false,
         };
     },
 
@@ -231,11 +246,20 @@ new Vue({
             const validPath = location.pathname === "/products.mvts";
             if (validPath) {
                 this.isDataLoading = true;
-                get("/mvts.all")
+                this.mouvements = [];
+
+                get(
+                    `/mvts.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&type=${this.filter_type}&date_debut=${this.filter_date1}&date_fin=${this.filter_date2}`
+                )
                     .then(({ data, status }) => {
-                        console.log(JSON.stringify(data));
                         this.isDataLoading = false;
-                        this.mouvements = data.mouvements;
+                        this.mouvements = data.mouvements.data;
+                        this.pagination = {
+                            current_page: data.mouvements.current_page,
+                            last_page: data.mouvements.last_page,
+                            total: data.mouvements.total,
+                            per_page: data.mouvements.per_page,
+                        };
                     })
                     .catch((err) => {
                         this.isDataLoading = false;
@@ -243,6 +267,25 @@ new Vue({
             }
         },
 
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewAllStockMvts();
+        },
+
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewAllStockMvts();
+        },
+
+        filterByType(type) {
+            this.filter_type = type;
+            if (type === "") {
+                this.filter_date1 = "";
+                this.filter_date2 = "";
+            }
+            this.viewAllStockMvts();
+        },
         //CREATE CATEGORIE
         submitCategorie() {
             this.isLoading = true;
@@ -420,7 +463,16 @@ new Vue({
         },
 
         //CREATE MVTS
-        submitStockMvt() {
+        submitMvt() {
+            if (this.formMvt.source === this.formMvt.destination) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "La déstination du stock produit doit être differente de la source",
+                    showConfirmButton: !1,
+                    timer: 3000,
+                });
+                return;
+            }
             this.isLoading = true;
             postJson("/mvt.create", this.formMvt)
                 .then(({ data, status }) => {
@@ -516,7 +568,68 @@ new Vue({
 
         editMvt(data) {
             this.formMvt = data;
+            this.disabled = true;
             $(".select2").val(data.produit_id).trigger("change");
+        },
+
+        deleteMvt(data) {
+            const self = this;
+            Swal.fire({
+                icon: "warning",
+                title: `Etes-vous sûr de poursuivre cette action ?`,
+                text: `Voulez-vous vraiment supprimer le mouvement ${data.type_mouvement} avec la quantité : ${data.quantite} ?`,
+                confirmButtonText: "Oui,Confirmer",
+                cancelButtonText: "Non, Annuler",
+                showCancelButton: 1,
+                showConfirmButton: 1,
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    self.isLoading = true;
+                    postJson("/mvts.delete", { id: data.id })
+                        .then(({ data, status }) => {
+                            self.isLoading = false;
+                            self.load_id = data.id;
+                            // Gestion des erreurs
+                            if (data.errors !== undefined) {
+                                self.error = data.errors;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: `${data.errors}`,
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                                return;
+                            }
+                            if (data.status === "success") {
+                                self.error = null;
+                                new Swal({
+                                    icon: "success",
+                                    title: "Suppression effectuéé !",
+                                    showConfirmButton: false,
+                                    showCancelButton: false,
+                                    timer: 3000,
+                                });
+                                self.viewAllStockMvts();
+                            }
+                        })
+                        .catch((err) => {
+                            self.load_id = "";
+                            self.isLoading = false;
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: "Veuillez réessayer plutard !",
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        });
+                }
+            });
         },
 
         resetAll() {
@@ -539,7 +652,7 @@ new Vue({
                 qte_init: "",
                 quantified: true,
                 tva: false,
-                emplacement_id: "", // AJOUT: Réinitialiser emplacement
+                emplacement_id: "",
             };
 
             this.formMvt = {
@@ -556,6 +669,7 @@ new Vue({
                 emplacement_id: "",
                 quantite: "",
             };
+            this.disabled = false;
             if ($(".select2").length) {
                 $(".select2").val(null).trigger("change");
             }
@@ -605,7 +719,7 @@ new Vue({
 
         formateSimpleDate() {
             return (date) =>
-                moment(date, "YYYY-MM-DD").locale("fr").format("DD MMMM YYYY");
+                moment(date, "YYYY-MM-DD").locale("fr").format("DD MMM YYYY");
             // ex: "14 avril 2021"
         },
         formateDate() {

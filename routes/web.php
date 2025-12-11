@@ -59,8 +59,9 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::view('/serveurs.activities', "serveurs_activities")->name("serveurs.activities");
     Route::view('/orders.portal', "serveur_portal")->name("orders.portal");
     Route::view('/orders.interface', "orders_interface")->name("orders.interface");
+
     Route::view('/products.categories', "product_categories")->name("products.categories");
-    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->where("ets_id", Auth::user()->ets_id)->get(), "emplacements" => Emplacement::where("ets_id", Auth::user()->ets_id)->get()]))->name("products.mvts");
+    Route::get('/products.mvts', fn()=>view("products_mvts", ["produits"=>Produit::orderBy("libelle")->where("ets_id", Auth::user()->ets_id)->get(), "emplacements" => Emplacement::where("ets_id", Auth::user()->ets_id)->whereNot('type', 'hôtel')->get()]))->name("products.mvts");
     Route::get('/fiche_stock', [ProductController::class, 'getFicheStockData'])->name('fiche_stock');
     Route::get('/fiche_stock.pdf', [ProductController::class, 'exportFicheStockToPDF'])->name('fiche_stock.pdf');
     Route::get('/fiche_stock.excel', [ProductController::class, 'exportFicheStockToExcel'])->name('fiche_stock.excel');
@@ -84,6 +85,7 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
         return view("users", ["emplacements"=>$places]);
     })->name("users");
     //GET ALL USER WITH LATEST LOGS
+
     Route::get("users.all", [AdminController::class, "getAllUsersWithLatestLog"])->name("users.all")->middleware("can:voir-utilisateurs");
     Route::get("serveurs.all", [AdminController::class, "getAllServeurs"])->name("serveurs.all")->middleware("can:voir-serveurs");
     Route::get("/serveurs.services", [AdminController::class, "getAllServeursServices"])->name("serveurs.services");
@@ -124,7 +126,8 @@ Route::middleware(["auth", "check.day.access"])->group(function(){
     Route::get("/products.all", [ProductController::class, "getAllProducts"])->name("products.all")->middleware("can:voir-produits");
     Route::post("/mvt.create", [ProductController::class, "createStockMvt"])->name("mvt.create")->middleware("can:creer-mouvements-stock");
     Route::post("/mvt.entree", [ProductController::class, "entreeStockMvt"])->name("mvt.entree")->middleware("can:creer-mouvements-stock");
-    Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("products.all")->middleware("can:voir-mouvements-stock");
+    Route::get("/mvts.all", [ProductController::class, "getStockMvts"])->name("mvts.all")->middleware("can:voir-mouvements-stock");
+    Route::post("/mvts.delete", [ProductController::class, "deleteMvt"])->name("mvts.delete")->middleware("can:supprimer-mouvements-stock");
 
     ///==========EMPLACEMENTS & TABLES MANAGEMENTS=======/
     Route::post("/inventory.start", [InventoryController::class, "startInventory"])->name("inventory.start");

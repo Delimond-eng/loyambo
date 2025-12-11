@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categorie;
+use App\Models\Facture;
 use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Models\Stock;
@@ -196,51 +197,204 @@ class ProductController extends Controller
      * @param Request $request
      * @return mixed
     */
-    public function createStockMvt(Request $request){
-        try{
-            $data = $request->validate([
-                "produit_id"=>"required|int|exists:produits,id",
-                "type_mouvement"=>"required|string",
-                "numdoc"=>"nullable|int",
-                "quantite"=>"required|int",
-                "source"=>"nullable|int",
-                "destination"=>"required|int",
-                "date_mouvement"=>"nullable|date",
-            ]);
-            $user = Auth::user();
-            $data["date_mouvement"] = !isset($data["date_mouvement"]) ? Carbon::now()->setTimezone("Africa/Kinshasa") : $data["date_mouvement"];
-            $data["user_id"] =$user->id;
+    public function createStockMvt(Request $request)
+    {
+        try {
 
-            if(!$data["numdoc"]){
-                $lastMvt = MouvementStock::where("ets_id", $user->ets_id)->latest()->first();
-                if($lastMvt){
-                    $data["numdoc"]= (int)$lastMvt->numdoc + 1;
+            // --- VALIDATION ---
+            $data = $request->validate([
+                "produit_id"     => "required|int|exists:produits,id",
+                "type_mouvement" => "required|string|in:entrée,sortie,vente,transfert,ajustement",
+                "numdoc"         => "nullable|int",
+                "quantite"       => "required|int|min:1",
+                "source"         => "nullable|required_if:type_mouvement,transfert|int|exists:emplacements,id",
+                "destination"    => "nullable|required_if:type_mouvement,transfert|int|exists:emplacements,id",
+                "emplacement_id" => "required|int|exists:emplacements,id",
+                "date_mouvement" => "nullable|date",
+            ], [
+                "produit_id.required" => "Veuillez sélectionner un produit.",
+                "type_mouvement.required" => "Le type de mouvement est obligatoire.",
+                "destination.required_if" => "La destination est obligatoire pour un transfert.",
+                "source.required_if" => "La source est obligatoire pour un transfert.",
+                "quantite.min" => "La quantité doit être supérieure à zéro."
+            ]);
+
+            $user = Auth::user();
+            $etsID = $user->ets_id;
+
+            $data["date_mouvement"] = $data["date_mouvement"] ?? Carbon::now()->setTimezone("Africa/Kinshasa");
+            $data["user_id"] = $user->id;
+            $data["ets_id"]  = $etsID;
+
+
+            // --- GESTION DU TRANSFERT ---
+            if ($data["type_mouvement"] === "transfert") {
+
+                $produit_id = $data["produit_id"];
+                $qte        = $data["quantite"];
+                $source     = $data["source"];
+                $dest       = $data["destination"];
+
+                // Vérifier stock dispo dans la source
+                $stockSource = $this->getStockDisponible($produit_id, $source, $etsID);
+
+                if ($stockSource < $qte) {
+                    return response()->json([
+                        "errors" =>"Stock insuffisant dans l'emplacement source (disponible : $stockSource)."
+                    ]);
                 }
-                else{
-                    $data["numdoc"] = 1;
+
+                DB::beginTransaction();
+
+                // Ligne 1 : SORTIE
+                MouvementStock::create([
+                    "produit_id"     => $produit_id,
+                    "type_mouvement" => "transfert",
+                    "numdoc"         => $data["numdoc"] ?? null,
+                    "quantite"       => $qte,
+                    "source"         => $source,
+                    "destination"    => $dest,
+                    "emplacement_id" => $source, // SORTIE
+                    "date_mouvement" => $data["date_mouvement"],
+                    "user_id"        => $data["user_id"],
+                    "ets_id"         => $data["ets_id"],
+                ]);
+
+                // Ligne 2 : ENTREE
+                MouvementStock::create([
+                    "produit_id"     => $produit_id,
+                    "type_mouvement" => "transfert",
+                    "numdoc"         => $data["numdoc"] ?? null,
+                    "quantite"       => $qte,
+                    "source"         => $source,
+                    "destination"    => $dest,
+                    "emplacement_id" => $dest, // ENTREE
+                    "date_mouvement" => $data["date_mouvement"],
+                    "user_id"        => $data["user_id"],
+                    "ets_id"         => $data["ets_id"],
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    "status" => "success",
+                    "result" => "Transfert effectué avec succès."
+                ]);
+            }
+
+
+            // --- SORTIE / VENTE ---
+            if (in_array($data["type_mouvement"], ["sortie", "vente"])) {
+
+                $stockDisponible = $this->getStockDisponible(
+                    $data["produit_id"],
+                    $data["emplacement_id"],
+                    $etsID
+                );
+
+                if ($stockDisponible < $data["quantite"]) {
+                    return response()->json([
+                        "errors" => [
+                            "Stock insuffisant (disponible : $stockDisponible)."
+                        ]
+                    ]);
                 }
             }
 
-            $data["ets_id"] = $user->ets_id;
-            $data["emplacement_id"] = $user->emplacement_id;
-            $mvt = MouvementStock::updateOrCreate(["id"=>$request->id ?? null],$data);
+
+            // --- AJUSTEMENT ---
+            if ($data["type_mouvement"] === "ajustement") {
+
+                $produit = $data["produit_id"];
+                $emp     = $data["emplacement_id"];
+                $qte     = $data["quantite"];
+
+                // Si on veut soustraire, vérifier stock dispo
+                if ($qte < 0) {
+                    $stock = $this->getStockDisponible($produit, $emp, $etsID);
+
+                    if ($stock < abs($qte)) {
+                        return response()->json([
+                            "errors" =>  "Stock insuffisant pour un ajustement négatif (disponible : $stock)."
+                        ]);
+                    }
+                }
+
+                $mvt = MouvementStock::create($data);
+
+                return response()->json([
+                    "status" => "success",
+                    "result" => $mvt
+                ]);
+            }
+
+
+            // --- MOUVEMENT NORMAL ---
+            $mvt = MouvementStock::updateOrCreate(
+                ["id" => $request->id ?? null],
+                $data
+            );
 
             return response()->json([
-                "status"=> "success",
-                "result"=> $mvt
+                "status" => "success",
+                "result" => $mvt
             ]);
         }
-        
+
         catch (\Illuminate\Validation\ValidationException $e) {
-            $errors = $e->validator->errors()->all();
-            return response()->json(['errors' => $errors]);
-        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        }
+        catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['errors' => $e->getMessage()]);
         }
-        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
-        }
     }
+
+
+    private function getStockDisponible($produit_id, $emplacement_id, $ets_id)
+    {
+        $stock = MouvementStock::select(
+            DB::raw("
+                SUM(CASE 
+                        WHEN type_mouvement = 'entrée' 
+                            AND emplacement_id = $emplacement_id 
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'transfert' 
+                            AND destination = $emplacement_id 
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'ajustement' 
+                            AND quantite > 0 
+                            AND emplacement_id = $emplacement_id
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'sortie' 
+                            AND emplacement_id = $emplacement_id 
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'vente' 
+                            AND emplacement_id = $emplacement_id 
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'transfert' 
+                            AND source = $emplacement_id 
+                        THEN quantite ELSE 0 END)
+                SUM(CASE 
+                        WHEN type_mouvement = 'ajustement' 
+                            AND quantite < 0 
+                            AND emplacement_id = $emplacement_id
+                        THEN ABS(quantite) ELSE 0 END)
+                as dispo
+            ")
+        )
+        ->where('produit_id', $produit_id)
+        ->where('ets_id', $ets_id)
+        ->first();
+
+        return (int) ($stock->dispo ?? 0);
+    }
+
 
 
     /**
@@ -279,20 +433,71 @@ class ProductController extends Controller
     }
 
     //Get all mouvement
-    public function getStockMvts(){
+    public function getStockMvts(Request $request){
         $user = Auth::user();
-        $reqs = MouvementStock::with(["produit","prov", "dest", "user"]);
-        $reqs->where("ets_id",$user->ets_id);
-        if($user->role !=="admin" && $user->emplacement_id){
+
+        $type = $request->query("type");
+        $dateDebut = $request->query("date_debut");
+        $dateFin = $request->query("date_fin");
+
+        $reqs = MouvementStock::with(["produit","prov", "dest","emplacement", "user"])
+            ->where("ets_id", $user->ets_id);
+
+        // Restriction emplacement si non admin
+        if($user->role !== "admin" && $user->emplacement_id){
             $reqs->where("emplacement_id", $user->emplacement_id);
         }
-        $mvts = $reqs->orderByDesc("id")->get();
+
+        // Filtre par type
+        if(!empty($type)){
+            $reqs->where("type_mouvement", $type);
+        }
+
+        if($dateDebut && $dateFin){
+            $reqs->whereBetween("date_mouvement", [
+                Carbon::parse($dateDebut)->startOfDay(),
+                Carbon::parse($dateFin)->endOfDay()
+            ]);
+        } 
+        else if($dateDebut){
+            $reqs->whereDate("date_mouvement", $dateDebut);
+        } 
+        else if($dateFin){
+            $reqs->whereDate("date_mouvement", $dateFin);
+        }
+        // Résultats
+        $mvts = $reqs->orderByDesc("id")->paginate(10);
+
         return response()->json([
-            "status"=>"success",
-            "mouvements"=>$mvts
+            "status" => "success",
+            "mouvements" => $mvts
         ]);
     }
 
+
+
+    public function deleteMvt(Request $request){
+        try{
+            $data = $request->validate([
+                "id"=>"required|int|exists:mouvement_stocks,id",
+            ]);
+            $mvt = MouvementStock::find((int)$data["id"]);
+            $mvt->delete();
+            return response()->json([
+                "status"=>"success",
+                "result"=>$mvt
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+    }
 
 
     //Afficher les données d'une fiche de stock...
