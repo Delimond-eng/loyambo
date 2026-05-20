@@ -1,0 +1,571 @@
+resources\views\reports\finances.blade.php:4:<div class="content-wrapper">
+resources\views\reports\finances.blade.php:5:    <div class="container-full">
+resources\views\reports\finances.blade.php:6:        <div class="content-header">
+resources\views\reports\finances.blade.php:7:            <div class="d-flex align-items-center">
+resources\views\reports\finances.blade.php:8:               <div class="col-xl-12">
+resources\views\reports\finances.blade.php:16:                <div class="col-12">
+resources\views\reports\finances.blade.php:18:                        <div class="box-header with-border p-5 text-center">
+resources\views\reports\finances.blade.php:19:                            <h4 class="box-title">Finances - recettes et tresorerie</h4>
+resources\views\reports\finances.blade.php:20:                            <p class="text-muted">Analyse des encaissements par periode, service, emplacement, mode de paiement et devise.</p>
+resources\views\reports\finances.blade.php:23:                        <!-- Filtres -->
+resources\views\reports\finances.blade.php:24:                        <div class="box-body">
+resources\views\reports\finances.blade.php:26:                                <div class="row mb-4">
+resources\views\reports\finances.blade.php:27:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:29:                                        <select name="service_type" id="service_type" class="form-control">
+resources\views\reports\finances.blade.php:38:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:40:                                        <select name="emplacement_id" id="emplacement_id" class="form-control">
+resources\views\reports\finances.blade.php:43:                                                <option value="{{ $emplacement->id }}" {{ request('emplacement_id') == $emplacement->id ? 'selected' : '' }}>
+resources\views\reports\finances.blade.php:44:                                                    {{ $emplacement->libelle }}
+resources\views\reports\finances.blade.php:49:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:51:                                        <select name="caissier_id" id="caissier_id" class="form-control">
+resources\views\reports\finances.blade.php:54:                                                <option value="{{ $caissier->id }}" {{ request('caissier_id') == $caissier->id ? 'selected' : '' }}>
+resources\views\reports\finances.blade.php:55:                                                    {{ $caissier->name }}
+resources\views\reports\finances.blade.php:60:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:62:                                        <select name="mode" id="mode" class="form-control">
+resources\views\reports\finances.blade.php:71:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:73:                                        <select name="devise" id="devise" class="form-control">
+resources\views\reports\finances.blade.php:76:                                                <option value="{{ $devise->devise }}" {{ request('devise') == $devise->devise ? 'selected' : '' }}>
+resources\views\reports\finances.blade.php:77:                                                    {{ $devise->devise }}
+resources\views\reports\finances.blade.php:82:                                    <div class="col-md-2">
+resources\views\reports\finances.blade.php:84:                                        <div class="input-group">
+resources\views\reports\finances.blade.php:85:                                            <input type="date" name="date_debut" id="date_debut" class="form-control" value="{{ request('date_debut') }}" placeholder="Debut">
+resources\views\reports\finances.blade.php:86:                                            <input type="date" name="date_fin" id="date_fin" class="form-control" value="{{ request('date_fin') }}" placeholder="Fin">
+resources\views\reports\finances.blade.php:91:                                    <div class="col-md-12 d-flex justify-content-center">
+resources\views\reports\finances.blade.php:92:                                        <div class="text-center">
+resources\views\reports\finances.blade.php:93:                                            <button type="submit" class="btn btn-primary">
+resources\views\reports\finances.blade.php:94:                                                <i class="fa fa-filter"></i> Appliquer les filtres
+resources\views\reports\finances.blade.php:96:                                            <a href="{{ route('reports.finances') }}" class="btn btn-secondary">
+resources\views\reports\finances.blade.php:97:                                                <i class="fa fa-refresh"></i> Reinitialiser
+resources\views\reports\finances.blade.php:99:                                            <a href="{{ route('reports.finances.export.pdf', request()->query()) }}" class="btn btn-outline-danger ms-2">
+resources\views\reports\finances.blade.php:100:                                                <i class="fa fa-file-pdf"></i> Export PDF
+resources\views\reports\finances.blade.php:102:                                            <a href="{{ route('reports.finances.export.excel', request()->query()) }}" class="btn btn-outline-success ms-1">
+resources\views\reports\finances.blade.php:103:                                                <i class="fa fa-file-excel"></i> Export Excel
+resources\views\reports\finances.blade.php:111:                        <!-- Statistiques principales DYNAMIQUES -->
+resources\views\reports\finances.blade.php:112:                        <div class="box-body">
+resources\views\reports\finances.blade.php:113:                            <div class="row mb-4">
+resources\views\reports\finances.blade.php:114:                                <div class="col-xl-3 col-md-6 mb-3">
+resources\views\reports\finances.blade.php:115:                                    <div class="box bg-primary text-white h-100">
+resources\views\reports\finances.blade.php:116:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+resources\views\reports\finances.blade.php:118:                                                <h2 class="mb-0">{{ number_format($stats['total_recettes'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+resources\views\reports\finances.blade.php:119:                                                <p class="mb-0">Recettes Totales</p>
+resources\views\reports\finances.blade.php:125:                                <div class="col-xl-3 col-md-6 mb-3">
+resources\views\reports\finances.blade.php:126:                                    <div class="box bg-success text-white h-100">
+resources\views\reports\finances.blade.php:127:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+resources\views\reports\finances.blade.php:129:                                                <h2 class="mb-0">{{ number_format($stats['recettes_aujourdhui'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+resources\views\reports\finances.blade.php:130:                                                <p class="mb-0">Aujourd'hui</p>
+resources\views\reports\finances.blade.php:132:                                            <small>{{ now()->format('d/m/Y') }}</small>
+resources\views\reports\finances.blade.php:136:                                <div class="col-xl-3 col-md-6 mb-3">
+resources\views\reports\finances.blade.php:137:                                    <div class="box bg-info text-white h-100">
+resources\views\reports\finances.blade.php:138:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+resources\views\reports\finances.blade.php:140:                                                <h2 class="mb-0">{{ number_format($stats['recettes_semaine'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+resources\views\reports\finances.blade.php:141:                                                <p class="mb-0">Cette Semaine</p>
+resources\views\reports\finances.blade.php:143:                                            <small>{{ now()->startOfWeek()->format('d/m') }} - {{ now()->endOfWeek()->format('d/m/Y') }}</small>
+resources\views\reports\finances.blade.php:147:                                <div class="col-xl-3 col-md-6 mb-3">
+resources\views\reports\finances.blade.php:148:                                    <div class="box bg-warning text-white h-100">
+resources\views\reports\finances.blade.php:149:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+resources\views\reports\finances.blade.php:151:                                                <h2 class="mb-0">{{ number_format($stats['recettes_mois'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+resources\views\reports\finances.blade.php:152:                                                <p class="mb-0">Ce Mois</p>
+resources\views\reports\finances.blade.php:154:                                            <small>{{ now()->format('F Y') }}</small>
+resources\views\reports\finances.blade.php:160:                            <!-- Onglets -->
+resources\views\reports\finances.blade.php:162:                                <div class="col-12">
+resources\views\reports\finances.blade.php:164:                                        <div class="box-header">
+resources\views\reports\finances.blade.php:165:                                            <ul class="nav nav-tabs" role="tablist">
+resources\views\reports\finances.blade.php:166:                                                <li class="nav-item">
+resources\views\reports\finances.blade.php:167:                                                    <a class="nav-link active" data-bs-toggle="tab" href="#modes">
+resources\views\reports\finances.blade.php:168:                                                        <i class="fa fa-credit-card"></i> Modes de Paiement
+resources\views\reports\finances.blade.php:171:                                                <li class="nav-item">
+resources\views\reports\finances.blade.php:172:                                                    <a class="nav-link" data-bs-toggle="tab" href="#emplacements">
+resources\views\reports\finances.blade.php:173:                                                        <i class="fa fa-store"></i> Par Emplacement
+resources\views\reports\finances.blade.php:176:                                                <li class="nav-item">
+resources\views\reports\finances.blade.php:177:                                                    <a class="nav-link" data-bs-toggle="tab" href="#caissiers">
+resources\views\reports\finances.blade.php:178:                                                        <i class="fa fa-user"></i> Performance Caissiers
+resources\views\reports\finances.blade.php:181:                                                <li class="nav-item">
+resources\views\reports\finances.blade.php:182:                                                    <a class="nav-link" data-bs-toggle="tab" href="#graphiques">
+resources\views\reports\finances.blade.php:183:                                                        <i class="fa fa-chart-bar"></i> Graphiques
+resources\views\reports\finances.blade.php:186:                                                <li class="nav-item">
+resources\views\reports\finances.blade.php:187:                                                    <a class="nav-link" data-bs-toggle="tab" href="#details">
+resources\views\reports\finances.blade.php:188:                                                        <i class="fa fa-list"></i> DÃ©tail des Paiements
+resources\views\reports\finances.blade.php:193:                                        <div class="box-body">
+resources\views\reports\finances.blade.php:194:                                            <div class="tab-content">
+resources\views\reports\finances.blade.php:195:                                                <!-- Tab Modes de Paiement -->
+resources\views\reports\finances.blade.php:196:                                                <div class="tab-pane fade show active" id="modes" role="tabpanel">
+resources\views\reports\finances.blade.php:201:                                                            $pourcentage = $total_recettes > 0 ? ($stat->total / $total_recettes) * 100 : 0;
+resources\views\reports\finances.blade.php:202:                                                            $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+resources\views\reports\finances.blade.php:204:                                                        <div class="col-md-4 mb-3">
+resources\views\reports\finances.blade.php:205:                                                            <div class="card border-0 shadow-sm ">
+resources\views\reports\finances.blade.php:206:                                                                <div class="card-body text-center d-flex flex-column justify-content-between">
+resources\views\reports\finances.blade.php:208:                                                                        <h5 class="card-title text-uppercase text-primary">
+resources\views\reports\finances.blade.php:209:                                                                            @if($stat->mode == 'cash') EspÃ¨ces
+resources\views\reports\finances.blade.php:210:                                                                            @elseif($stat->mode == 'card') Carte
+resources\views\reports\finances.blade.php:211:                                                                            @elseif($stat->mode == 'mobile') Mobile
+resources\views\reports\finances.blade.php:212:                                                                            @elseif($stat->mode == 'virement') Virement
+resources\views\reports\finances.blade.php:213:                                                                            @elseif($stat->mode == 'cheque') ChÃ¨que
+resources\views\reports\finances.blade.php:214:                                                                            @else {{ $stat->mode }}
+resources\views\reports\finances.blade.php:217:                                                                        <h3 class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</h3>
+resources\views\reports\finances.blade.php:218:                                                                        <p class="text-muted">{{ $stat->nombre }} transactions</p>
+resources\views\reports\finances.blade.php:221:                                                                        <div class="progress-bar bg-success" style="width: {{ $pourcentage }}%">
+resources\views\reports\finances.blade.php:230:                                                    @if($stats_modes->count() == 0)
+resources\views\reports\finances.blade.php:231:                                                    <div class="alert alert-info text-center">
+resources\views\reports\finances.blade.php:232:                                                        <i class="fa fa-info-circle"></i> Aucun paiement trouvÃ© avec les critÃ¨res sÃ©lectionnÃ©s.
+resources\views\reports\finances.blade.php:237:                                                <!-- Tab Par Emplacement -->
+resources\views\reports\finances.blade.php:238:                                                <div class="tab-pane fade" id="emplacements" role="tabpanel">
+resources\views\reports\finances.blade.php:239:                                                    @if($stats_emplacements->count() > 0)
+resources\views\reports\finances.blade.php:240:                                                    <div class="table-responsive">
+resources\views\reports\finances.blade.php:241:                                                        <table class="table table-bordered table-hover">
+resources\views\reports\finances.blade.php:243:                                                                <tr class="bg-light">
+resources\views\reports\finances.blade.php:245:                                                                    <th class="text-center">Nombre de Paiements</th>
+resources\views\reports\finances.blade.php:246:                                                                    <th class="text-end">Montant Total</th>
+resources\views\reports\finances.blade.php:247:                                                                    <th class="text-center">Part du Total</th>
+resources\views\reports\finances.blade.php:254:                                                                        $pourcentage = $total_recettes > 0 ? ($stat->total / $total_recettes) * 100 : 0;
+resources\views\reports\finances.blade.php:255:                                                                        $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+resources\views\reports\finances.blade.php:259:                                                                            <strong>{{ $stat->libelle }}</strong>
+resources\views\reports\finances.blade.php:261:                                                                        <td class="text-center">
+resources\views\reports\finances.blade.php:262:                                                                            <span class="badge bg-primary">{{ $stat->nombre }}</span>
+resources\views\reports\finances.blade.php:264:                                                                        <td class="text-end">
+resources\views\reports\finances.blade.php:265:                                                                            <strong class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</strong>
+resources\views\reports\finances.blade.php:267:                                                                        <td class="text-center">
+resources\views\reports\finances.blade.php:268:                                                                            <span class="badge bg-info">{{ number_format($pourcentage, 1) }}%</span>
+resources\views\reports\finances.blade.php:276:                                                    <div class="alert alert-info text-center">
+resources\views\reports\finances.blade.php:277:                                                        <i class="fa fa-info-circle"></i> Aucun emplacement avec des paiements trouvÃ©.
+resources\views\reports\finances.blade.php:282:                                                <!-- Tab Performance Caissiers -->
+resources\views\reports\finances.blade.php:283:                                                <div class="tab-pane fade" id="caissiers" role="tabpanel">
+resources\views\reports\finances.blade.php:284:                                                    @if($stats_caissiers->count() > 0)
+resources\views\reports\finances.blade.php:285:                                                    <div class="table-responsive">
+resources\views\reports\finances.blade.php:286:                                                        <table class="table table-bordered table-hover">
+resources\views\reports\finances.blade.php:288:                                                                <tr class="bg-light">
+resources\views\reports\finances.blade.php:290:                                                                    <th class="text-center">Nombre de Paiements</th>
+resources\views\reports\finances.blade.php:291:                                                                    <th class="text-end">Montant Total</th>
+resources\views\reports\finances.blade.php:292:                                                                    <th class="text-center">Moyenne par Paiement</th>
+resources\views\reports\finances.blade.php:298:                                                                        $moyenne = ($stat->nombre > 0 && $stat->total > 0) ? $stat->total / $stat->nombre : 0;
+resources\views\reports\finances.blade.php:299:                                                                        $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+resources\views\reports\finances.blade.php:303:                                                                            <strong>{{ $stat->name ?? 'N/A' }}</strong>
+resources\views\reports\finances.blade.php:305:                                                                        <td class="text-center">
+resources\views\reports\finances.blade.php:306:                                                                            <span class="badge bg-primary">{{ $stat->nombre }}</span>
+resources\views\reports\finances.blade.php:308:                                                                        <td class="text-end">
+resources\views\reports\finances.blade.php:309:                                                                            <strong class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</strong>
+resources\views\reports\finances.blade.php:311:                                                                        <td class="text-center">
+resources\views\reports\finances.blade.php:312:                                                                            <span class="badge bg-info">{{ number_format($moyenne, 0, ',', ' ') }} {{ $devise_stat }}</span>
+resources\views\reports\finances.blade.php:320:                                                    <div class="alert alert-info text-center">
+resources\views\reports\finances.blade.php:321:                                                        <i class="fa fa-info-circle"></i> Aucun caissier trouvÃ© avec des paiements.
+resources\views\reports\finances.blade.php:326:                                                <!-- Tab Graphiques -->
+resources\views\reports\finances.blade.php:327:                                                <div class="tab-pane fade" id="graphiques" role="tabpanel">
+resources\views\reports\finances.blade.php:329:                                                        <!-- Graphique 1: RÃ©partition par mode de paiement -->
+resources\views\reports\finances.blade.php:330:                                                        <div class="col-md-6 mb-4">
+resources\views\reports\finances.blade.php:332:                                                                <div class="card-header bg-primary text-white">
+resources\views\reports\finances.blade.php:333:                                                                    <h5 class="card-title mb-0">
+resources\views\reports\finances.blade.php:334:                                                                        <i class="fa fa-pie-chart"></i> Modes de Paiement ({{ $stats_devise_principale ?? 'CDF' }})
+resources\views\reports\finances.blade.php:337:                                                                <div class="card-body">
+resources\views\reports\finances.blade.php:343:                                                        <!-- Graphique 2: RÃ©partition par devise -->
+resources\views\reports\finances.blade.php:344:                                                        <div class="col-md-6 mb-4">
+resources\views\reports\finances.blade.php:346:                                                                <div class="card-header bg-success text-white">
+resources\views\reports\finances.blade.php:347:                                                                    <h5 class="card-title mb-0">
+resources\views\reports\finances.blade.php:348:                                                                        <i class="fa fa-money"></i> RÃ©partition par Devise
+resources\views\reports\finances.blade.php:351:                                                                <div class="card-body">
+resources\views\reports\finances.blade.php:357:                                                        <!-- Graphique 3: Performance par emplacement -->
+resources\views\reports\finances.blade.php:358:                                                        <div class="col-md-6 mb-4">
+resources\views\reports\finances.blade.php:360:                                                                <div class="card-header bg-info text-white">
+resources\views\reports\finances.blade.php:361:                                                                    <h5 class="card-title mb-0">
+resources\views\reports\finances.blade.php:362:                                                                        <i class="fa fa-bar-chart"></i> Recettes par Emplacement ({{ $stats_devise_principale ?? 'CDF' }})
+resources\views\reports\finances.blade.php:365:                                                                <div class="card-body">
+resources\views\reports\finances.blade.php:371:                                                        <!-- Graphique 4: Performance des caissiers -->
+resources\views\reports\finances.blade.php:372:                                                        <div class="col-md-6 mb-4">
+resources\views\reports\finances.blade.php:374:                                                                <div class="card-header bg-warning text-white">
+resources\views\reports\finances.blade.php:375:                                                                    <h5 class="card-title mb-0">
+resources\views\reports\finances.blade.php:376:                                                                        <i class="fa fa-users"></i> Top Caissiers ({{ $stats_devise_principale ?? 'CDF' }})
+resources\views\reports\finances.blade.php:379:                                                                <div class="card-body">
+resources\views\reports\finances.blade.php:385:                                                        <!-- Graphique 5: Ã‰volution mensuelle -->
+resources\views\reports\finances.blade.php:386:                                                        <div class="col-12 mb-4">
+resources\views\reports\finances.blade.php:388:                                                                <div class="card-header bg-danger text-white">
+resources\views\reports\finances.blade.php:389:                                                                    <h5 class="card-title mb-0">
+resources\views\reports\finances.blade.php:390:                                                                        <i class="fa fa-line-chart"></i> Ã‰volution des Recettes ({{ $stats_devise_principale ?? 'CDF' }})
+resources\views\reports\finances.blade.php:393:                                                                <div class="card-body">
+resources\views\reports\finances.blade.php:403:                                                <!-- Tab DÃ©tail des Paiements -->
+resources\views\reports\finances.blade.php:404:                                                <div class="tab-pane fade" id="details" role="tabpanel">
+resources\views\reports\finances.blade.php:405:                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+resources\views\reports\finances.blade.php:407:                                                        <button class="btn btn-sm btn-info" onclick="exporterExcel()">
+resources\views\reports\finances.blade.php:408:                                                            <i class="fa fa-download"></i> Exporter
+resources\views\reports\finances.blade.php:411:                                                    @if($paiements->count() > 0)
+resources\views\reports\finances.blade.php:412:                                                        <div class="table-responsive">
+resources\views\reports\finances.blade.php:413:                                                            <table class="table table-bordered table-hover" id="table-paiements">
+resources\views\reports\finances.blade.php:415:                                                                    <tr class="bg-light">
+resources\views\reports\finances.blade.php:420:                                                                        <th class="text-end">Montant</th>
+resources\views\reports\finances.blade.php:429:                                                                            $devise_paiement = $paiement->devise ?? $paiement->facture?->devise ?? 'CDF';
+resources\views\reports\finances.blade.php:431:                                                                        <tr class="payment-row" data-payment-id="{{ $paiement->id }}" style="cursor: pointer;">
+resources\views\reports\finances.blade.php:433:                                                                                {{ \Carbon\Carbon::parse($paiement->pay_date)->format('d/m/Y H:i') }}
+resources\views\reports\finances.blade.php:436:                                                                                @if($paiement->facture)
+resources\views\reports\finances.blade.php:437:                                                                                    <strong>{{ $paiement->facture->numero_facture ?? 'N/A' }}</strong>
+resources\views\reports\finances.blade.php:439:                                                                                    <span class="text-muted">-</span>
+resources\views\reports\finances.blade.php:443:                                                                                <span class="badge bg-secondary">{{ $paiement->emplacement?->libelle ?? 'N/A' }}</span>
+resources\views\reports\finances.blade.php:447:                                                                                    @if($paiement->mode == 'cash') bg-success
+resources\views\reports\finances.blade.php:448:                                                                                    @elseif($paiement->mode == 'card') bg-primary
+resources\views\reports\finances.blade.php:449:                                                                                    @elseif($paiement->mode == 'mobile') bg-info
+resources\views\reports\finances.blade.php:450:                                                                                    @else bg-warning @endif">
+resources\views\reports\finances.blade.php:451:                                                                                    @if($paiement->mode == 'cash') EspÃ¨ces
+resources\views\reports\finances.blade.php:452:                                                                                    @elseif($paiement->mode == 'card') Carte
+resources\views\reports\finances.blade.php:453:                                                                                    @elseif($paiement->mode == 'mobile') Mobile
+resources\views\reports\finances.blade.php:454:                                                                                    @elseif($paiement->mode == 'virement') Virement
+resources\views\reports\finances.blade.php:455:                                                                                    @elseif($paiement->mode == 'cheque') ChÃ¨que
+resources\views\reports\finances.blade.php:456:                                                                                    @else {{ $paiement->mode }}
+resources\views\reports\finances.blade.php:460:                                                                            <td class="text-end">
+resources\views\reports\finances.blade.php:461:                                                                                <strong class="text-success">{{ number_format($paiement->amount, 0, ',', ' ') }}</strong>
+resources\views\reports\finances.blade.php:463:                                                                            <td class="text-center">
+resources\views\reports\finances.blade.php:464:                                                                                <span class="badge bg-dark text-white">{{ $devise_paiement }}</span>
+resources\views\reports\finances.blade.php:467:                                                                                <small>{{ $paiement->user?->name ?? 'N/A' }}</small>
+resources\views\reports\finances.blade.php:469:                                                                            <td class="text-center">
+resources\views\reports\finances.blade.php:470:                                                                                <button class="btn btn-sm btn-outline-primary view-payment" data-payment-id="{{ $paiement->id }}">
+resources\views\reports\finances.blade.php:471:                                                                                    <i class="fa fa-eye"></i>
+resources\views\reports\finances.blade.php:479:                                                        <div class="mt-3">
+resources\views\reports\finances.blade.php:480:                                                            {{ $paiements->links('vendor.pagination.vue-table') }}
+resources\views\reports\finances.blade.php:484:                                                        <div class="alert alert-info text-center">
+resources\views\reports\finances.blade.php:485:                                                            <i class="fa fa-info-circle"></i> Aucun paiement trouvÃ© avec les critÃ¨res sÃ©lectionnÃ©s.
+resources\views\reports\finances.blade.php:502:<!-- Modal pour les dÃ©tails du paiement -->
+resources\views\reports\finances.blade.php:503:<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+resources\views\reports\finances.blade.php:504:    <div class="modal-dialog modal-lg">
+resources\views\reports\finances.blade.php:505:        <div class="modal-content">
+resources\views\reports\finances.blade.php:506:            <div class="modal-header bg-primary text-white">
+resources\views\reports\finances.blade.php:507:                <h5 class="modal-title" id="paymentModalLabel">DÃ©tails du Paiement</h5>
+resources\views\reports\finances.blade.php:508:                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+resources\views\reports\finances.blade.php:510:            <div class="modal-body" id="paymentDetails">
+resources\views\reports\finances.blade.php:511:                <!-- Les dÃ©tails seront chargÃ©s ici -->
+resources\views\reports\finances.blade.php:513:            <div class="modal-footer">
+resources\views\reports\finances.blade.php:514:                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+resources\views\reports\finances.blade.php:529:    const table = document.getElementById('table-paiements');
+resources\views\reports\finances.blade.php:535:    const url = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(html);
+resources\views\reports\finances.blade.php:548:    modalBody.innerHTML = '<div class="text-center py-4"><span class="spinner-border"></span></div>';
+resources\views\reports\finances.blade.php:559:        return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleString('fr-FR');
+resources\views\reports\finances.blade.php:573:    fetch(`/reports/payment-details/${paymentId}`, { headers: { 'Accept': 'application/json' } })
+resources\views\reports\finances.blade.php:585:            const montantPaiement = Number(payment.amount || 0).toLocaleString('fr-FR');
+resources\views\reports\finances.blade.php:589:                    <div class="col-md-6">
+resources\views\reports\finances.blade.php:591:                        <table class="table table-bordered">
+resources\views\reports\finances.blade.php:602:                                <td><span class="badge bg-primary">${modeLabel(payment.mode)}</span></td>
+resources\views\reports\finances.blade.php:618:                    <div class="col-md-6">
+resources\views\reports\finances.blade.php:624:                const totalFacture = Number(payment.facture.total_ttc || 0).toLocaleString('fr-FR');
+resources\views\reports\finances.blade.php:627:                    <table class="table table-bordered">
+resources\views\reports\finances.blade.php:642:                            <td><span class="badge ${String(payment.facture.statut || '').startsWith('pay') ? 'bg-success' : 'bg-warning'}">${payment.facture.statut || 'N/A'}</span></td>
+resources\views\reports\finances.blade.php:647:                detailsHTML += `<p class="text-muted">Aucune facture associee</p>`;
+resources\views\reports\finances.blade.php:659:                    <div class="row mt-3">
+resources\views\reports\finances.blade.php:660:                        <div class="col-12">
+resources\views\reports\finances.blade.php:662:                            <div class="table-responsive">
+resources\views\reports\finances.blade.php:663:                                <table class="table table-sm table-bordered">
+resources\views\reports\finances.blade.php:665:                                        <tr class="bg-light">
+resources\views\reports\finances.blade.php:667:                                            <th class="text-end">Prix unitaire</th>
+resources\views\reports\finances.blade.php:668:                                            <th class="text-center">Quantite</th>
+resources\views\reports\finances.blade.php:669:                                            <th class="text-end">Sous-total</th>
+resources\views\reports\finances.blade.php:680:                            <td class="text-end">${Number(detail.prix_unitaire || 0).toLocaleString('fr-FR')} ${deviseFacture}</td>
+resources\views\reports\finances.blade.php:681:                            <td class="text-center">${detail.quantite || '0'}</td>
+resources\views\reports\finances.blade.php:682:                            <td class="text-end">${Number(detail.total || 0).toLocaleString('fr-FR')} ${deviseFacture}</td>
+resources\views\reports\finances.blade.php:690:                                        <tr class="bg-light">
+resources\views\reports\finances.blade.php:691:                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+resources\views\reports\finances.blade.php:692:                                            <td class="text-end"><strong>${Number(payment.facture.total_ttc || 0).toLocaleString('fr-FR')} ${deviseFacture}</strong></td>
+resources\views\reports\finances.blade.php:706:            modalBody.innerHTML = `<div class="alert alert-danger mb-0">Impossible de charger les details du paiement.</div>`;
+resources\views\reports\finances.blade.php:713:    document.querySelectorAll('.payment-row').forEach(row => {
+resources\views\reports\finances.blade.php:715:            const paymentId = this.getAttribute('data-payment-id');
+resources\views\reports\finances.blade.php:721:    document.querySelectorAll('.view-payment').forEach(button => {
+resources\views\reports\finances.blade.php:724:            const paymentId = this.getAttribute('data-payment-id');
+resources\views\reports\finances.blade.php:729:    // Auto-submit des filtres principaux
+resources\views\reports\finances.blade.php:994:            ctxEvolution.innerHTML = '<div class="text-center p-4 text-muted">Aucune donnÃ©e disponible pour l\'Ã©volution mensuelle</div>';
+resources\views\reports\finances.blade.php:1001:.payment-row:hover {
+resources\views\reports\finances.blade.php:1002:    background-color: #f8f9fa !important;
+resources\views\reports\finances.blade.php:1003:    transform: translateY(-1px);
+resources\views\reports\finances.blade.php:1010:    transform: translateY(-2px);
+resources\views\reports\finances.blade.php:1011:    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+resources\views\reports\finances.blade.php:1016:.progress-bar {
+resources\views\reports\finances.blade.php:1017:    font-size: 12px;
+resources\views\reports\finances.blade.php:1018:    line-height: 20px;
+resources\views\reports\finances.blade.php:1020:.nav-tabs .nav-link.active {
+resources\views\reports\finances.blade.php:1021:    font-weight: bold;
+resources\views\reports\finances.blade.php:1022:    border-bottom: 3px solid #3498db;
+resources\views\reports\finances.blade.php:1025:    background-color: #f8f9fa !important;
+resources\views\reports\finances.blade.php:1026:    font-weight: 600;
+resources\views\reports\reservations.blade.php:4:<div class="content-wrapper">
+resources\views\reports\reservations.blade.php:5:    <div class="container-full">
+resources\views\reports\reservations.blade.php:6:        <div class="content-header">
+resources\views\reports\reservations.blade.php:7:            <div class="d-flex align-items-center">
+resources\views\reports\reservations.blade.php:8:                <div class="col-xl-12">
+resources\views\reports\reservations.blade.php:16:                <div class="col-12">
+resources\views\reports\reservations.blade.php:18:                        <div class="box-header with-border p-5 text-center">
+resources\views\reports\reservations.blade.php:19:                            <h4 class="box-title">Rapport reservations hotel</h4>
+resources\views\reports\reservations.blade.php:20:                            <p class="text-muted mb-0">Suivi des reservations de chambres avec type de sejour et paiements.</p>
+resources\views\reports\reservations.blade.php:23:                        <div class="box-body">
+resources\views\reports\reservations.blade.php:24:                            <form method="GET" action="{{ route('reports.reservations') }}" class="mb-4">
+resources\views\reports\reservations.blade.php:25:                                <div class="row g-2">
+resources\views\reports\reservations.blade.php:26:                                    <div class="col-md-3">
+resources\views\reports\reservations.blade.php:28:                                        <input type="text" id="search" name="search" class="form-control" value="{{ request('search') }}" placeholder="Client, chambre, facture">
+resources\views\reports\reservations.blade.php:30:                                    <div class="col-md-2">
+resources\views\reports\reservations.blade.php:32:                                        <input type="date" id="date_debut" name="date_debut" class="form-control" value="{{ request('date_debut') }}">
+resources\views\reports\reservations.blade.php:34:                                    <div class="col-md-2">
+resources\views\reports\reservations.blade.php:36:                                        <input type="date" id="date_fin" name="date_fin" class="form-control" value="{{ request('date_fin') }}">
+resources\views\reports\reservations.blade.php:38:                                    <div class="col-md-2">
+resources\views\reports\reservations.blade.php:40:                                        <select id="type_sejour" name="type_sejour" class="form-control">
+resources\views\reports\reservations.blade.php:46:                                    <div class="col-md-3">
+resources\views\reports\reservations.blade.php:48:                                        <select id="type_chambre" name="type_chambre" class="form-control">
+resources\views\reports\reservations.blade.php:56:                                <div class="row g-2 mt-2">
+resources\views\reports\reservations.blade.php:57:                                    <div class="col-md-4">
+resources\views\reports\reservations.blade.php:59:                                        <select id="statut_reservation" name="statut_reservation" class="form-control">
+resources\views\reports\reservations.blade.php:67:                                    <div class="col-md-4">
+resources\views\reports\reservations.blade.php:69:                                        <select id="statut_paiement" name="statut_paiement" class="form-control">
+resources\views\reports\reservations.blade.php:77:                                    <div class="col-md-4">
+resources\views\reports\reservations.blade.php:79:                                        <select id="mode_paiement" name="mode_paiement" class="form-control">
+resources\views\reports\reservations.blade.php:87:                                <div class="row mt-3">
+resources\views\reports\reservations.blade.php:88:                                    <div class="col-12 text-center">
+resources\views\reports\reservations.blade.php:89:                                        <button type="submit" class="btn btn-primary">
+resources\views\reports\reservations.blade.php:90:                                            <i class="fa fa-filter"></i> Appliquer
+resources\views\reports\reservations.blade.php:92:                                        <a href="{{ route('reports.reservations') }}" class="btn btn-secondary">
+resources\views\reports\reservations.blade.php:93:                                            <i class="fa fa-refresh"></i> Reinitialiser
+resources\views\reports\reservations.blade.php:100:                                $resteGlobal = max(0, (float)$stats['montant_total'] - (float)$stats['total_paye']);
+resources\views\reports\reservations.blade.php:102:                            <div class="row mb-4">
+resources\views\reports\reservations.blade.php:103:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:104:                                    <div class="box bg-primary text-white">
+resources\views\reports\reservations.blade.php:105:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:106:                                            <h3 class="mb-0">{{ $stats['total'] }}</h3>
+resources\views\reports\reservations.blade.php:107:                                            <p class="mb-0">Reservations</p>
+resources\views\reports\reservations.blade.php:111:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:112:                                    <div class="box bg-success text-white">
+resources\views\reports\reservations.blade.php:113:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:114:                                            <h3 class="mb-0">{{ $stats['confirmees'] }}</h3>
+resources\views\reports\reservations.blade.php:115:                                            <p class="mb-0">Confirmees</p>
+resources\views\reports\reservations.blade.php:119:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:120:                                    <div class="box bg-warning text-white">
+resources\views\reports\reservations.blade.php:121:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:122:                                            <h3 class="mb-0">{{ $stats['en_attente'] }}</h3>
+resources\views\reports\reservations.blade.php:123:                                            <p class="mb-0">En attente</p>
+resources\views\reports\reservations.blade.php:127:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:128:                                    <div class="box bg-danger text-white">
+resources\views\reports\reservations.blade.php:129:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:130:                                            <h3 class="mb-0">{{ $stats['annulees'] }}</h3>
+resources\views\reports\reservations.blade.php:131:                                            <p class="mb-0">Annulees</p>
+resources\views\reports\reservations.blade.php:135:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:136:                                    <div class="box bg-info text-white">
+resources\views\reports\reservations.blade.php:137:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:138:                                            <h3 class="mb-0">{{ number_format($stats['total_paye'], 0, ',', ' ') }}</h3>
+resources\views\reports\reservations.blade.php:139:                                            <p class="mb-0">Total paye</p>
+resources\views\reports\reservations.blade.php:143:                                <div class="col-xl-2 col-md-6">
+resources\views\reports\reservations.blade.php:144:                                    <div class="box bg-secondary text-white">
+resources\views\reports\reservations.blade.php:145:                                        <div class="box-body text-center">
+resources\views\reports\reservations.blade.php:146:                                            <h3 class="mb-0">{{ number_format($resteGlobal, 0, ',', ' ') }}</h3>
+resources\views\reports\reservations.blade.php:147:                                            <p class="mb-0">Reste</p>
+resources\views\reports\reservations.blade.php:153:                            <div class="table-responsive">
+resources\views\reports\reservations.blade.php:154:                                <table class="table table-bordered table-hover">
+resources\views\reports\reservations.blade.php:162:                                            <th class="text-end">Montant</th>
+resources\views\reports\reservations.blade.php:163:                                            <th class="text-end">Paye</th>
+resources\views\reports\reservations.blade.php:164:                                            <th class="text-end">Reste</th>
+resources\views\reports\reservations.blade.php:166:                                            <th class="text-center">Actions</th>
+resources\views\reports\reservations.blade.php:172:                                                $facture = $reservation->facture;
+resources\views\reports\reservations.blade.php:173:                                                $chambre = $reservation->chambre;
+resources\views\reports\reservations.blade.php:174:                                                $client = $reservation->client;
+resources\views\reports\reservations.blade.php:175:                                                $devise = $facture?->devise ?? $chambre?->prix_devise ?? 'USD';
+resources\views\reports\reservations.blade.php:176:                                                $montantReservation = (float)($reservation->prix_facture ?? $reservation->prix_base ?? ($facture?->total_ttc ?? 0));
+resources\views\reports\reservations.blade.php:177:                                                $totalPaye = (float)($facture?->payments?->sum('amount') ?? 0);
+resources\views\reports\reservations.blade.php:178:                                                $reste = max(0, $montantReservation - $totalPaye);
+resources\views\reports\reservations.blade.php:179:                                                $modes = $facture ? $facture->payments->pluck('mode')->filter()->unique()->implode(', ') : '-';
+resources\views\reports\reservations.blade.php:181:                                                $reservationStatus = (string)$reservation->statut;
+resources\views\reports\reservations.blade.php:182:                                                $reservationStatusClass = 'badge-secondary';
+resources\views\reports\reservations.blade.php:184:                                                    $reservationStatusClass = 'badge-warning';
+resources\views\reports\reservations.blade.php:186:                                                    $reservationStatusClass = 'badge-success';
+resources\views\reports\reservations.blade.php:188:                                                    $reservationStatusClass = 'badge-primary';
+resources\views\reports\reservations.blade.php:190:                                                    $reservationStatusClass = 'badge-danger';
+resources\views\reports\reservations.blade.php:193:                                                $paymentStatus = $facture?->statut ?? 'non_facturee';
+resources\views\reports\reservations.blade.php:194:                                                $paymentStatusClass = 'badge-secondary';
+resources\views\reports\reservations.blade.php:196:                                                    $paymentStatusClass = 'badge-dark';
+resources\views\reports\reservations.blade.php:198:                                                    $paymentStatusClass = 'badge-success';
+resources\views\reports\reservations.blade.php:200:                                                    $paymentStatusClass = 'badge-info';
+resources\views\reports\reservations.blade.php:202:                                                    $paymentStatusClass = 'badge-warning';
+resources\views\reports\reservations.blade.php:206:                                                <td>{{ optional($reservation->created_at)->format('d/m/Y H:i') }}</td>
+resources\views\reports\reservations.blade.php:208:                                                    <strong>{{ $client?->nom ?? '-' }}</strong><br>
+resources\views\reports\reservations.blade.php:209:                                                    <small class="text-muted">{{ $client?->telephone ?? '-' }}</small>
+resources\views\reports\reservations.blade.php:212:                                                    CH-{{ $chambre?->numero ?? '-' }}<br>
+resources\views\reports\reservations.blade.php:213:                                                    <small class="text-muted">{{ $chambre?->emplacement?->libelle ?? '-' }}</small>
+resources\views\reports\reservations.blade.php:216:                                                    <span class="badge badge-light">{{ $chambre?->type ?? '-' }}</span>
+resources\views\reports\reservations.blade.php:217:                                                    <span class="badge badge-pill {{ $reservation->type_sejour === 'passage' ? 'badge-info' : 'badge-primary' }}">
+resources\views\reports\reservations.blade.php:218:                                                        {{ $reservation->type_sejour === 'passage' ? 'Passage' : 'Nuitee' }}
+resources\views\reports\reservations.blade.php:222:                                                    {{ optional($reservation->date_debut)->format('d/m/Y') ?? '-' }}
+resources\views\reports\reservations.blade.php:223:                                                    <span class="text-muted">au</span>
+resources\views\reports\reservations.blade.php:224:                                                    {{ optional($reservation->date_fin)->format('d/m/Y') ?? '-' }}
+resources\views\reports\reservations.blade.php:226:                                                <td class="text-end fw-600">{{ number_format($montantReservation, 0, ',', ' ') }} {{ $devise }}</td>
+resources\views\reports\reservations.blade.php:227:                                                <td class="text-end text-success fw-600">{{ number_format($totalPaye, 0, ',', ' ') }} {{ $devise }}</td>
+resources\views\reports\reservations.blade.php:228:                                                <td class="text-end text-danger fw-600">{{ number_format($reste, 0, ',', ' ') }} {{ $devise }}</td>
+resources\views\reports\reservations.blade.php:231:                                                    <small class="text-muted">{{ $modes !== '' ? $modes : '-' }}</small>
+resources\views\reports\reservations.blade.php:233:                                                <td class="text-center">
+resources\views\reports\reservations.blade.php:234:                                                    <span class="badge {{ $reservationStatusClass }} mb-2">{{ str_replace('_', ' ', $reservationStatus) }}</span><br>
+resources\views\reports\reservations.blade.php:235:                                                    <button type="button" class="btn btn-sm btn-outline-primary btn-view-reservation" data-id="{{ $reservation->id }}">
+resources\views\reports\reservations.blade.php:242:                                                <td colspan="10" class="text-center text-muted py-4">Aucune reservation trouvee.</td>
+resources\views\reports\reservations.blade.php:249:                            <div class="mt-3">
+resources\views\reports\reservations.blade.php:250:                                {{ $reservations->links('vendor.pagination.vue-table') }}
+resources\views\reports\reservations.blade.php:260:<div class="modal fade" id="reservationReportDetailModal" tabindex="-1" aria-hidden="true">
+resources\views\reports\reservations.blade.php:261:    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+resources\views\reports\reservations.blade.php:262:        <div class="modal-content">
+resources\views\reports\reservations.blade.php:263:            <div class="modal-header bg-primary text-white">
+resources\views\reports\reservations.blade.php:264:                <h5 class="modal-title">Details reservation</h5>
+resources\views\reports\reservations.blade.php:265:                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+resources\views\reports\reservations.blade.php:267:            <div class="modal-body" id="reservationReportDetailBody">
+resources\views\reports\reservations.blade.php:268:                <div class="text-center py-4">
+resources\views\reports\reservations.blade.php:269:                    <span class="spinner-border"></span>
+resources\views\reports\reservations.blade.php:272:            <div class="modal-footer">
+resources\views\reports\reservations.blade.php:273:                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+resources\views\reports\reservations.blade.php:296:        if (!value) return '-';
+resources\views\reports\reservations.blade.php:299:        return date.toLocaleString('fr-FR');
+resources\views\reports\reservations.blade.php:304:        return number.toLocaleString('fr-FR');
+resources\views\reports\reservations.blade.php:308:        if (!mode) return '-';
+resources\views\reports\reservations.blade.php:320:        return String(value || '-').replace(/_/g, ' ');
+resources\views\reports\reservations.blade.php:326:        return typeSejour || '-';
+resources\views\reports\reservations.blade.php:331:            return '<tr><td colspan="5" class="text-center text-muted">Aucun paiement.</td></tr>';
+resources\views\reports\reservations.blade.php:339:                    <td>${escapeHtml(payment.mode_ref || '-')}</td>
+resources\views\reports\reservations.blade.php:340:                    <td class="text-end fw-600">${escapeHtml(formatAmount(payment.amount))} ${escapeHtml(payment.devise || '')}</td>
+resources\views\reports\reservations.blade.php:341:                    <td>${escapeHtml(payment.caissier || '-')}</td>
+resources\views\reports\reservations.blade.php:356:            <div class="row g-3">
+resources\views\reports\reservations.blade.php:357:                <div class="col-md-4">
+resources\views\reports\reservations.blade.php:358:                    <div class="border rounded p-3 h-100">
+resources\views\reports\reservations.blade.php:359:                        <h6 class="mb-2">Reservation</h6>
+resources\views\reports\reservations.blade.php:360:                        <p class="mb-1"><strong>ID:</strong> ${escapeHtml(reservation.id)}</p>
+resources\views\reports\reservations.blade.php:361:                        <p class="mb-1"><strong>Statut:</strong> ${escapeHtml(cleanStatus(reservation.statut))}</p>
+resources\views\reports\reservations.blade.php:362:                        <p class="mb-1"><strong>Type sejour:</strong> ${escapeHtml(labelTypeSejour(reservation.type_sejour))}</p>
+resources\views\reports\reservations.blade.php:363:                        <p class="mb-1"><strong>Debut:</strong> ${escapeHtml(formatDate(reservation.date_debut))}</p>
+resources\views\reports\reservations.blade.php:364:                        <p class="mb-1"><strong>Fin:</strong> ${escapeHtml(formatDate(reservation.date_fin))}</p>
+resources\views\reports\reservations.blade.php:365:                        <p class="mb-0"><strong>Creee le:</strong> ${escapeHtml(formatDate(reservation.created_at))}</p>
+resources\views\reports\reservations.blade.php:368:                <div class="col-md-4">
+resources\views\reports\reservations.blade.php:369:                    <div class="border rounded p-3 h-100">
+resources\views\reports\reservations.blade.php:370:                        <h6 class="mb-2">Client</h6>
+resources\views\reports\reservations.blade.php:371:                        <p class="mb-1"><strong>Nom:</strong> ${escapeHtml(client.nom || '-')}</p>
+resources\views\reports\reservations.blade.php:372:                        <p class="mb-1"><strong>Telephone:</strong> ${escapeHtml(client.telephone || '-')}</p>
+resources\views\reports\reservations.blade.php:373:                        <p class="mb-1"><strong>Email:</strong> ${escapeHtml(client.email || '-')}</p>
+resources\views\reports\reservations.blade.php:374:                        <p class="mb-1"><strong>Identite:</strong> ${escapeHtml(client.identite || '-')}</p>
+resources\views\reports\reservations.blade.php:375:                        <p class="mb-0"><strong>Type identite:</strong> ${escapeHtml(client.identite_type || '-')}</p>
+resources\views\reports\reservations.blade.php:378:                <div class="col-md-4">
+resources\views\reports\reservations.blade.php:379:                    <div class="border rounded p-3 h-100">
+resources\views\reports\reservations.blade.php:380:                        <h6 class="mb-2">Chambre</h6>
+resources\views\reports\reservations.blade.php:381:                        <p class="mb-1"><strong>Numero:</strong> CH-${escapeHtml(chambre.numero || '-')}</p>
+resources\views\reports\reservations.blade.php:382:                        <p class="mb-1"><strong>Type:</strong> ${escapeHtml(chambre.type || '-')}</p>
+resources\views\reports\reservations.blade.php:383:                        <p class="mb-1"><strong>Emplacement:</strong> ${escapeHtml(chambre.emplacement || '-')}</p>
+resources\views\reports\reservations.blade.php:384:                        <p class="mb-1"><strong>Montant reservation:</strong> ${escapeHtml(formatAmount(totaux.montant_reservation))} ${escapeHtml(devise)}</p>
+resources\views\reports\reservations.blade.php:385:                        <p class="mb-1"><strong>Total paye:</strong> ${escapeHtml(formatAmount(totaux.total_paye))} ${escapeHtml(devise)}</p>
+resources\views\reports\reservations.blade.php:386:                        <p class="mb-0"><strong>Reste:</strong> ${escapeHtml(formatAmount(totaux.reste))} ${escapeHtml(devise)}</p>
+resources\views\reports\reservations.blade.php:390:                <div class="col-12">
+resources\views\reports\reservations.blade.php:391:                    <div class="border rounded p-3">
+resources\views\reports\reservations.blade.php:392:                        <h6 class="mb-2">Facture</h6>
+resources\views\reports\reservations.blade.php:395:                                <div class="col-md-3"><strong>Numero:</strong> ${escapeHtml(facture.numero_facture || '-')}</div>
+resources\views\reports\reservations.blade.php:396:                                <div class="col-md-3"><strong>Statut:</strong> ${escapeHtml(cleanStatus(facture.statut))}</div>
+resources\views\reports\reservations.blade.php:397:                                <div class="col-md-3"><strong>Total TTC:</strong> ${escapeHtml(formatAmount(facture.total_ttc))} ${escapeHtml(facture.devise || '')}</div>
+resources\views\reports\reservations.blade.php:398:                                <div class="col-md-3"><strong>Date:</strong> ${escapeHtml(formatDate(facture.date_facture))}</div>
+resources\views\reports\reservations.blade.php:400:                        ` : '<p class="text-muted mb-0">Aucune facture associee.</p>'}
+resources\views\reports\reservations.blade.php:404:                <div class="col-12">
+resources\views\reports\reservations.blade.php:405:                    <div class="table-responsive">
+resources\views\reports\reservations.blade.php:406:                        <table class="table table-bordered">
+resources\views\reports\reservations.blade.php:412:                                    <th class="text-end">Montant</th>
+resources\views\reports\reservations.blade.php:426:    document.querySelectorAll('.btn-view-reservation').forEach(function(button) {
+resources\views\reports\reservations.blade.php:428:            const id = this.getAttribute('data-id');
+resources\views\reports\reservations.blade.php:431:            detailBody.innerHTML = '<div class="text-center py-4"><span class="spinner-border"></span></div>';
+resources\views\reports\reservations.blade.php:451:                detailBody.innerHTML = `<p class="text-danger mb-0">Impossible de charger les details: ${escapeHtml(error.message)}</p>`;
+resources\views\reports\service_sales_emplacement.blade.php:4:<!-- Content Wrapper. Contains page content -->
+resources\views\reports\service_sales_emplacement.blade.php:5:<div class="content-wrapper">
+resources\views\reports\service_sales_emplacement.blade.php:6:    <div class="container-full">
+resources\views\reports\service_sales_emplacement.blade.php:7:        <!-- Content Header (Page header) -->
+resources\views\reports\service_sales_emplacement.blade.php:8:        <div class="content-header">
+resources\views\reports\service_sales_emplacement.blade.php:9:            <div class="d-flex align-items-center">
+resources\views\reports\service_sales_emplacement.blade.php:10:               <div class="col-xl-12">
+resources\views\reports\service_sales_emplacement.blade.php:16:        <!-- Main content -->
+resources\views\reports\service_sales_emplacement.blade.php:19:                <div class="col-12">
+resources\views\reports\service_sales_emplacement.blade.php:21:                        <div class="box-header with-border p-5 text-center">
+resources\views\reports\service_sales_emplacement.blade.php:22:                            <h4 class="box-title">Ventes par service - etape 2/2 ({{ $emplacement->libelle }})</h4>
+resources\views\reports\service_sales_emplacement.blade.php:23:                            <p class="text-muted">Les donnees sont groupees par journee de vente avec heure de debut et de fin.</p>
+resources\views\reports\service_sales_emplacement.blade.php:26:                        <!-- Filtres -->
+resources\views\reports\service_sales_emplacement.blade.php:27:                        <div class="box-body">
+resources\views\reports\service_sales_emplacement.blade.php:28:<div class="row mb-4">
+resources\views\reports\service_sales_emplacement.blade.php:29:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:31:                                    <input type="date" id="date_debut" class="form-control" value="{{ request('date_debut') }}">
+resources\views\reports\service_sales_emplacement.blade.php:33:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:35:                                    <input type="date" id="date_fin" class="form-control" value="{{ request('date_fin') }}">
+resources\views\reports\service_sales_emplacement.blade.php:37:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:39:                                    <input type="text" id="search" class="form-control" placeholder="Rechercher...">
+resources\views\reports\service_sales_emplacement.blade.php:42:                            <div class="row mb-4">
+resources\views\reports\service_sales_emplacement.blade.php:43:                                <div class="col-md-12 text-center">
+resources\views\reports\service_sales_emplacement.blade.php:44:                                    <button class="btn btn-primary" id="appliquerFiltres">
+resources\views\reports\service_sales_emplacement.blade.php:45:                                        <i class="fa fa-filter"></i> Appliquer les filtres
+resources\views\reports\service_sales_emplacement.blade.php:47:                                    <button class="btn btn-secondary" id="resetFiltres">
+resources\views\reports\service_sales_emplacement.blade.php:48:                                        <i class="fa fa-refresh"></i> RÃ©initialiser
+resources\views\reports\service_sales_emplacement.blade.php:54:                        <!-- Liste des journÃ©es de vente -->
+resources\views\reports\service_sales_emplacement.blade.php:55:                        <div class="box-body">
+resources\views\reports\service_sales_emplacement.blade.php:56:                            <div class="table-responsive">
+resources\views\reports\service_sales_emplacement.blade.php:57:                                <table class="table table-bordered table-hover">
+resources\views\reports\service_sales_emplacement.blade.php:73:                                                $facturesFiltrees = $saleday->factures->filter(function($facture) use ($emplacement) {
+resources\views\reports\service_sales_emplacement.blade.php:76:                                                    if ($emplacement->type === 'hotel') {
+resources\views\reports\service_sales_emplacement.blade.php:77:                                                        $emplacementOk = $facture->chambre && $facture->chambre->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:79:                                                        $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:83:                                                    $statutOk = $facture->statut === 'payÃ©e';
+resources\views\reports\service_sales_emplacement.blade.php:88:                                                $totalFacturesPayees = $facturesFiltrees->count();
+resources\views\reports\service_sales_emplacement.blade.php:89:                                                $totalVentesPayees = $facturesFiltrees->sum('total_ttc');
+resources\views\reports\service_sales_emplacement.blade.php:94:                                                    foreach ($facture->payments as $payment) {
+resources\views\reports\service_sales_emplacement.blade.php:95:                                                        if (!empty($payment->devise)) {
+resources\views\reports\service_sales_emplacement.blade.php:96:                                                            $devises[$payment->devise] = $payment->devise;
+resources\views\reports\service_sales_emplacement.blade.php:110:                                            <tr class="sale-day-row" 
+resources\views\reports\service_sales_emplacement.blade.php:111:                                                data-date="{{ $saleday->sale_date->format('Y-m-d') }}"
+resources\views\reports\service_sales_emplacement.blade.php:112:                                                data-search="{{ $saleday->sale_date->format('d/m/Y') }} {{ $totalFacturesPayees }} {{ $totalVentesPayees }} {{ $deviseAffichage }}">
+resources\views\reports\service_sales_emplacement.blade.php:114:                                                    <strong>{{ $saleday->sale_date->format('d/m/Y') }}</strong>
+resources\views\reports\service_sales_emplacement.blade.php:116:                                                <td>{{ $saleday->start_time->format('H:i') }}</td>
+resources\views\reports\service_sales_emplacement.blade.php:118:                                                    @if($saleday->end_time)
+resources\views\reports\service_sales_emplacement.blade.php:119:                                                        {{ $saleday->end_time->format('H:i') }}
+resources\views\reports\service_sales_emplacement.blade.php:121:                                                        <span class="badge badge-warning">En cours</span>
+resources\views\reports\service_sales_emplacement.blade.php:125:                                                    <span class="badge badge-primary" style="font-size: 14px;">
+resources\views\reports\service_sales_emplacement.blade.php:130:                                                    <strong class="text-success">
+resources\views\reports\service_sales_emplacement.blade.php:132:                                                        <span class="text-muted" style="font-size: 12px;">{{ $deviseAffichage }}</span>
+resources\views\reports\service_sales_emplacement.blade.php:136:                                                    @if($saleday->end_time)
+resources\views\reports\service_sales_emplacement.blade.php:137:                                                        <span class="badge badge-success">TerminÃ©e</span>
+resources\views\reports\service_sales_emplacement.blade.php:139:                                                        <span class="badge badge-warning">En cours</span>
+resources\views\reports\service_sales_emplacement.blade.php:143:                                                    <a href="{{ route('reports.service.vente.details', ['id_saleDay'=>$saleday->id,"emplacement_id"=>$emplacement->id] + request()->query()) }}" 
+resources\views\reports\service_sales_emplacement.blade.php:144:                                                       class="btn btn-sm btn-primary">
+resources\views\reports\service_sales_emplacement.blade.php:145:                                                        <i class="fa fa-eye"></i> Voir dÃ©tails
+resources\views\reports\service_sales_emplacement.blade.php:151:                                                <td colspan="7" class="text-center text-muted py-4">Aucune journee de vente trouvee pour ce filtre.</td>
+resources\views\reports\service_sales_emplacement.blade.php:158:                            <!-- Pagination -->
+resources\views\reports\service_sales_emplacement.blade.php:159:                            <div class="mt-4">
+resources\views\reports\service_sales_emplacement.blade.php:160:                                {{ $saledays->links('vendor.pagination.vue-table') }}
+resources\views\reports\service_sales_emplacement.blade.php:163:                            <!-- Statistiques rÃ©sumÃ©es -->
+resources\views\reports\service_sales_emplacement.blade.php:164:                            <div class="row mt-4">
+resources\views\reports\service_sales_emplacement.blade.php:165:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:166:                                    <div class="box bg-primary text-white">
+resources\views\reports\service_sales_emplacement.blade.php:167:                                        <div class="box-body text-center">
+resources\views\reports\service_sales_emplacement.blade.php:168:                                            <h3 class="mb-0">{{ $saledays->total() }}</h3>
+resources\views\reports\service_sales_emplacement.blade.php:169:                                            <p class="mb-0">JournÃ©es totales</p>
+resources\views\reports\service_sales_emplacement.blade.php:173:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:174:                                    <div class="box bg-success text-white">
+resources\views\reports\service_sales_emplacement.blade.php:175:                                        <div class="box-body text-center">
+resources\views\reports\service_sales_emplacement.blade.php:176:                                            <h3 class="mb-0">
+resources\views\reports\service_sales_emplacement.blade.php:179:                                                    $saledays->each(function($saleday) use ($emplacement, &$totalFacturesGlobal) {
+resources\views\reports\service_sales_emplacement.blade.php:180:                                                        $facturesFiltrees = $saleday->factures->filter(function($facture) use ($emplacement) {
+resources\views\reports\service_sales_emplacement.blade.php:182:                                                            if ($emplacement->type === 'hotel') {
+resources\views\reports\service_sales_emplacement.blade.php:183:                                                                $emplacementOk = $facture->chambre && $facture->chambre->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:185:                                                                $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:187:                                                            return $emplacementOk && $facture->statut === 'payÃ©e';
+resources\views\reports\service_sales_emplacement.blade.php:189:                                                        $totalFacturesGlobal += $facturesFiltrees->count();
+resources\views\reports\service_sales_emplacement.blade.php:194:                                            <p class="mb-0">Factures payÃ©es totales</p>
+resources\views\reports\service_sales_emplacement.blade.php:198:                                <div class="col-md-4">
+resources\views\reports\service_sales_emplacement.blade.php:199:                                    <div class="box bg-info text-white">
+resources\views\reports\service_sales_emplacement.blade.php:200:                                        <div class="box-body text-center">
+resources\views\reports\service_sales_emplacement.blade.php:201:                                            <h3 class="mb-0">
+resources\views\reports\service_sales_emplacement.blade.php:205:                                                    $saledays->each(function($saleday) use ($emplacement, &$totalVentesGlobal, &$devisesGlobal) {
+resources\views\reports\service_sales_emplacement.blade.php:206:                                                        $facturesFiltrees = $saleday->factures->filter(function($facture) use ($emplacement) {
+resources\views\reports\service_sales_emplacement.blade.php:208:                                                            if ($emplacement->type === 'hotel') {
+resources\views\reports\service_sales_emplacement.blade.php:209:                                                                $emplacementOk = $facture->chambre && $facture->chambre->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:211:                                                                $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
+resources\views\reports\service_sales_emplacement.blade.php:213:                                                            return $emplacementOk && $facture->statut === 'payÃ©e';
+resources\views\reports\service_sales_emplacement.blade.php:215:                                                        $totalVentesGlobal += $facturesFiltrees->sum('total_ttc');
+resources\views\reports\service_sales_emplacement.blade.php:219:                                                            foreach ($facture->payments as $payment) {
+resources\views\reports\service_sales_emplacement.blade.php:220:                                                                if (!empty($payment->devise)) {
+resources\views\reports\service_sales_emplacement.blade.php:221:                                                                    $devisesGlobal[$payment->devise] = $payment->devise;
+resources\views\reports\service_sales_emplacement.blade.php:238:                                            <p class="mb-0">Chiffre d'affaires (payÃ©)</p>
+resources\views\reports\service_sales_emplacement.blade.php:248:        <!-- /.content -->
+resources\views\reports\service_sales_emplacement.blade.php:251:<!-- /.content-wrapper -->
+resources\views\reports\service_sales_emplacement.blade.php:262:    const rows = document.querySelectorAll('.sale-day-row');
+resources\views\reports\service_sales_emplacement.blade.php:277:            const baseUrl = '{{ route("reports.service_sales.emplacement", ["emplacement_id" => $emplacement->id]) }}';
+resources\views\reports\service_sales_emplacement.blade.php:291:            const baseUrl = '{{ route("reports.service_sales.emplacement", ["emplacement_id" => $emplacement->id]) }}';
+resources\views\reports\service_sales_emplacement.blade.php:301:                const rowSearch = row.getAttribute('data-search').toLowerCase();
+resources\views\reports\service_sales_emplacement.blade.php:310:.sale-day-row:hover {
+resources\views\reports\service_sales_emplacement.blade.php:311:    background-color: #f8f9fa !important;
+resources\views\reports\service_sales_emplacement.blade.php:312:    transform: translateY(-1px);
+resources\views\reports\service_sales_emplacement.blade.php:314:    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+resources\views\reports\service_sales_emplacement.blade.php:317:.table-responsive {
+resources\views\reports\service_sales_emplacement.blade.php:318:    border-radius: 8px;
+resources\views\reports\service_sales_emplacement.blade.php:323:    font-size: 12px;
+resources\views\reports\service_sales_emplacement.blade.php:327:.box.bg-primary, .box.bg-success, .box.bg-info {
+resources\views\reports\service_sales_emplacement.blade.php:328:    border-radius: 8px;
+resources\views\reports\service_sales_emplacement.blade.php:332:.box.bg-primary .box-body, 
+resources\views\reports\service_sales_emplacement.blade.php:333:.box.bg-success .box-body, 
+resources\views\reports\service_sales_emplacement.blade.php:334:.box.bg-info .box-body {

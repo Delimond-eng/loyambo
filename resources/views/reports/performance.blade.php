@@ -1,38 +1,45 @@
 @extends("layouts.admin")
 
 @section("content")
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <div class="container-full">
-        <!-- Content Header (Page header) -->
         <div class="content-header">
             <div class="d-flex align-items-center">
-               <div class="col-xl-12">
+                <div class="col-xl-12">
                     @include("components.menus.reports")
                 </div>
             </div>
         </div>
 
-        <!-- Main content -->
         <section class="content">
             <div class="row">
                 <div class="col-12">
                     <div class="box">
                         <div class="box-header with-border p-5 text-center">
-                            <h4 class="box-title">Performance des ventes des employés</h4>
-                            <p class="text-muted">Voir les performances de vente de tous les employés</p>
+                            <h4 class="box-title">Performance du personnel</h4>
+                            <p class="text-muted mb-0">Suivi des serveurs et caissiers par periode, service et emplacement.</p>
                         </div>
 
-                        <!-- Filtres -->
                         <div class="box-body">
-                            <div class="row mb-4">
+<div class="row mb-4">
                                 <div class="col-md-3">
-                                    <label for="date_debut">Date début</label>
+                                    <label for="date_debut">Date debut</label>
                                     <input type="date" id="date_debut" class="form-control" value="{{ request('date_debut') }}">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="date_fin">Date fin</label>
                                     <input type="date" id="date_fin" class="form-control" value="{{ request('date_fin') }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="service_type">Service</label>
+                                    <select id="service_type" class="form-control">
+                                        <option value="">Tous les services</option>
+                                        @foreach($serviceTypes as $type)
+                                            <option value="{{ $type }}" {{ request('service_type') == $type ? 'selected' : '' }}>
+                                                {{ $type === 'restaurant & lounge' ? 'Restaurant & Lounge' : ucfirst($type) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="emplacement_id">Emplacement</label>
@@ -45,37 +52,44 @@
                                         @endforeach
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="row mb-4">
                                 <div class="col-md-3">
-                                    <label for="role">Rôle</label>
+                                    <label for="role">Role</label>
                                     <select id="role" class="form-control">
-                                        <option value="">Tous les rôles</option>
+                                        <option value="">Tous les roles</option>
                                         <option value="serveur" {{ request('role') == 'serveur' ? 'selected' : '' }}>Serveur</option>
                                         <option value="caissier" {{ request('role') == 'caissier' ? 'selected' : '' }}>Caissier</option>
                                         <option value="manager" {{ request('role') == 'manager' ? 'selected' : '' }}>Manager</option>
                                         <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="row mb-4">
-                                <div class="col-md-12 text-center">
-                                    <button class="btn btn-primary" id="appliquerFiltres">
+                                <div class="col-md-9 d-flex align-items-end justify-content-center">
+                                    <button class="btn btn-primary me-2" id="appliquerFiltres">
                                         <i class="fa fa-filter"></i> Appliquer les filtres
                                     </button>
-                                    <button class="btn btn-secondary" id="resetFiltres">
-                                        <i class="fa fa-refresh"></i> Réinitialiser
+                                    <button class="btn btn-secondary me-2" id="resetFiltres">
+                                        <i class="fa fa-refresh"></i> Reinitialiser
                                     </button>
+                                    <a href="{{ route('reports.performance.export.pdf', request()->query()) }}" class="btn btn-outline-danger me-2">
+                                        <i class="fa fa-file-pdf"></i> Export PDF
+                                    </a>
+                                    <a href="{{ route('reports.performance.export.excel', request()->query()) }}" class="btn btn-outline-success">
+                                        <i class="fa fa-file-excel"></i> Export Excel
+                                    </a>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Statistiques globales -->
-                        <div class="box-body">
+                            @php
+                                $panierMoyenGlobal = $totalCommandes > 0 ? $totalEncaissement / $totalCommandes : 0;
+                            @endphp
                             <div class="row mb-4">
                                 <div class="col-xl-3 col-md-6">
                                     <div class="box bg-primary text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ $totalEmployes }}</h2>
-                                            <p class="mb-0">Total Employés</p>
+                                            <p class="mb-0">Employes analyses</p>
                                         </div>
                                     </div>
                                 </div>
@@ -83,7 +97,7 @@
                                     <div class="box bg-success text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ $totalCommandes }}</h2>
-                                            <p class="mb-0">Commandes Total</p>
+                                            <p class="mb-0">Operations totales</p>
                                         </div>
                                     </div>
                                 </div>
@@ -91,130 +105,116 @@
                                     <div class="box bg-info text-white">
                                         <div class="box-body text-center">
                                             <h2 class="mb-0">{{ number_format($totalEncaissement, 0, ',', ' ') }}</h2>
-                                            <p class="mb-0">Total Encaissé (CDF)</p>
+                                            <p class="mb-0">Total encaisse (CDF)</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-xl-3 col-md-6">
                                     <div class="box bg-warning text-white">
                                         <div class="box-body text-center">
-                                            @php
-                                                $panierMoyenGlobal = $totalCommandes > 0 ? $totalEncaissement / $totalCommandes : 0;
-                                            @endphp
                                             <h2 class="mb-0">{{ number_format($panierMoyenGlobal, 0, ',', ' ') }}</h2>
-                                            <p class="mb-0">Panier Moyen (CDF)</p>
+                                            <p class="mb-0">Panier moyen (CDF)</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Tableau des performances -->
                             <div class="row">
                                 <div class="col-12">
-                                    <div class="box">
-                                        <div class="box-header">
-                                            <h4 class="box-title">Performance détaillée par employé</h4>
-                                            <div class="box-tools">
-                                                <span class="badge badge-success">Actif</span>
-                                                <span class="badge badge-secondary ms-1">Inactif</span>
-                                            </div>
-                                        </div>
-                                        <div class="box-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Employé</th>
-                                                            <th>Rôle</th>
-                                                            <th>Emplacement</th>
-                                                            <th>Statut</th>
-                                                            <th>Commandes Servies</th>
-                                                            <th>Total Encaissé</th>
-                                                            <th>Panier Moyen</th>
-                                                            <th>Performance</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($performances as $performance)
-                                                            @php
-                                                                $pourcentagePerformance = $performance['pourcentage_performance'];
-                                                                $classPerformance = '';
-                                                                if ($pourcentagePerformance >= 80) {
-                                                                    $classPerformance = 'success';
-                                                                } elseif ($pourcentagePerformance >= 50) {
-                                                                    $classPerformance = 'warning';
-                                                                } else {
-                                                                    $classPerformance = 'danger';
-                                                                }
-                                                            @endphp
-                                                            <tr>
-                                                                <td>
-                                                                    <strong>{{ $performance['employe']->name }}</strong>
-                                                                    <br>
-                                                                    <small class="text-muted">{{ $performance['employe']->email }}</small>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="badge badge-info">{{ $performance['employe']->role }}</span>
-                                                                </td>
-                                                                <td>
-                                                                    @if($performance['employe']->emplacement)
-                                                                        {{ $performance['employe']->emplacement->libelle }}
-                                                                    @else
-                                                                        <span class="text-muted">-</span>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    @if($performance['est_actif'])
-                                                                        <span class="badge badge-success">Actif</span>
-                                                                    @else
-                                                                        <span class="badge badge-secondary">Inactif</span>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    <span class="badge badge-primary" style="font-size: 14px;">
-                                                                        {{ $performance['nombre_commandes'] }}
-                                                                    </span>
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    <strong class="text-success">
-                                                                        {{ number_format($performance['total_encaissement'], 0, ',', ' ') }} 
-                                                                        <span class="text-muted" style="font-size: 12px;">{{ $performance['devise_principale'] }}</span>
-                                                                    </strong>
-                                                                </td>
-                                                                <td class="text-end">
-                                                                    {{ number_format($performance['panier_moyen'], 0, ',', ' ') }} {{ $performance['devise_principale'] }}
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    <div class="progress" style="height: 20px;">
-                                                                        <div class="progress-bar bg-{{ $classPerformance }}" 
-                                                                             role="progressbar" 
-                                                                             style="width: {{ $pourcentagePerformance }}%"
-                                                                             aria-valuenow="{{ $pourcentagePerformance }}" 
-                                                                             aria-valuemin="0" 
-                                                                             aria-valuemax="100">
-                                                                            {{ number_format($pourcentagePerformance, 1) }}%
-                                                                        </div>
-                                                                    </div>
-                                                                    <small class="text-muted">
-                                                                        Basé sur le CA moyen
-                                                                    </small>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employe</th>
+                                                    <th>Role</th>
+                                                    <th>Emplacement</th>
+                                                    <th>Type d'activite</th>
+                                                    <th>Statut</th>
+                                                    <th>Operations</th>
+                                                    <th>Total encaisse</th>
+                                                    <th>Panier moyen</th>
+                                                    <th>Performance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($performances as $performance)
+                                                    @php
+                                                        $pourcentagePerformance = $performance['pourcentage_performance'];
+                                                        $classPerformance = $pourcentagePerformance >= 80 ? 'success' : ($pourcentagePerformance >= 50 ? 'warning' : 'danger');
+                                                    @endphp
+                                                    <tr>
+                                                        <td>
+                                                            <strong>{{ $performance['employe']->name }}</strong>
+                                                            <br>
+                                                            <small class="text-muted">{{ $performance['employe']->email }}</small>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-info">{{ ucfirst($performance['employe']->role) }}</span>
+                                                        </td>
+                                                        <td>
+                                                            {{ $performance['employe']->emplacement?->libelle ?? '-' }}
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-light">{{ $performance['type_activite'] }}</span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @if($performance['est_actif'])
+                                                                <span class="badge badge-success">Actif</span>
+                                                            @else
+                                                                <span class="badge badge-secondary">Inactif</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge badge-primary">{{ $performance['nombre_commandes'] }}</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong class="text-success">
+                                                                {{ number_format($performance['total_encaissement'], 0, ',', ' ') }}
+                                                                {{ $performance['devise_principale'] }}
+                                                            </strong>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            {{ number_format($performance['panier_moyen'], 0, ',', ' ') }} {{ $performance['devise_principale'] }}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar bg-{{ $classPerformance }}"
+                                                                     role="progressbar"
+                                                                     style="width: {{ $pourcentagePerformance }}%"
+                                                                     aria-valuenow="{{ $pourcentagePerformance }}"
+                                                                     aria-valuemin="0"
+                                                                     aria-valuemax="100">
+                                                                    {{ number_format($pourcentagePerformance, 1) }}%
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="9" class="text-center text-muted py-4">Aucune donnee pour les filtres selectionnes.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Classement des meilleurs performeurs -->
+                            @php
+                                $topServeurs = collect($performances)
+                                    ->filter(fn($p) => ($p['employe']->role ?? null) === 'serveur')
+                                    ->sortByDesc('total_encaissement')
+                                    ->take(5);
+                                $topCaissiers = collect($performances)
+                                    ->filter(fn($p) => ($p['employe']->role ?? null) === 'caissier')
+                                    ->sortByDesc('total_encaissement')
+                                    ->take(5);
+                            @endphp
                             <div class="row mt-4">
                                 <div class="col-md-6">
                                     <div class="box">
                                         <div class="box-header">
-                                            <h4 class="box-title">Top 5 - Meilleurs Serveurs</h4>
+                                            <h4 class="box-title">Top 5 serveurs</h4>
                                         </div>
                                         <div class="box-body">
                                             <div class="table-responsive">
@@ -222,40 +222,24 @@
                                                     <thead>
                                                         <tr>
                                                             <th>#</th>
-                                                            <th>Serveur</th>
-                                                            <th>Statut</th>
-                                                            <th>Commandes</th>
-                                                            <th>CA (CDF)</th>
+                                                            <th>Nom</th>
+                                                            <th>Operations</th>
+                                                            <th>CA</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @php
-                                                            $serveurs = collect($performances)
-                                                                ->filter(function($performance) {
-                                                                    return $performance['employe']->role === 'serveur';
-                                                                })
-                                                                ->sortByDesc('total_encaissement')
-                                                                ->take(5);
-                                                        @endphp
-                                                        @foreach($serveurs as $index => $performance)
+                                                        @forelse($topServeurs as $index => $performance)
                                                             <tr>
-                                                                <td class="text-center">
-                                                                    <span class="badge badge-primary">{{ $index + 1 }}</span>
-                                                                </td>
+                                                                <td class="text-center"><span class="badge badge-primary">{{ $index + 1 }}</span></td>
                                                                 <td>{{ $performance['employe']->name }}</td>
-                                                                <td class="text-center">
-                                                                    @if($performance['est_actif'])
-                                                                        <span class="badge badge-success">Actif</span>
-                                                                    @else
-                                                                        <span class="badge badge-secondary">Inactif</span>
-                                                                    @endif
-                                                                </td>
                                                                 <td class="text-center">{{ $performance['nombre_commandes'] }}</td>
-                                                                <td class="text-end text-success">
-                                                                    {{ number_format($performance['total_encaissement'], 0, ',', ' ') }} CDF
-                                                                </td>
+                                                                <td class="text-end text-success">{{ number_format($performance['total_encaissement'], 0, ',', ' ') }} {{ $performance['devise_principale'] }}</td>
                                                             </tr>
-                                                        @endforeach
+                                                        @empty
+                                                            <tr>
+                                                                <td colspan="4" class="text-center text-muted">Aucune donnee serveur.</td>
+                                                            </tr>
+                                                        @endforelse
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -265,7 +249,7 @@
                                 <div class="col-md-6">
                                     <div class="box">
                                         <div class="box-header">
-                                            <h4 class="box-title">Top 5 - Meilleurs Caissiers</h4>
+                                            <h4 class="box-title">Top 5 caissiers</h4>
                                         </div>
                                         <div class="box-body">
                                             <div class="table-responsive">
@@ -273,40 +257,24 @@
                                                     <thead>
                                                         <tr>
                                                             <th>#</th>
-                                                            <th>Caissier</th>
-                                                            <th>Statut</th>
+                                                            <th>Nom</th>
                                                             <th>Transactions</th>
-                                                            <th>CA (CDF)</th>
+                                                            <th>Encaissement</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @php
-                                                            $caissiers = collect($performances)
-                                                                ->filter(function($performance) {
-                                                                    return $performance['employe']->role === 'caissier';
-                                                                })
-                                                                ->sortByDesc('total_encaissement')
-                                                                ->take(5);
-                                                        @endphp
-                                                        @foreach($caissiers as $index => $performance)
+                                                        @forelse($topCaissiers as $index => $performance)
                                                             <tr>
-                                                                <td class="text-center">
-                                                                    <span class="badge badge-success">{{ $index + 1 }}</span>
-                                                                </td>
+                                                                <td class="text-center"><span class="badge badge-success">{{ $index + 1 }}</span></td>
                                                                 <td>{{ $performance['employe']->name }}</td>
-                                                                <td class="text-center">
-                                                                    @if($performance['est_actif'])
-                                                                        <span class="badge badge-success">Actif</span>
-                                                                    @else
-                                                                        <span class="badge badge-secondary">Inactif</span>
-                                                                    @endif
-                                                                </td>
                                                                 <td class="text-center">{{ $performance['nombre_commandes'] }}</td>
-                                                                <td class="text-end text-success">
-                                                                    {{ number_format($performance['total_encaissement'], 0, ',', ' ') }} CDF
-                                                                </td>
+                                                                <td class="text-end text-success">{{ number_format($performance['total_encaissement'], 0, ',', ' ') }} {{ $performance['devise_principale'] }}</td>
                                                             </tr>
-                                                        @endforeach
+                                                        @empty
+                                                            <tr>
+                                                                <td colspan="4" class="text-center text-muted">Aucune donnee caissier.</td>
+                                                            </tr>
+                                                        @endforelse
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -319,10 +287,8 @@
                 </div>
             </div>
         </section>
-        <!-- /.content -->
     </div>
 </div>
-<!-- /.content-wrapper -->
 @endsection
 
 @push('scripts')
@@ -330,63 +296,39 @@
 document.addEventListener('DOMContentLoaded', function() {
     const dateDebut = document.getElementById('date_debut');
     const dateFin = document.getElementById('date_fin');
+    const serviceTypeSelect = document.getElementById('service_type');
     const emplacementSelect = document.getElementById('emplacement_id');
     const roleSelect = document.getElementById('role');
     const appliquerFiltres = document.getElementById('appliquerFiltres');
     const resetFiltres = document.getElementById('resetFiltres');
 
-    // Appliquer les filtres
-    appliquerFiltres.addEventListener('click', function() {
-        appliquerFiltresPerformance();
-    });
-
-    // Réinitialiser les filtres
-    resetFiltres.addEventListener('click', function() {
-        dateDebut.value = '';
-        dateFin.value = '';
-        emplacementSelect.value = '';
-        roleSelect.value = '';
-        appliquerFiltresPerformance();
-    });
-
     function appliquerFiltresPerformance() {
         const params = new URLSearchParams();
-        
-        if (dateDebut.value) params.append('date_debut', dateDebut.value);
-        if (dateFin.value) params.append('date_fin', dateFin.value);
-        if (emplacementSelect.value) params.append('emplacement_id', emplacementSelect.value);
-        if (roleSelect.value) params.append('role', roleSelect.value);
-        
-        window.location.href = '{{ route("reports.performance") }}?' + params.toString();
+        if (dateDebut && dateDebut.value) params.append('date_debut', dateDebut.value);
+        if (dateFin && dateFin.value) params.append('date_fin', dateFin.value);
+        if (serviceTypeSelect && serviceTypeSelect.value) params.append('service_type', serviceTypeSelect.value);
+        if (emplacementSelect && emplacementSelect.value) params.append('emplacement_id', emplacementSelect.value);
+        if (roleSelect && roleSelect.value) params.append('role', roleSelect.value);
+
+        const baseUrl = '{{ route("reports.performance") }}';
+        const query = params.toString();
+        window.location.href = query ? `${baseUrl}?${query}` : baseUrl;
+    }
+
+    if (appliquerFiltres) {
+        appliquerFiltres.addEventListener('click', appliquerFiltresPerformance);
+    }
+
+    if (resetFiltres) {
+        resetFiltres.addEventListener('click', function() {
+            if (dateDebut) dateDebut.value = '';
+            if (dateFin) dateFin.value = '';
+            if (serviceTypeSelect) serviceTypeSelect.value = '';
+            if (emplacementSelect) emplacementSelect.value = '';
+            if (roleSelect) roleSelect.value = '';
+            window.location.href = '{{ route("reports.performance") }}';
+        });
     }
 });
 </script>
-
-<style>
-.box.bg-primary, .box.bg-success, .box.bg-info, .box.bg-warning {
-    border-radius: 8px;
-    border: none;
-}
-
-.box.bg-primary .box-body, 
-.box.bg-success .box-body, 
-.box.bg-info .box-body,
-.box.bg-warning .box-body {
-    padding: 20px;
-}
-
-.badge {
-    font-size: 12px;
-    padding: 6px 10px;
-}
-
-.table-responsive {
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.progress {
-    border-radius: 10px;
-}
-</style>
 @endpush

@@ -17,7 +17,7 @@
                     <form class="box" @submit.prevent="submitStockMvt">
                         <div class="box-header d-flex justify-content-between align-items-center" style="padding : 1.5rem">
                             <h4 class="box-title">Approvisionnement stock des produits
-                                <small class="subtitle text-danger">Veuillez créer une entrée dans l'emplacement récommandé !</small>
+                                <small class="subtitle text-danger">Veuillez créer une entrée dans l'emplacement recommandé !</small>
                             </h4>
                         </div>
                         <div class="box-body">

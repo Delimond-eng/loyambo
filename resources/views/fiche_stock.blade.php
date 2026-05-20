@@ -12,7 +12,7 @@
 				<div class="col-md-12">
 					<div class="box shadow-none">
 
-						<div class="box-header d-flex justify-content-between align-items-center py-3 px-10 bg-light text-dark rounded-top">
+						<div class="box-header d-flex justify-content-between align-items-center py-3 px-10 text-dark">
 							<h4 class="fw-bold text-uppercase">FICHE DE STOCK</h4>
 
 							<div>
@@ -104,4 +104,3 @@
 }
 </style>
 @endpush
-

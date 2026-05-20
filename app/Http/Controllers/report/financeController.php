@@ -5,6 +5,8 @@ namespace App\Http\Controllers\report;
 use App\Models\User;
 use App\Models\Payments;
 use App\Models\Emplacement;
+use App\Support\ReportExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,7 @@ class financeController extends Controller
         $caissiers = User::where('ets_id', auth()->user()->ets_id)
                         ->where('role', "caissier")
                         ->get();
+        $serviceTypes = Emplacement::getTypesForEts(auth()->user()->ets_id);
 
         // Définir l'année courante par défaut
         $annee = $request->annee ?? now()->year;
@@ -29,6 +32,9 @@ class financeController extends Controller
         // Appliquer les filtres
         if ($request->emplacement_id) {
             $baseQuery->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $baseQuery->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
         }
         
         if ($request->caissier_id) {
@@ -48,12 +54,16 @@ class financeController extends Controller
         }
 
         // Récupérer les paiements pour l'affichage
-        $paiements = $baseQuery->orderBy('pay_date', 'desc')->get();
+        $perPage = max(1, (int) $request->input('per_page', 15));
+        $paiements = (clone $baseQuery)
+            ->orderBy('pay_date', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
         // Statistiques dynamiques basées sur les filtres
         $stats = [
-            'total_recettes' => $paiements->sum('amount'),
-            'total_paiements' => $paiements->count(),
+            'total_recettes' => (clone $baseQuery)->sum('amount'),
+            'total_paiements' => (clone $baseQuery)->count(),
             'recettes_aujourdhui' => (clone $baseQuery)->whereDate('pay_date', today())->sum('amount'),
             'recettes_semaine' => (clone $baseQuery)->whereBetween('pay_date', [
                 now()->startOfWeek(), 
@@ -70,6 +80,9 @@ class financeController extends Controller
         
         if ($request->emplacement_id) {
             $stats_devises_query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $stats_devises_query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
         }
         if ($request->caissier_id) {
             $stats_devises_query->where('user_id', $request->caissier_id);
@@ -91,6 +104,9 @@ class financeController extends Controller
         
         if ($request->emplacement_id) {
             $stats_modes_query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $stats_modes_query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
         }
         if ($request->caissier_id) {
             $stats_modes_query->where('user_id', $request->caissier_id);
@@ -114,6 +130,9 @@ class financeController extends Controller
         if ($request->caissier_id) {
             $stats_emplacements_query->where('payments.user_id', $request->caissier_id);
         }
+        if ($request->service_type) {
+            $stats_emplacements_query->where('emplacements.type', $request->service_type);
+        }
         if ($request->mode) {
             $stats_emplacements_query->where('payments.mode', $request->mode);
         }
@@ -131,10 +150,14 @@ class financeController extends Controller
 
         // Statistiques par caissier (avec filtres)
         $stats_caissiers_query = Payments::join('users', 'payments.user_id', '=', 'users.id')
+            ->join('emplacements', 'payments.emplacement_id', '=', 'emplacements.id')
             ->where('payments.ets_id', auth()->user()->ets_id);
             
         if ($request->emplacement_id) {
             $stats_caissiers_query->where('payments.emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $stats_caissiers_query->where('emplacements.type', $request->service_type);
         }
         if ($request->mode) {
             $stats_caissiers_query->where('payments.mode', $request->mode);
@@ -176,7 +199,8 @@ class financeController extends Controller
             'graphique_devises',
             'annee',
             'emplacements',
-            'caissiers'
+            'caissiers',
+            'serviceTypes'
         ));
     }
 
@@ -188,6 +212,9 @@ class financeController extends Controller
         // Appliquer les mêmes filtres que la requête principale
         if ($request->filled('emplacement_id')) {
             $query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->filled('service_type')) {
+            $query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
         }
         if ($request->filled('caissier_id')) {
             $query->where('user_id', $request->caissier_id);
@@ -231,6 +258,9 @@ class financeController extends Controller
         // Appliquer les mêmes filtres
         if ($request->filled('emplacement_id')) {
             $query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->filled('service_type')) {
+            $query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
         }
         if ($request->filled('caissier_id')) {
             $query->where('user_id', $request->caissier_id);
@@ -279,7 +309,7 @@ class financeController extends Controller
     public function getPaymentDetails($id)
     {
         $payment = Payments::with([
-            'facture.details',
+            'facture.details.produit',
             'user',
             'emplacement',
             'table',
@@ -294,4 +324,101 @@ class financeController extends Controller
             'payment' => $payment
         ]);
     }
+
+    public function exportFinancesPdf(Request $request)
+    {
+        $query = Payments::with(['facture', 'emplacement', 'user'])
+            ->where('ets_id', auth()->user()->ets_id);
+
+        if ($request->emplacement_id) {
+            $query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
+        }
+        if ($request->caissier_id) {
+            $query->where('user_id', $request->caissier_id);
+        }
+        if ($request->mode) {
+            $query->where('mode', $request->mode);
+        }
+        if ($request->devise) {
+            $query->where('devise', $request->devise);
+        }
+        if ($request->date_debut && $request->date_fin) {
+            $query->whereBetween('pay_date', [$request->date_debut, $request->date_fin]);
+        }
+
+        $paiements = $query->orderBy('pay_date', 'desc')->get();
+
+        $headers = ["Date", "Facture", "Caissier", "Emplacement", "Mode", "Devise", "Montant"];
+        $rows = $paiements->map(function ($payment) {
+            return [
+                optional($payment->pay_date)->format('d/m/Y H:i'),
+                $payment->facture?->numero_facture ?? '-',
+                $payment->user?->name ?? '-',
+                $payment->emplacement?->libelle ?? '-',
+                $payment->mode ?? '-',
+                $payment->devise ?? '-',
+                number_format($payment->amount ?? 0, 0, ',', ' '),
+            ];
+        })->toArray();
+
+        $pdf = Pdf::loadView('pdf.report_table', [
+            'title' => 'Rapport Financier',
+            'subtitle' => 'Recettes et encaissements',
+            'headers' => $headers,
+            'rows' => $rows,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('rapport_finances_' . date('Ymd_His') . '.pdf');
+    }
+
+    public function exportFinancesExcel(Request $request)
+    {
+        $query = Payments::with(['facture', 'emplacement', 'user'])
+            ->where('ets_id', auth()->user()->ets_id);
+
+        if ($request->emplacement_id) {
+            $query->where('emplacement_id', $request->emplacement_id);
+        }
+        if ($request->service_type) {
+            $query->whereHas('emplacement', fn($q) => $q->where('type', $request->service_type));
+        }
+        if ($request->caissier_id) {
+            $query->where('user_id', $request->caissier_id);
+        }
+        if ($request->mode) {
+            $query->where('mode', $request->mode);
+        }
+        if ($request->devise) {
+            $query->where('devise', $request->devise);
+        }
+        if ($request->date_debut && $request->date_fin) {
+            $query->whereBetween('pay_date', [$request->date_debut, $request->date_fin]);
+        }
+
+        $paiements = $query->orderBy('pay_date', 'desc')->get();
+
+        $headers = ["Date", "Facture", "Caissier", "Emplacement", "Mode", "Devise", "Montant"];
+        $rows = $paiements->map(function ($payment) {
+            return [
+                optional($payment->pay_date)->format('d/m/Y H:i'),
+                $payment->facture?->numero_facture ?? '-',
+                $payment->user?->name ?? '-',
+                $payment->emplacement?->libelle ?? '-',
+                $payment->mode ?? '-',
+                $payment->devise ?? '-',
+                $payment->amount ?? 0,
+            ];
+        })->toArray();
+
+        return ReportExporter::toExcel(
+            'rapport_finances_' . date('Ymd_His') . '.xlsx',
+            'Finances',
+            $headers,
+            $rows
+        );
+    }
 }
+

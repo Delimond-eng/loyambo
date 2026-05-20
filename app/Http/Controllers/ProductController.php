@@ -7,6 +7,7 @@ use App\Models\Facture;
 use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Models\Stock;
+use App\Models\Emplacement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,7 +81,8 @@ class ProductController extends Controller
                 "prix_unitaire"=>"required|string",
                 "unite"=>"nullable|string",
                 "seuil_reappro"=>"nullable|int",
-                "qte_init"=>"nullable|int"
+                "qte_init"=>"nullable|int",
+                "prices_config"=>"nullable|array"
             ]);
 
             $data["libelle"] = Str::upper($data["libelle"]);
@@ -102,6 +104,14 @@ class ProductController extends Controller
             $data["qte_init"] = $data["qte_init"] ?? 0;
 
             $produit = Produit::updateOrCreate(["id"=>$request->id ?? null], $data);
+
+            $syncData = [];
+            foreach ($request->input('prices_config', []) as $config) {
+                if (!empty($config['emplacement_id']) && isset($config['prix'])) {
+                    $syncData[$config['emplacement_id']] = ['prix' => $config['prix']];
+                }
+            }
+            $produit->emplacements()->sync($syncData);
 
             if($produit && $produit->qte_init >= 1){
                 MouvementStock::create([
@@ -151,16 +161,75 @@ class ProductController extends Controller
         ]);
     }
 
+    public function deleteProduct(Request $request){
+        try{
+            $data = $request->validate([
+                "id"=>"required|int|exists:produits,id",
+            ]);
+            $produit = Produit::find((int)$data["id"]);
+            $produit->delete();
+            return response()->json([
+                "status"=>"success",
+                "result"=>$produit
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+    }
+
+    public function deleteCategory(Request $request){
+        try{
+            $data = $request->validate([
+                "id"=>"required|int|exists:categories,id",
+            ]);
+            $cat = Categorie::find((int)$data["id"]);
+            $cat->delete();
+            return response()->json([
+                "status"=>"success",
+                "result"=>$cat
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
+            return response()->json(['errors' => "Action non autorisée !"]);
+        }
+    }
+
     //ALL PRODUCT
-    public function getAllProducts(Request $request)
+        public function getAllProducts(Request $request)
     {
         $empId = $request->query("emp_id");
         $user  = Auth::user();
 
-        $products = Produit::with("categorie")
+        $productsQuery = Produit::with(["categorie","emplacements"])
             ->where("ets_id", $user->ets_id)
-            ->select("produits.*")
-            ->selectRaw(
+            ->select("produits.*");
+
+        if ($request->has("cat_id") && !empty($request->query("cat_id"))) {
+            $productsQuery->where("categorie_id", $request->query("cat_id"));
+        }
+
+        if ($empId) {
+            $productsQuery->leftJoin('emplacement_produit', function($join) use ($empId) {
+                $join->on('produits.id', '=', 'emplacement_produit.produit_id')
+                    ->where('emplacement_produit.emplacement_id', '=', $empId);
+            })
+            ->addSelect(DB::raw("COALESCE(emplacement_produit.prix, produits.prix_unitaire) as prix_emplacement"));
+        }
+
+        $products = $productsQuery->selectRaw(
                 "(
                     SELECT SUM(
                         CASE
@@ -177,15 +246,17 @@ class ProductController extends Controller
                     FROM mouvement_stocks
                     WHERE mouvement_stocks.produit_id = produits.id
                     AND mouvement_stocks.ets_id = ?
-                    " . ($empId ? "AND mouvement_stocks.emplacement_id = ?" : "") . "
                 ) AS stock_actuel",
-                $empId ? [$user->ets_id, $empId] : [$user->ets_id]
+                [$user->ets_id]
             )
             ->orderBy("libelle")
             ->get();
 
+        $emplacements = Emplacement::where("ets_id", $user->ets_id)->whereNot('type', 'hôtel')->get();
+
         return response()->json([
-            "produits" => $products
+            "produits" => $products,
+            "emplacements"=>$emplacements
         ]);
     }
 
@@ -351,42 +422,10 @@ class ProductController extends Controller
     }
 
 
-    private function getStockDisponible($produit_id, $emplacement_id, $ets_id)
+            private function getStockDisponible($produit_id, $emplacement_id, $ets_id)
     {
         $stock = MouvementStock::select(
-            DB::raw("
-                SUM(CASE 
-                        WHEN type_mouvement = 'entrée' 
-                            AND emplacement_id = $emplacement_id 
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'transfert' 
-                            AND destination = $emplacement_id 
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'ajustement' 
-                            AND quantite > 0 
-                            AND emplacement_id = $emplacement_id
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'sortie' 
-                            AND emplacement_id = $emplacement_id 
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'vente' 
-                            AND emplacement_id = $emplacement_id 
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'transfert' 
-                            AND source = $emplacement_id 
-                        THEN quantite ELSE 0 END)
-                SUM(CASE 
-                        WHEN type_mouvement = 'ajustement' 
-                            AND quantite < 0 
-                            AND emplacement_id = $emplacement_id
-                        THEN ABS(quantite) ELSE 0 END)
-                as dispo
-            ")
+            DB::raw("\n                SUM(\n                    CASE \n                        WHEN type_mouvement = 'entrée' THEN quantite\n                        WHEN type_mouvement = 'transfert' AND destination IS NOT NULL THEN quantite\n                        WHEN type_mouvement = 'ajustement' AND quantite > 0 THEN quantite\n                        WHEN type_mouvement = 'sortie' THEN -quantite\n                        WHEN type_mouvement = 'vente' THEN -quantite\n                        WHEN type_mouvement = 'transfert' AND source IS NOT NULL THEN -quantite\n                        WHEN type_mouvement = 'ajustement' AND quantite < 0 THEN quantite\n                        ELSE 0\n                    END\n                ) as dispo\n            ")
         )
         ->where('produit_id', $produit_id)
         ->where('ets_id', $ets_id)
@@ -625,3 +664,7 @@ class ProductController extends Controller
 
 
 }
+
+
+
+

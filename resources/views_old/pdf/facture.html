@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture Hôtel - Le Grand Prestige</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            justify-content: flex-end;
+        }
+
+        .button-group button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-print {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-download {
+            background-color: #4b5563;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background-color: #374151;
+        }
+
+        .invoice {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header Section */
+        .invoice-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hotel-info h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .hotel-info p {
+            font-size: 13px;
+            color: #dbeafe;
+            margin-bottom: 4px;
+        }
+
+        .invoice-badge {
+            background-color: white;
+            color: #2563eb;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-meta p {
+            font-size: 13px;
+            color: #dbeafe;
+            margin-bottom: 4px;
+        }
+
+        /* Main Content */
+        .invoice-content {
+            padding: 32px;
+        }
+
+        /* Client Information */
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .info-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .info-box.highlight {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .info-box.highlight .info-label {
+            color: #1e40af;
+        }
+
+        .info-box.highlight .info-value {
+            color: #1e3a8a;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background-color: #f3f4f6;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        th:last-child {
+            text-align: right;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #1f2937;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        td:last-child {
+            text-align: right;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 32px;
+        }
+
+        .totals-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #d1d5db;
+            font-size: 13px;
+        }
+
+        .total-row.final {
+            border-bottom: none;
+            padding-top: 12px;
+            margin-bottom: 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .total-label {
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .total-amount {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .total-row.paid .total-amount {
+            color: #16a34a;
+        }
+
+        .total-row.final .total-label {
+            color: #111827;
+        }
+
+        .total-row.final .total-amount {
+            color: #16a34a;
+        }
+
+        .total-row.final.pending .total-amount {
+            color: #dc2626;
+        }
+
+        /* Footer Section */
+        .invoice-footer {
+            background-color: #f3f4f6;
+            padding: 20px 32px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.paid {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.partial {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .footer-message {
+            text-align: right;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .footer-message p:first-child {
+            margin-bottom: 4px;
+        }
+
+        .footer-message p:last-child {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .button-group {
+                display: none;
+            }
+
+            .invoice {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            @page {
+                margin: 10mm;
+                size: A4;
+            }
+
+            .invoice-header {
+                page-break-after: avoid;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .invoice-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-footer {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .footer-message {
+                text-align: left;
+            }
+
+            .button-group {
+                justify-content: flex-start;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 8px 12px;
+            }
+
+            .totals-section {
+                justify-content: flex-start;
+            }
+
+            .totals-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dataTables_wrapper container-fluid dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="example1_info" role="status" aria-live="polite">Showing 1 to 10 of 11
+                    entries </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_simple_numbers" id="example1_paginate">
+                    <ul class="pagination">
+                        <li class="paginate_button page-item previous disabled" id="example1_previous"><a href="#"
+                                aria-controls="example1" data-dt-idx="0" tabindex="0" class="page-link">Previous</a>
+                        </li>
+                        <li class="paginate_button page-item active"><a href="#" aria-controls="example1"
+                                data-dt-idx="1" tabindex="0" class="page-link">1</a></li>
+                        <li class="paginate_button page-item "><a href="#" aria-controls="example1" data-dt-idx="2"
+                                tabindex="0" class="page-link">2</a></li>
+                        <li class="paginate_button page-item next" id="example1_next"><a href="#"
+                                aria-controls="example1" data-dt-idx="3" tabindex="0" class="page-link">Next</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="button-group">
+            <button class="btn-print" onclick="window.print()">
+                <span>🖨️</span>
+                Imprimer
+            </button>
+            <button class="btn-download" onclick="downloadPDF()">
+                <span>⬇️</span>
+                Télécharger PDF
+            </button>
+        </div>
+
+        <div class="invoice">
+            <!-- Header -->
+            <div class="invoice-header">
+                <div class="hotel-info">
+                    <h1>Hôtel Le Grand Prestige</h1>
+                    <p>123 Avenue des Champs, 75008 Paris, France</p>
+                    <p>Tél: +33 1 23 45 67 89 | contact@grandprestige.fr</p>
+                </div>
+                <div>
+                    <div class="invoice-badge">FACTURE</div>
+                    <div class="invoice-meta">
+                        <p>N° INV-2025-001234</p>
+                        <p>Date: 07/12/2025</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="invoice-content">
+                <!-- Client Information -->
+                <section class="section">
+                    <h2 class="section-title">Informations du client</h2>
+                    <div class="info-box">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Nom complet</span>
+                                <span class="info-value">Marie Dupont</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">N° d'identité</span>
+                                <span class="info-value">FR123456789</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Téléphone</span>
+                                <span class="info-value">+33 6 12 34 56 78</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">marie.dupont@email.fr</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stay Details -->
+                <section class="section">
+                    <h2 class="section-title">Détails du séjour</h2>
+                    <div class="info-box highlight">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Date d'entrée</span>
+                                <span class="info-value">01/12/2025</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Date de sortie</span>
+                                <span class="info-value">05/12/2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Billing Details -->
+                <section class="section">
+                    <h2 class="section-title">Détails de la facturation</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Prix unitaire</th>
+                                <th>Jours</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Chambre Deluxe - Suite 405</td>
+                                <td>250,00 €</td>
+                                <td>4</td>
+                                <td>1 000,00 €</td>
+                            </tr>
+                            <tr>
+                                <td>Petit-déjeuner Continental</td>
+                                <td>25,00 €</td>
+                                <td>4</td>
+                                <td>100,00 €</td>
+                            </tr>
+                            <tr>
+                                <td>Service de spa</td>
+                                <td>120,00 €</td>
+                                <td>1</td>
+                                <td>120,00 €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Payments -->
+                <section class="section">
+                    <h2 class="section-title">Paiements reçus</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date de paiement</th>
+                                <th>Mode de paiement</th>
+                                <th>Montant payé</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>01/12/2025</td>
+                                <td>Carte Bancaire</td>
+                                <td>500,00 €</td>
+                            </tr>
+                            <tr>
+                                <td>05/12/2025</td>
+                                <td>Espèces</td>
+                                <td>720,00 €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Totals -->
+                <div class="totals-section">
+                    <div class="totals-box">
+                        <div class="total-row">
+                            <span class="total-label">Total facture</span>
+                            <span class="total-amount">1 220,00 €</span>
+                        </div>
+                        <div class="total-row paid">
+                            <span class="total-label">Total payé</span>
+                            <span class="total-amount">1 220,00 €</span>
+                        </div>
+                        <div class="total-row final">
+                            <span class="total-label">Reste à payer</span>
+                            <span class="total-amount">0,00 €</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="invoice-footer">
+                <div>
+                    <span class="status-badge paid">PAYÉE</span>
+                </div>
+                <div class="footer-message">
+                    <p>Merci pour votre confiance et votre séjour parmi nous.</p>
+                    <p>Au plaisir de vous revoir bientôt !</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

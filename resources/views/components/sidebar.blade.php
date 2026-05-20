@@ -1,4 +1,4 @@
-@if (!Route::is("licences.pricing"))
+﻿@if (!Route::is("licences.pricing"))
     <nav class="main-nav" role="navigation">
     <!-- Mobile menu toggle button (hamburger/x icon) -->
     <input id="main-menu-state" type="checkbox" />
@@ -45,7 +45,7 @@
         <!-- End Commandes -->
         @can('voir-chambres')
             @canCloseDay
-                @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
+                @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hÃ´tel')
                 <li @active(["bedroom.reserve"])>
                     <a href="{{ route("bedroom.reserve") }}">
                         <i class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
@@ -119,7 +119,7 @@
                 <li class="@active('products.categories')">
                     <a href="{{ route('products.categories') }}">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Catégories
+                        CatÃ©gories
                     </a>
                 </li>
                 @endcan
@@ -174,6 +174,19 @@
             </ul>
         </li>
         <!-- end emplacements -->
+        <!-- Menu finance -->
+        @if(Auth::user()->role === 'admin')
+            @canCloseDay
+            <li class="@active(['reports.finances'])">
+                <a href="{{ route('reports.finances') }}">
+                    <i class="icon-Dollar"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    Finance
+                </a>
+            </li>
+            @endif
+        @endif
+        <!-- end finance -->
+
 
         <!-- Menu rapports -->
         @can('voir-rapports')
@@ -185,8 +198,25 @@
                 </a>
                 <ul>
                     <li class="@active('reports.global')">
-                        <a href="{{ route('reports.global') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Rapports journaliers des ventes</a>
+                        <a href="{{ route('reports.global') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Journaliers (debut/fin)</a>
                     </li>
+                    <li class="@active(['reports.service.vente', 'reports.service.vente.*', 'reports.service_sales.*'])">
+                        <a href="{{ route('reports.service.vente') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Ventes par service</a>
+                    </li>
+                    <li class="@active('reports.performance')">
+                        <a href="{{ route('reports.performance') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Performance du personnel</a>
+                    </li>
+                    <li class="@active(['reports.produits', 'reports.produits.plusVendus.*'])">
+                        <a href="{{ route('reports.produits') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Produits les plus vendus</a>
+                    </li>
+                    <li class="@active('reports.reservations*')">
+                        <a href="{{ route('reports.reservations') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Reservations hotel</a>
+                    </li>
+                    @if(Auth::user()->role === 'admin')
+                        <li class="@active('reports.finances')">
+                            <a href="{{ route('reports.finances') }}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Finances</a>
+                        </li>
+                    @endif
                 </ul>
             </li>
             @endif
@@ -208,11 +238,11 @@
                     </a>
                 </li>
                 @endcan
-                <!-- @can('gerer-roles') {{-- ou permission personnalisée si nécessaire --}}
+                <!-- @can('gerer-roles') {{-- ou permission personnalisÃ©e si nÃ©cessaire --}}
                 <li>
                     <a href="#">
                         <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                        Rôles & attribution accès
+                        RÃ´les & attribution accÃ¨s
                     </a>
                 </li>
                 @endcan -->
@@ -229,3 +259,5 @@
     <script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>	
     <script type="module" src="{{ asset("assets/js/scripts/places.js") }}"></script>	
 @endpush
+
+

@@ -16,15 +16,26 @@
                 <div class="col-12">
                     <div class="box">
                         <div class="box-header with-border p-5 text-center">
-                            <h4 class="box-title">Rapport Financier - Recettes et Trésorerie</h4>
-                            <p class="text-muted">Suivi des recettes par emplacement, mode de paiement et devise</p>
+                            <h4 class="box-title">Finances - recettes et tresorerie</h4>
+                            <p class="text-muted">Analyse des encaissements par periode, service, emplacement, mode de paiement et devise.</p>
                         </div>
 
                         <!-- Filtres -->
                         <div class="box-body">
-                            <form method="GET" action="{{ route('reports.finances') }}" id="filterForm">
+<form method="GET" action="{{ route('reports.finances') }}" id="filterForm">
                                 <div class="row mb-4">
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
+                                        <label for="service_type">Service</label>
+                                        <select name="service_type" id="service_type" class="form-control">
+                                            <option value="">Tous les services</option>
+                                            @foreach($serviceTypes as $type)
+                                                <option value="{{ $type }}" {{ request('service_type') == $type ? 'selected' : '' }}>
+                                                    {{ $type === 'restaurant & lounge' ? 'Restaurant & Lounge' : ucfirst($type) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
                                         <label for="emplacement_id">Emplacement</label>
                                         <select name="emplacement_id" id="emplacement_id" class="form-control">
                                             <option value="">Tous les emplacements</option>
@@ -50,11 +61,11 @@
                                         <label for="mode">Mode paiement</label>
                                         <select name="mode" id="mode" class="form-control">
                                             <option value="">Tous modes</option>
-                                            <option value="cash" {{ request('mode') == 'cash' ? 'selected' : '' }}>Espèces</option>
+                                            <option value="cash" {{ request('mode') == 'cash' ? 'selected' : '' }}>Especes</option>
                                             <option value="card" {{ request('mode') == 'card' ? 'selected' : '' }}>Carte</option>
                                             <option value="mobile" {{ request('mode') == 'mobile' ? 'selected' : '' }}>Mobile</option>
                                             <option value="virement" {{ request('mode') == 'virement' ? 'selected' : '' }}>Virement</option>
-                                            <option value="cheque" {{ request('mode') == 'cheque' ? 'selected' : '' }}>Chèque</option>
+                                            <option value="cheque" {{ request('mode') == 'cheque' ? 'selected' : '' }}>Cheque</option>
                                         </select>
                                     </div>
                                     <div class="col-md-2">
@@ -68,13 +79,11 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-3">
-                                        <label for="date_debut">Période spécifique</label>
+                                    <div class="col-md-2">
+                                        <label for="date_debut">Periode</label>
                                         <div class="input-group">
-                                            <input type="date" name="date_debut" id="date_debut" class="form-control" 
-                                                   value="{{ request('date_debut') }}" placeholder="Date début">
-                                            <input type="date" name="date_fin" id="date_fin" class="form-control" 
-                                                   value="{{ request('date_fin') }}" placeholder="Date fin">
+                                            <input type="date" name="date_debut" id="date_debut" class="form-control" value="{{ request('date_debut') }}" placeholder="Debut">
+                                            <input type="date" name="date_fin" id="date_fin" class="form-control" value="{{ request('date_fin') }}" placeholder="Fin">
                                         </div>
                                     </div>
                                 </div>
@@ -85,7 +94,13 @@
                                                 <i class="fa fa-filter"></i> Appliquer les filtres
                                             </button>
                                             <a href="{{ route('reports.finances') }}" class="btn btn-secondary">
-                                                <i class="fa fa-refresh"></i> Réinitialiser
+                                                <i class="fa fa-refresh"></i> Reinitialiser
+                                            </a>
+                                            <a href="{{ route('reports.finances.export.pdf', request()->query()) }}" class="btn btn-outline-danger ms-2">
+                                                <i class="fa fa-file-pdf"></i> Export PDF
+                                            </a>
+                                            <a href="{{ route('reports.finances.export.excel', request()->query()) }}" class="btn btn-outline-success ms-1">
+                                                <i class="fa fa-file-excel"></i> Export Excel
                                             </a>
                                         </div>
                                     </div>
@@ -170,7 +185,7 @@
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link" data-bs-toggle="tab" href="#details">
-                                                        <i class="fa fa-list"></i> Détail des Paiements
+                                                        <i class="fa fa-list"></i> DÃ©tail des Paiements
                                                     </a>
                                                 </li>
                                             </ul>
@@ -191,11 +206,11 @@
                                                                 <div class="card-body text-center d-flex flex-column justify-content-between">
                                                                     <div>
                                                                         <h5 class="card-title text-uppercase text-primary">
-                                                                            @if($stat->mode == 'cash') Espèces
+                                                                            @if($stat->mode == 'cash') EspÃ¨ces
                                                                             @elseif($stat->mode == 'card') Carte
                                                                             @elseif($stat->mode == 'mobile') Mobile
                                                                             @elseif($stat->mode == 'virement') Virement
-                                                                            @elseif($stat->mode == 'cheque') Chèque
+                                                                            @elseif($stat->mode == 'cheque') ChÃ¨que
                                                                             @else {{ $stat->mode }}
                                                                             @endif
                                                                         </h5>
@@ -214,7 +229,7 @@
                                                     </div>
                                                     @if($stats_modes->count() == 0)
                                                     <div class="alert alert-info text-center">
-                                                        <i class="fa fa-info-circle"></i> Aucun paiement trouvé avec les critères sélectionnés.
+                                                        <i class="fa fa-info-circle"></i> Aucun paiement trouvÃ© avec les critÃ¨res sÃ©lectionnÃ©s.
                                                     </div>
                                                     @endif
                                                 </div>
@@ -259,7 +274,7 @@
                                                     </div>
                                                     @else
                                                     <div class="alert alert-info text-center">
-                                                        <i class="fa fa-info-circle"></i> Aucun emplacement avec des paiements trouvé.
+                                                        <i class="fa fa-info-circle"></i> Aucun emplacement avec des paiements trouvÃ©.
                                                     </div>
                                                     @endif
                                                 </div>
@@ -303,7 +318,7 @@
                                                     </div>
                                                     @else
                                                     <div class="alert alert-info text-center">
-                                                        <i class="fa fa-info-circle"></i> Aucun caissier trouvé avec des paiements.
+                                                        <i class="fa fa-info-circle"></i> Aucun caissier trouvÃ© avec des paiements.
                                                     </div>
                                                     @endif
                                                 </div>
@@ -311,7 +326,7 @@
                                                 <!-- Tab Graphiques -->
                                                 <div class="tab-pane fade" id="graphiques" role="tabpanel">
                                                     <div class="row">
-                                                        <!-- Graphique 1: Répartition par mode de paiement -->
+                                                        <!-- Graphique 1: RÃ©partition par mode de paiement -->
                                                         <div class="col-md-6 mb-4">
                                                             <div class="card ">
                                                                 <div class="card-header bg-primary text-white">
@@ -325,12 +340,12 @@
                                                             </div>
                                                         </div>
 
-                                                        <!-- Graphique 2: Répartition par devise -->
+                                                        <!-- Graphique 2: RÃ©partition par devise -->
                                                         <div class="col-md-6 mb-4">
                                                             <div class="card ">
                                                                 <div class="card-header bg-success text-white">
                                                                     <h5 class="card-title mb-0">
-                                                                        <i class="fa fa-money"></i> Répartition par Devise
+                                                                        <i class="fa fa-money"></i> RÃ©partition par Devise
                                                                     </h5>
                                                                 </div>
                                                                 <div class="card-body">
@@ -367,12 +382,12 @@
                                                             </div>
                                                         </div>
 
-                                                        <!-- Graphique 5: Évolution mensuelle -->
+                                                        <!-- Graphique 5: Ã‰volution mensuelle -->
                                                         <div class="col-12 mb-4">
                                                             <div class="card">
                                                                 <div class="card-header bg-danger text-white">
                                                                     <h5 class="card-title mb-0">
-                                                                        <i class="fa fa-line-chart"></i> Évolution des Recettes ({{ $stats_devise_principale ?? 'CDF' }})
+                                                                        <i class="fa fa-line-chart"></i> Ã‰volution des Recettes ({{ $stats_devise_principale ?? 'CDF' }})
                                                                     </h5>
                                                                 </div>
                                                                 <div class="card-body">
@@ -385,10 +400,10 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Tab Détail des Paiements -->
+                                                <!-- Tab DÃ©tail des Paiements -->
                                                 <div class="tab-pane fade" id="details" role="tabpanel">
                                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h5>Détail des transactions</h5>
+                                                        <h5>DÃ©tail des transactions</h5>
                                                         <button class="btn btn-sm btn-info" onclick="exporterExcel()">
                                                             <i class="fa fa-download"></i> Exporter
                                                         </button>
@@ -411,7 +426,7 @@
                                                                 <tbody>
                                                                     @foreach($paiements as $paiement)
                                                                         @php
-                                                                            $devise_paiement = $paiement->devise ?? $paiement->facture->devise ?? 'CDF';
+                                                                            $devise_paiement = $paiement->devise ?? $paiement->facture?->devise ?? 'CDF';
                                                                         @endphp
                                                                         <tr class="payment-row" data-payment-id="{{ $paiement->id }}" style="cursor: pointer;">
                                                                             <td>
@@ -425,7 +440,7 @@
                                                                                 @endif
                                                                             </td>
                                                                             <td>
-                                                                                <span class="badge bg-secondary">{{ $paiement->emplacement->libelle ?? 'N/A' }}</span>
+                                                                                <span class="badge bg-secondary">{{ $paiement->emplacement?->libelle ?? 'N/A' }}</span>
                                                                             </td>
                                                                             <td>
                                                                                 <span class="badge 
@@ -433,11 +448,11 @@
                                                                                     @elseif($paiement->mode == 'card') bg-primary
                                                                                     @elseif($paiement->mode == 'mobile') bg-info
                                                                                     @else bg-warning @endif">
-                                                                                    @if($paiement->mode == 'cash') Espèces
+                                                                                    @if($paiement->mode == 'cash') EspÃ¨ces
                                                                                     @elseif($paiement->mode == 'card') Carte
                                                                                     @elseif($paiement->mode == 'mobile') Mobile
                                                                                     @elseif($paiement->mode == 'virement') Virement
-                                                                                    @elseif($paiement->mode == 'cheque') Chèque
+                                                                                    @elseif($paiement->mode == 'cheque') ChÃ¨que
                                                                                     @else {{ $paiement->mode }}
                                                                                     @endif
                                                                                 </span>
@@ -449,7 +464,7 @@
                                                                                 <span class="badge bg-dark text-white">{{ $devise_paiement }}</span>
                                                                             </td>
                                                                             <td>
-                                                                                <small>{{ $paiement->user->name ?? 'N/A' }}</small>
+                                                                                <small>{{ $paiement->user?->name ?? 'N/A' }}</small>
                                                                             </td>
                                                                             <td class="text-center">
                                                                                 <button class="btn btn-sm btn-outline-primary view-payment" data-payment-id="{{ $paiement->id }}">
@@ -461,10 +476,13 @@
                                                                 </tbody>
                                                             </table>
                                                         </div>
-                                                        
+                                                        <div class="mt-3">
+                                                            {{ $paiements->links('vendor.pagination.vue-table') }}
+                                                        </div>
+
                                                     @else
                                                         <div class="alert alert-info text-center">
-                                                            <i class="fa fa-info-circle"></i> Aucun paiement trouvé avec les critères sélectionnés.
+                                                            <i class="fa fa-info-circle"></i> Aucun paiement trouvÃ© avec les critÃ¨res sÃ©lectionnÃ©s.
                                                         </div>
                                                     @endif
                                                 </div>
@@ -481,16 +499,16 @@
     </div>
 </div>
 
-<!-- Modal pour les détails du paiement -->
+<!-- Modal pour les dÃ©tails du paiement -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="paymentModalLabel">Détails du Paiement</h5>
+                <h5 class="modal-title" id="paymentModalLabel">DÃ©tails du Paiement</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="paymentDetails">
-                <!-- Les détails seront chargés ici -->
+                <!-- Les dÃ©tails seront chargÃ©s ici -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -510,7 +528,7 @@ let chartModesPaiement, chartDevises, chartEmplacements, chartCaissiers, chartEv
 function exporterExcel() {
     const table = document.getElementById('table-paiements');
     if (!table) {
-        alert('Aucune donnée à exporter');
+        alert('Aucune donnÃ©e Ã  exporter');
         return;
     }
     const html = table.outerHTML;
@@ -521,147 +539,175 @@ function exporterExcel() {
     link.click();
 }
 
-// Fonction pour afficher les détails du paiement
+// Fonction pour afficher les dÃ©tails du paiement
 function showPaymentDetails(paymentId) {
-    fetch(`/reports/payment-details/${paymentId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const payment = data.payment;
-                const modalBody = document.getElementById('paymentDetails');
-                
-                // Récupérer la devise depuis le paiement ou la facture, avec CDF par défaut
-                const devisePaiement = payment.devise || (payment.facture && payment.facture.devise) || 'CDF';
-                
-                let detailsHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Informations du Paiement</h6>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <td><strong>Date:</strong></td>
-                                    <td>${new Date(payment.pay_date).toLocaleString('fr-FR')}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Montant:</strong></td>
-                                    <td>${payment.amount.toLocaleString('fr-FR')} ${devisePaiement}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Mode:</strong></td>
-                                    <td><span class="badge bg-primary">${payment.mode}</span></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Référence:</strong></td>
-                                    <td>${payment.mode_ref || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Caissier:</strong></td>
-                                    <td>${payment.user?.name || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Emplacement:</strong></td>
-                                    <td>${payment.emplacement?.libelle || 'N/A'}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Informations de la Facture</h6>
-                `;
+    const modalElement = document.getElementById('paymentModal');
+    const modalBody = document.getElementById('paymentDetails');
+    if (!modalElement || !modalBody || !paymentId) return;
 
-                if (payment.facture) {
-                    // Récupérer la devise de la facture avec CDF par défaut
-                    const deviseFacture = payment.facture.devise || 'CDF';
-                    
-                    detailsHTML += `
+    modalBody.innerHTML = '<div class="text-center py-4"><span class="spinner-border"></span></div>';
+
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalElement).show();
+    } else if (window.jQuery) {
+        $('#paymentModal').modal('show');
+    }
+
+    const formatDateTime = (value) => {
+        if (!value) return 'N/A';
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleString('fr-FR');
+    };
+
+    const modeLabel = (mode) => {
+        const map = {
+            cash: 'Especes',
+            card: 'Carte',
+            mobile: 'Mobile',
+            virement: 'Virement',
+            cheque: 'Cheque'
+        };
+        return map[mode] || mode || 'N/A';
+    };
+
+    fetch(`/reports/payment-details/${paymentId}`, { headers: { 'Accept': 'application/json' } })
+        .then(response => {
+            if (!response.ok) throw new Error('Reponse invalide');
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success || !data.payment) {
+                throw new Error(data.message || 'Paiement introuvable');
+            }
+
+            const payment = data.payment;
+            const devisePaiement = payment.devise || (payment.facture && payment.facture.devise) || 'CDF';
+            const montantPaiement = Number(payment.amount || 0).toLocaleString('fr-FR');
+
+            let detailsHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informations du paiement</h6>
                         <table class="table table-bordered">
                             <tr>
-                                <td><strong>N° Facture:</strong></td>
-                                <td>${payment.facture.numero_facture}</td>
+                                <td><strong>Date:</strong></td>
+                                <td>${formatDateTime(payment.pay_date)}</td>
                             </tr>
                             <tr>
-                                <td><strong>Date Facture:</strong></td>
-                                <td>${new Date(payment.facture.date_facture).toLocaleDateString('fr-FR')}</td>
+                                <td><strong>Montant:</strong></td>
+                                <td>${montantPaiement} ${devisePaiement}</td>
                             </tr>
                             <tr>
-                                <td><strong>Total TTC:</strong></td>
-                                <td>${payment.facture.total_ttc?.toLocaleString('fr-FR') || 'N/A'} ${deviseFacture}</td>
+                                <td><strong>Mode:</strong></td>
+                                <td><span class="badge bg-primary">${modeLabel(payment.mode)}</span></td>
                             </tr>
                             <tr>
-                                <td><strong>Statut:</strong></td>
-                                <td><span class="badge ${payment.facture.statut === 'payée' ? 'bg-success' : 'bg-warning'}">${payment.facture.statut}</span></td>
+                                <td><strong>Reference:</strong></td>
+                                <td>${payment.mode_ref || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Caissier:</strong></td>
+                                <td>${payment.user?.name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Emplacement:</strong></td>
+                                <td>${payment.emplacement?.libelle || 'N/A'}</td>
                             </tr>
                         </table>
-                    `;
-                } else {
-                    detailsHTML += `<p class="text-muted">Aucune facture associée</p>`;
-                }
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Informations de la facture</h6>
+            `;
+
+            if (payment.facture) {
+                const deviseFacture = payment.facture.devise || 'CDF';
+                const totalFacture = Number(payment.facture.total_ttc || 0).toLocaleString('fr-FR');
 
                 detailsHTML += `
+                    <table class="table table-bordered">
+                        <tr>
+                            <td><strong>No Facture:</strong></td>
+                            <td>${payment.facture.numero_facture || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Date Facture:</strong></td>
+                            <td>${formatDateTime(payment.facture.date_facture)}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total TTC:</strong></td>
+                            <td>${totalFacture} ${deviseFacture}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Statut:</strong></td>
+                            <td><span class="badge ${String(payment.facture.statut || '').startsWith('pay') ? 'bg-success' : 'bg-warning'}">${payment.facture.statut || 'N/A'}</span></td>
+                        </tr>
+                    </table>
+                `;
+            } else {
+                detailsHTML += `<p class="text-muted">Aucune facture associee</p>`;
+            }
+
+            detailsHTML += `
+                    </div>
+                </div>
+            `;
+
+            if (payment.facture && payment.facture.details && payment.facture.details.length > 0) {
+                const deviseFacture = payment.facture.devise || 'CDF';
+
+                detailsHTML += `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Articles de la facture</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="bg-light">
+                                            <th>Article</th>
+                                            <th class="text-end">Prix unitaire</th>
+                                            <th class="text-center">Quantite</th>
+                                            <th class="text-end">Sous-total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+
+                payment.facture.details.forEach(detail => {
+                    const nomProduit = detail.produit?.libelle || detail.produit?.nom || detail.libelle || 'Article';
+                    detailsHTML += `
+                        <tr>
+                            <td>${nomProduit}</td>
+                            <td class="text-end">${Number(detail.prix_unitaire || 0).toLocaleString('fr-FR')} ${deviseFacture}</td>
+                            <td class="text-center">${detail.quantite || '0'}</td>
+                            <td class="text-end">${Number(detail.total || 0).toLocaleString('fr-FR')} ${deviseFacture}</td>
+                        </tr>
+                    `;
+                });
+
+                detailsHTML += `
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="bg-light">
+                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                            <td class="text-end"><strong>${Number(payment.facture.total_ttc || 0).toLocaleString('fr-FR')} ${deviseFacture}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 `;
-
-                // Détails des articles si la facture existe et a des détails
-                if (payment.facture && payment.facture.details && payment.facture.details.length > 0) {
-                    const deviseFacture = payment.facture.devise || 'CDF';
-                    
-                    detailsHTML += `
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <h6>Articles de la Facture</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered">
-                                        <thead>
-                                            <tr class="bg-light">
-                                                <th>Article</th>
-                                                <th class="text-end">Prix Unitaire</th>
-                                                <th class="text-center">Quantité</th>
-                                                <th class="text-end">Sous-Total</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                    `;
-
-                    payment.facture.details.forEach(detail => {
-                        // Utiliser le nom du produit depuis la relation produit
-                        const nomProduit = detail.produit?.nom || detail.libelle || 'Article';
-                        detailsHTML += `
-                            <tr>
-                                <td>${nomProduit}</td>
-                                <td class="text-end">${detail.prix_unitaire?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</td>
-                                <td class="text-center">${detail.quantite || '0'}</td>
-                                <td class="text-end">${detail.total?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</td>
-                            </tr>
-                        `;
-                    });
-
-                    detailsHTML += `
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="bg-light">
-                                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                                <td class="text-end"><strong>${payment.facture.total_ttc?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</strong></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                modalBody.innerHTML = detailsHTML;
-                const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-                modal.show();
             }
+
+            modalBody.innerHTML = detailsHTML;
         })
         .catch(error => {
             console.error('Erreur:', error);
-            alert('Erreur lors du chargement des détails');
+            modalBody.innerHTML = `<div class="alert alert-danger mb-0">Impossible de charger les details du paiement.</div>`;
         });
 }
 
-// Initialisation des événements
+// Initialisation des Ã©vÃ©nements
 document.addEventListener('DOMContentLoaded', function() {
     // Clic sur une ligne du tableau
     document.querySelectorAll('.payment-row').forEach(row => {
@@ -681,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Auto-submit des filtres principaux
-    const filtresAuto = ['emplacement_id', 'caissier_id', 'mode', 'devise'];
+    const filtresAuto = ['service_type', 'emplacement_id', 'caissier_id', 'mode', 'devise'];
     
     filtresAuto.forEach(filtre => {
         const element = document.getElementById(filtre);
@@ -720,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialiser les graphiques immédiatement si l'onglet est actif
+    // Initialiser les graphiques immÃ©diatement si l'onglet est actif
     if (document.getElementById('graphiques').classList.contains('active')) {
         setTimeout(initialiserGraphiques, 500);
     }
@@ -735,9 +781,9 @@ function initialiserGraphiques() {
     const statsCaissiers = @json($stats_caissiers ?? []);
     const devisePrincipale = @json($stats_devise_principale ?? 'CDF');
 
-    console.log('Données évolution mensuelle:', evolutionMensuelle);
+    console.log('DonnÃ©es Ã©volution mensuelle:', evolutionMensuelle);
 
-    // Palette de couleurs améliorée
+    // Palette de couleurs amÃ©liorÃ©e
     const paletteCouleurs = [
         '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
         '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
@@ -746,11 +792,11 @@ function initialiserGraphiques() {
     // Fonction pour traduire les modes de paiement
     function traduireMode(mode) {
         const traductions = {
-            'cash': 'Espèces',
+            'cash': 'EspÃ¨ces',
             'card': 'Carte',
             'mobile': 'Mobile',
             'virement': 'Virement',
-            'cheque': 'Chèque'
+            'cheque': 'ChÃ¨que'
         };
         return traductions[mode] || mode;
     }
@@ -795,7 +841,7 @@ function initialiserGraphiques() {
             }
         });
     } else {
-        console.warn('Aucune donnée pour le graphique des modes de paiement');
+        console.warn('Aucune donnÃ©e pour le graphique des modes de paiement');
     }
 
     // Graphique devises
@@ -829,7 +875,7 @@ function initialiserGraphiques() {
             }
         });
     } else {
-        console.warn('Aucune donnée pour le graphique des devises');
+        console.warn('Aucune donnÃ©e pour le graphique des devises');
     }
 
     // Graphique emplacements
@@ -865,7 +911,7 @@ function initialiserGraphiques() {
             }
         });
     } else {
-        console.warn('Aucune donnée pour le graphique des emplacements');
+        console.warn('Aucune donnÃ©e pour le graphique des emplacements');
     }
 
     // Graphique caissiers
@@ -904,10 +950,10 @@ function initialiserGraphiques() {
             }
         });
     } else {
-        console.warn('Aucune donnée pour le graphique des caissiers');
+        console.warn('Aucune donnÃ©e pour le graphique des caissiers');
     }
 
-    // Graphique évolution mensuelle
+    // Graphique Ã©volution mensuelle
     const ctxEvolution = document.getElementById('chartEvolutionMensuelle');
     if (ctxEvolution && evolutionMensuelle && evolutionMensuelle.length > 0) {
         if (chartEvolutionMensuelle) chartEvolutionMensuelle.destroy();
@@ -942,10 +988,10 @@ function initialiserGraphiques() {
             }
         });
     } else {
-        console.warn('Aucune donnée pour le graphique d\'évolution mensuelle');
-        // Afficher un message si pas de données
+        console.warn('Aucune donnÃ©e pour le graphique d\'Ã©volution mensuelle');
+        // Afficher un message si pas de donnÃ©es
         if (ctxEvolution) {
-            ctxEvolution.innerHTML = '<div class="text-center p-4 text-muted">Aucune donnée disponible pour l\'évolution mensuelle</div>';
+            ctxEvolution.innerHTML = '<div class="text-center p-4 text-muted">Aucune donnÃ©e disponible pour l\'Ã©volution mensuelle</div>';
         }
     }
 }
@@ -981,3 +1027,4 @@ function initialiserGraphiques() {
 }
 </style>
 @endpush
+

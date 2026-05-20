@@ -17,6 +17,26 @@ class Emplacement extends Model
         "ets_id",
     ];
 
+    public static function getTypesForEts(int $etsId)
+    {
+        return static::query()
+            ->where("ets_id", $etsId)
+            ->select("type")
+            ->distinct()
+            ->pluck("type")
+            ->filter()
+            ->values();
+    }
+
+    public static function isHotelType(?string $type): bool
+    {
+        if (!$type) {
+            return false;
+        }
+
+        return in_array($type, ["hotel", "hôtel"], true);
+    }
+
     // Relation tables (pour tout sauf hôtel)
     public function tables()
     {
@@ -30,5 +50,10 @@ class Emplacement extends Model
     public function mouvements()
     {
         return $this->hasMany(MouvementStock::class, 'emplacement_id');
+    }
+
+    public function produits()
+    {
+        return $this->belongsToMany(Produit::class, 'emplacement_produit')->withPivot('prix')->withTimestamps();
     }
 }

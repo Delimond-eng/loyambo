@@ -31,15 +31,22 @@
                                         @endif
                                     </p>
                                 </div>
-                                <a href="{{ route('reports.service_sales.emplacement', ['emplacement_id' => $emplacement->id]) }}" 
-                                   class="btn btn-secondary">
-                                    <i class="fa fa-arrow-left"></i> Retour
-                                </a>
+                                <div class="d-flex align-items-center">
+    <a href="{{ route('reports.service_sales.emplacement', ['emplacement_id' => $emplacement->id] + request()->query()) }}" class="btn btn-secondary me-2">
+        <i class="fa fa-arrow-left"></i> Retour
+    </a>
+    <a href="{{ route('reports.service.vente.details.export.pdf', ['id_saleDay' => $saleday->id, 'emplacement_id' => $emplacement->id] + request()->query()) }}" class="btn btn-outline-danger me-2">
+        <i class="fa fa-file-pdf"></i> PDF
+    </a>
+    <a href="{{ route('reports.service.vente.details.export.excel', ['id_saleDay' => $saleday->id, 'emplacement_id' => $emplacement->id] + request()->query()) }}" class="btn btn-outline-success">
+        <i class="fa fa-file-excel"></i> Excel
+    </a>
+</div>
                             </div>
                         </div>
 
                         <div class="box-body">
-                            @php
+@php
                                 // Filtrer seulement les factures payées
                                 $facturesPayees = $saleday->factures->where('statut', 'payée');
                                 $facturesAvecRemises = $saleday->factures->where('remise', '>', 0);
@@ -424,3 +431,4 @@
 }
 </style>
 @endpush
+

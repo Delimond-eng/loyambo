@@ -1,264 +1,133 @@
 @extends("layouts.admin")
 
 @section("content")
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-	<div class="container-full AppService" v-cloak>
-		<div class="data-loading" v-if="isDataLoading">
-			<img src="{{ asset("assets/images/loading.gif") }}" alt="loading">
-			<h4 class="mt-2">Chargement...</h4>
+	<div class="container-full AppService" v-cloak data-rate="@lastRate">
+        <!-- Loader Moderne -->
+		<div class="data-loading text-center py-100" v-if="isDataLoading">
+            <div class="spinner-box mx-auto mb-3">
+                <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+            </div>
+			<h4 class="text-muted fw-600">Analyse du plan de salle...</h4>
 		</div>
-	<!-- Content Header (Page header) -->
-	 	<div class="content-header"  v-if="!isDataLoading">
-            <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
-                <!-- <a href="{{ route("serveurs") }}" class="btn btn-xs btn-dark me-2"><i class="mdi mdi-arrow-left me-1"></i> Retour</a> -->
+
+	 	<div class="content-header" v-if="!isDataLoading">
+
+            <div class="d-md-flex align-items-center justify-content-between mb-4">
                 <div class="me-auto">
 					@if (Auth::user()->role === "serveur")
-                    <h3 class="page-title">Bienvenue, <span class="fw-800 text-primary me-2">{{ Auth::user()->name }} </span>  <span class="fa fa-home me-1"></span> {{ Auth::user()->etablissement->nom }} | {{ Auth::user()->emplacement->libelle ?? "" }}</span> </h3>
+                    <h3 class="page-title fw-bold">Bonjour, <span class="text-primary">{{ Auth::user()->name }}</span></h3>
 					@else
-                    <h3 class="page-title">Bienvenue à la session de <span class="fw-800 text-primary" v-if="userSession">@{{ userSession.name }}</span> </h3>
+                    <h3 class="page-title fw-bold">Session de <span class="text-primary" v-if="userSession">@{{ userSession.name }}</span></h3>
 					@endif
-					<div class="d-inline-block align-items-center">
-						<nav>
-							<ol class="breadcrumb">
-								<li class="breadcrumb-item active" aria-current="page">Vous êtes au portail de vente du serveur.</li>
-							</ol>
-						</nav>
-					</div>
+					<p class="text-muted mb-0 small"><i class="fa fa-home me-1 text-primary"></i> {{ Auth::user()->etablissement->nom }}</p>
                 </div>
 
-				<div class="clearfix mt-3 mt-lg-0 mt-xl-0">
-					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2 rounded-2">Transferer Table <i class="mdi mdi-swap-horizontal ms-2"></i></button>
-					<button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn-sm btn btn-success mb-2 rounded-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button>
-					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
-					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger rounded-2 mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
+				<div class="d-flex gap-2 mt-3 mt-lg-0">
+					<button type="button" @click="setOperation('transfert')" class="btn btn-info-light btn-sm rounded-pill px-3 fw-600" :class="{'bg-info text-white shadow': operation === 'transfert'}">
+                        <i class="mdi mdi-swap-horizontal me-1"></i> Transférer
+                    </button>
+					<button type="button" @click="setOperation('combiner')" class="btn btn-success-light btn-sm rounded-pill px-3 fw-600" :class="{'bg-success text-white shadow': operation === 'combiner'}">
+                        <i class="mdi mdi-link me-1"></i> Combiner
+                    </button>
+					<button type="button" v-if="operation" @click="setOperation('')" class="btn btn-danger-light btn-sm rounded-pill px-3 fw-600">
+                        <i class="mdi mdi-cancel me-1"></i> Annuler
+                    </button>
 				</div>
             </div>
         </div>
 
-		<section class="content" v-if="!isDataLoading">
-		  	<div>
-			<!-- Default box -->
-			  	<div class="box bg-transparent no-shadow b-0">
-					<div class="box-body">
-						<div class="row d-flex justify-content-center">
-							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(table, i) in allTables">
-								<a href="#" @click="goToOrderPannel(table)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
-									<div class="box-body ribbon-box">
-										<div class="ribbon-two" :class="{'ribbon-two-danger': table.statut==='occupée', 'ribbon-two-success':table.statut==='libre','ribbon-two-warning':table.statut==='réservée' }"><span>@{{ table.statut }}</span></div>
-										<div style="position: absolute; top: 10px; right: 10px;" v-if="table.commandes.length > 0 && checkServiceStatus(table.commandes)">
-											<span class="fs-18 mx-10 text-success icon-Dinner1"><span class="path1"></span><span class="path2"></span></span>
-										</div>
-										<img v-if="table.emplacement.type !== 'hôtel'" :src="table.statut==='libre' ? 'assets/images/table4.png' : 'assets/images/table-reseved.png'" class="img-fluid img-hov-fadein">
-                                        <img v-else :src="table.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
-										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
-											@{{ table.numero }}
-										</div>
-									</div> 
-								</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			<!-- /.box-body -->
-		  	</div>
-		  <!-- /.box -->
+        <div v-if="operation" class="alert alert-dismissible shadow-sm border-0 my-3 animate-fadeInDown"
+             :class="operation === 'transfert' ? 'alert-info bg-info text-white' : 'alert-success bg-success text-white'">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="me-3 fs-24">
+                        <i class="mdi" :class="operation === 'transfert' ? 'mdi-swap-horizontal' : 'mdi-link'"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Mode @{{ operation.toUpperCase() }} activé</h5>
+                        <p class="mb-0 small" v-if="selectedTables.length === 0">Veuillez sélectionner la <strong>table source</strong> (Occupée).</p>
+                        <p class="mb-0 small" v-if="selectedTables.length === 1">Table source : <strong>@{{ selectedTables[0].numero }}</strong>. Sélectionnez maintenant la <strong>table cible</strong>.</p>
+                    </div>
+                </div>
+                <button type="button" @click="setOperation('')" class="btn btn-sm btn-light rounded-pill px-3 fw-bold">
+                    <i class="mdi mdi-close me-1"></i> ANNULER
+                </button>
+            </div>
+        </div>
+
+		<section class="content pt-0" v-if="!isDataLoading">
+            <!-- Parcours des emplacements groupés -->
+            <template v-if="Object.keys(groupedTables).length > 0">
+                <div v-for="(group, emplacement) in groupedTables" :key="emplacement" class="mb-5">
+                    <div class="d-flex align-items-center mb-4">
+                        <h5 class="fw-bold text-dark mb-0 text-uppercase letter-spacing-2 fs-13">@{{ emplacement }}</h5>
+                        <div class="flex-grow-1 border-bottom ms-3 opacity-10"></div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-1" v-for="table in group" :key="table.id">
+                            <div class="card h-100 luxury-table-card shadow-xs border-0 transition-all"
+                                 :class="[getTableOperationColorClass(table), {'table-occupied-active': table.statut==='occupée'}]"
+                                 @click="goToOrderPannel(table)">
+
+                                <!-- Status Badge Flottant -->
+                                <div class="status-floating-badge" :class="table.statut">
+                                    @{{ table.statut === 'libre' ? 'LIBRE' : (table.statut === 'occupée' ? 'OCCUPÉE' : 'RÉSERVÉE') }}
+                                </div>
+
+                                <div class="card-body p-3 text-center d-flex flex-column align-items-center justify-content-between min-h-150">
+                                    <div class="position-absolute top-0 end-0 m-2 mt-4" v-if="table.commandes.length > 0 && checkServiceStatus(table.commandes)">
+                                        <div class="pulse-green"><i class="mdi mdi-bell-ring text-success fs-18"></i></div>
+                                    </div>
+
+                                    <div class="svg-wrapper mt-3">
+                                        <template v-if="table.emplacement.type !== 'hôtel'">
+                                            <svg v-if="table.statut === 'libre'" width="50" height="50" viewBox="0 0 64 64">
+                                                <circle cx="32" cy="32" r="16" fill="#ffffff" stroke="#2EC4B6" stroke-width="2.5"/>
+                                                <rect x="29" y="2" width="6" height="8" rx="2" fill="#2EC4B6" opacity="0.3"/>
+                                                <rect x="29" y="54" width="6" height="8" rx="2" fill="#2EC4B6" opacity="0.3"/>
+                                                <rect x="2" y="29" width="8" height="6" rx="2" fill="#2EC4B6" opacity="0.3"/>
+                                                <rect x="54" y="29" width="8" height="6" rx="2" fill="#2EC4B6" opacity="0.3"/>
+                                            </svg>
+                                            <svg v-else width="50" height="50" viewBox="0 0 64 64" class="svg-occupied">
+                                                <circle cx="32" cy="32" r="16" fill="#FFF5F5" stroke="#E71D36" stroke-width="2.5"/>
+                                                <circle cx="32" cy="10" r="4" fill="#E71D36"/>
+                                                <circle cx="32" cy="54" r="4" fill="#E71D36"/>
+                                                <circle cx="10" cy="32" r="4" fill="#E71D36"/>
+                                                <circle cx="54" cy="32" r="4" fill="#E71D36"/>
+                                            </svg>
+                                        </template>
+                                        <template v-else>
+                                            <svg width="50" height="50" viewBox="0 0 64 64" fill="none">
+                                                <rect x="8" y="24" width="48" height="28" rx="4" stroke="currentColor" :class="table.statut === 'libre' ? 'text-primary' : 'text-danger'" stroke-width="2.5"/>
+                                                <path d="M12 24v-8h40v8" stroke="currentColor" :class="table.statut === 'libre' ? 'text-primary' : 'text-danger'" stroke-width="2"/>
+                                            </svg>
+                                        </template>
+                                    </div>
+
+                                    <div class="table-info-wrapper mt-2">
+                                        <span class="table-label">TABLE</span>
+                                        <div class="table-number">@{{ table.numero }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Message Vide -->
+            <div v-else class="empty-state-container text-center py-100">
+                <div class="empty-icon-box bg-light rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                    <i class="mdi mdi-map-marker-off fa-4x text-muted opacity-30"></i>
+                </div>
+                <h3 class="fw-bold text-dark">Plan de salle vide</h3>
+                <p class="text-muted fs-16">Aucun emplacement ou table n'est configuré.</p>
+            </div>
 		</section>
 
-		<!-- Modal Commandes -->
-		<div class="modal fade modal-commande" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-			<div class="modal-dialog modal-lg modal-dialog-centered">
-				<div class="modal-content" v-if="selectedPendingTable">
-					<div class="modal-header">
-						<h4 class="modal-title" id="myModalLabel">Bons de commande Table @{{ selectedPendingTable.numero }}</h4>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<div class="d-flex">
-							<button @click="goToOrderPannel(selectedPendingTable, true)" class="btn btn-primary btn-xs mb-20 me-2">+ Nouveau bon de commande</button>
-							<button v-if="selectedPendingTable.commandes.length === 0" @click="libererTable(selectedPendingTable)" class="btn btn-danger btn-xs mb-20 me-2">Liberer table <i class="mdi mdi-arrange-bring-forward"></i></button>
-							<button v-if="selectedPendingTable.commandes.length > 1" class="btn btn-info btn-xs mb-20" @click="fusionnerCmds(selectedPendingTable.commandes)"><i class="mdi mdi-link me-1"></i>Fusionner les commandes</button>
-						</div>
-						<div class="row g-2">
-							<div class="col-12 col-lg-6 mb-3" v-for="(cmd, index) in selectedPendingTable.commandes">
-								<div class="box ribbon-box border-1 b-1 border-primary rounded-3 shadow-sm">
-									<!-- Ribbon statut -->
-									<div class="ribbon-two ribbon-two-primary" v-if="cmd.statut_service==='servie'">
-										<span v-if="cmd.statut_service==='servie'">Servie</span>
-										<span v-else>En attente</span>
-									</div>
-
-									<div class="box-body m-0">
-										<!-- Titre -->
-										<div class="text-center border-bottom pb-2 mb-3">
-											<h5 class="fw-bold text-primary mb-0">
-												<i class="mdi mdi-file-document-outline me-2"></i>
-												Bon de Commande N°@{{ cmd.id }}
-											</h5>
-										</div>
-
-										<!-- Actions -->
-										<div class="d-flex flex-wrap justify-content-center gap-2">
-											<!-- Edit -->
-											<button  @click="editCommande(cmd)" class="btn btn-circle btn-sm btn-primary">
-												<i class="fa fa-pencil"></i>
-											</button>
-
-											<!-- Impression -->
-											<button class="btn btn-circle btn-sm btn-success" 
-													@click="printInvoiceFromJson(cmd, selectedPendingTable.emplacement)">
-												<i class="fa fa-print"></i>
-											</button>
-
-											<!-- Servir -->
-											<button v-if="cmd.statut_service==='en_attente'" 
-													@click="servirCmd(cmd)" 
-													class="btn btn-circle btn-sm btn-warning">
-												<i class="fa fa-glass"></i>
-											</button>
-
-											<!-- Paiement -->
-											@if (Auth::user()->hasRole("caissier") || Auth::user()->hasRole("admin"))
-											<button @click="selectedFacture=cmd" 
-													data-bs-toggle="modal" 
-													data-bs-target=".modal-pay-trigger" 
-													class="btn btn-circle btn-sm btn-dark">
-												<span v-if="load_id===cmd.id" class="spinner-border spinner-border-sm"></span>
-												<i v-else class="fa fa-money"></i>
-											</button>
-											@endif
-
-											<!-- Voir facture -->
-											<button class="btn btn-circle btn-sm btn-info" 
-													data-bs-toggle="modal" 
-													data-bs-target=".modal-invoice-detail" 
-													@click="selectedFacture = cmd">
-												<i class="fa fa-eye"></i>
-											</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- /.modal-content -->
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
-
-		<!-- Modal mode de paiement -->
-		<div class="modal fade modal-pay-trigger" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content" v-if="selectedFacture">
-					<div class="modal-header">
-						<h4 class="modal-title" id="myModalLabel">Servir le bon de commande n°@{{ selectedFacture.id }}</h4>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<p class="text-danger">Sélectionnez un mode de paiement.</p>
-						<div class="flexbox flex-justified text-center">
-							<a href="#"
-								v-for="mode in modes" 
-								@click="selectedMode=mode.value; selectedModeRef=''"
-								class="b-1 border-primary text-decoration-none rounded py-20 cursor-pointer"
-								:class="selectedMode && selectedMode === mode.value ? 'bg-primary text-white' :'text-primary bg-white'"
-							>
-								<p class="mb-0 fa-3x">
-									<i :class="mode.icon"></i>
-								</p>
-								<p class="mb-2 fw-300">@{{ mode.label }}</p>
-							</a>
-						</div>
-						<!-- Input de référence uniquement si le mode n'est pas CASH et qu'un mode est sélectionné -->
-						<input 
-							v-if="selectedMode && selectedMode !== 'cash'" 
-							type="text" 
-							v-model="selectedModeRef"
-							placeholder="Réference du mode de paiement ..." 
-							class="form-control rounded-2 mt-2 mb-2"
-						>
-
-						<div v-if="selectedMode" class="d-flex justify-content-center align-items-center">
-							<button class="btn btn-success rounded-2 mt-5" style="width:100%" @click="triggerPayment">
-								Valider <i class="mdi mdi-check-all"></i>
-							</button>
-						</div>
-					</div>
-				</div>
-				<!-- /.modal-content -->
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
-
-		<!-- Modal Facture Details -->
-		<div class="modal fade modal-invoice-detail" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<!-- <button class="btn btn-success btn-sm me-2 rounded-3" @click="printInvoiceFromJson(selectedFacture, selectedPendingTable.emplacement)"> <i class="mdi mdi-printer"></i></button>
-						<button class="btn btn-primary btn-sm me-2 rounded-3"> <i class="mdi mdi-pencil"></i></button> -->
-						<h4 class="modal-title" id="myModalLabel">Facture détails</h4>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<section v-if="selectedFacture" class="invoice border-0 p-0 printableArea">
-							<div class="row">
-								<div class="col-12">
-									<div class="page-header">
-										<h2 class="d-inline"><span class="fs-30">@{{ selectedFacture.numero_facture }}</span></h2>
-										<div class="pull-right text-end">
-											<h3>@{{ formateDate2(selectedFacture.date_facture) }}</h3>
-										</div>
-									</div>
-								</div>
-							<!-- /.col -->
-							</div>
-						
-							<div class="row" v-if="selectedFacture.details">
-								<div class="col-12 table-responsive">
-									<table class="table table-bordered">
-										<tbody>
-										<tr>
-											<th>#</th>
-											<th>Designation</th>
-											<th class="text-end">Quantité</th>
-											<th class="text-end">Prix unitaire</th>
-											<th class="text-end">Sous total</th>
-										</tr>
-										<tr v-for="(detail, index) in selectedFacture.details" :key="index">
-											<td>@{{ index+1 }}</td>
-											<td>@{{ detail.produit.libelle }}</td>
-											<td class="text-end">@{{ detail.quantite }}</td>
-											<td class="text-end">@{{ detail.prix_unitaire }}</td>
-											<td class="text-end">@{{ detail.total_ligne }}</td>
-										</tr>
-										</tbody>
-									</table>
-								</div>
-								<!-- /.col -->
-							</div>
-							<div class="row">
-								<div class="col-12 text-end">
-									<p class="lead d-print-none"><b>Statut : </b><span class="badge badge-pill" :class="{'badge-warning-light':selectedFacture.statut==='en_attente', 'badge-success-light':selectedFacture.statut==='payée', 'badge-danger-light':selectedFacture.statut==='annulée'}">@{{ selectedFacture.statut.replaceAll('_', ' ') }}</span></p>
-									<div>
-										<p>Total HT  :  @{{ selectedFacture.total_ht }}</p>
-										<p>Remise (@{{ selectedFacture.remise }}%)  :  0</p>
-										<p>TVA  :  @{{ selectedFacture.tva }}</p>
-									</div>
-									<div class="total-payment">
-										<h3><b>Total TTC :</b> @{{ selectedFacture.total_ttc }}</h3>
-									</div>
-								</div>
-								<!-- /.col -->
-							</div>
-						</section>
-					</div>
-				</div>
-				<!-- /.modal-content -->
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
+		@include('components.modals.portal_modals')
 	</div>
 </div>
 
@@ -269,66 +138,28 @@
 	</button>
 @endif
 @endsection
-@push("scripts")
-    <script type="module" src="{{ asset("assets/js/scripts/service.js") }}"></script>
-	<script type="module" src="{{ asset("assets/js/scripts/dashboard.js") }}"></script>	
-@endpush
 
 @push("styles")
 	<style>
-        .fixed-btn {
-            position: fixed;
-            bottom: 50px;
-            right: 20px;
-            background: #4c95dd;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(1, 9, 18, 0.3);
-            animation: glow 1.5s infinite alternate;
-            color: #FFFFFF;
-        }
+        .luxury-table-card { border-radius: 10px; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); background: #ffffff; min-height: 150px; margin-top: 10px; position: relative; }
+        .luxury-table-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.07) !important; border-color: #4361ee; }
 
-        @keyframes glow {
-            from {
-            box-shadow: 0 0 10px rgba(76, 95, 221, 0.5),
-                        0 0 20px rgba(76, 149, 221, 0.3);
-            }
-            to {
-            box-shadow: 0 0 25px rgba(76, 149, 221, 0.9),
-                        0 0 50px rgba(76, 149, 221, 0.7);
-            }
-        }
+        .table-selected-op { border: 2px solid #fff !important; box-shadow: 0 0 0 3px #4361ee !important; }
 
-        .btn-badge {
-            position: absolute;
-			top: -5px;
-			left: 50%;
-			transform: translateX(-50%);
-			min-width: 20px;
-			height: 20px;
-			padding: 0 3px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: #ef4444;
-			color: #fff;
-			font-weight: 500;
-			border: 2px solid #FFF;
-			font-size: 10px;
-			border-radius: 5px;
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-        }
+        .status-floating-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); padding: 4px 12px; border-radius: 50px; font-size: 8px; font-weight: 800; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; background: #fff; }
+        .status-floating-badge.libre { color: #2EC4B6; border: 1px solid #2EC4B6; }
+        .status-floating-badge.occupée { color: #E71D36; border: 1px solid #E71D36; }
 
-        .fixed-btn-container {
-            position: relative;
-            width: 70px;
-            height: 70px;
-        }
+        .table-info-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .table-label { font-size: 9px; font-weight: 700; color: #adb5bd; letter-spacing: 2px; margin-bottom: -5px; }
+        .table-number { font-size: 26px; font-weight: 900; color: #343a40; }
+
+        .animate-fadeInDown { animation: fadeInDown 0.4s both; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .svg-occupied { animation: heartbeat 2s ease-in-out infinite; }
+        @keyframes heartbeat { 0% { transform: scale(1); } 10% { transform: scale(1.05); } 20% { transform: scale(1); } }
+        .pulse-green { animation: shadow-pulse 2s infinite; border-radius: 50%; }
+        @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0px rgba(46, 196, 182, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(46, 196, 182, 0); } 100% { box-shadow: 0 0 0 0px rgba(46, 196, 182, 0); } }
     </style>
 @endpush

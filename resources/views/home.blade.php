@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="assets/css/menu.css">
 @endpush
 
-@section("content") 
+@section("content")
 <div class="content-wrapper">
     <div class="container-full">
         <div class="content-header">
@@ -56,14 +56,14 @@
                                 <div class="menu-label">Produits</div>
                             </button>
                         @endcan
-                        
+
                         @can('voir-emplacements')
-                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/tables.emplacements'"> 
+                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/tables.emplacements'">
                                 <img class="menu-icon" src="assets/icons/home-button.png" alt="Emplacements">
                                 <div class="menu-label">Emplacements</div>
                             </button>
                         @endcan
-                        
+
                         @can('voir-factures')
                             @canCloseDay
                             <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/factures'">
@@ -95,12 +95,10 @@
                         @endcan
 
                         @can('voir-chambres')
-                                @if(Auth::user()->role==='caissier' && Auth::user()->emplacement->type==='hôtel')
-                                <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/reservations'">
-                                    <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
-                                    <div class="menu-label">Reservations</div>
-                                </button>
-                                @endif
+                            <button class="menu-btn b-1 border-primary"  @unless(Blade::check('licenceActive')) disabled @endunless type="button" onclick="location.href='/reservations'">
+                                <img class="menu-icon" src="assets/icons/hotel-check-in.png" alt="Chambres">
+                                <div class="menu-label">Reservations</div>
+                            </button>
                         @endcan
 
 
@@ -136,7 +134,7 @@
                     Activer
                 </button>
             @endif
-            
+
         </div>
         <div class="license-status {{ auth()->user()->etablissement->licence->type === 'trial' ? 'status-trial' : 'status-active' }}">
             Essai ({{ now()->diffInDays(auth()->user()->etablissement->licence->date_fin, false) }} j restants)

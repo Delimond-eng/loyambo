@@ -7,12 +7,11 @@ use App\Models\Reservation;
 use App\Models\Chambre;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use function PHPUnit\Framework\isEmpty;
 
 class UpdateReservationsCommand extends Command
 {
     protected $signature = 'reservations:update';
-    protected $description = 'Met à jour les réservations expirées et libère automatiquement les chambres.';
+    protected $description = 'Met à jour les réservations expirées (nuit/passages) et libère automatiquement les chambres.';
 
     public function handle()
     {
@@ -22,9 +21,16 @@ class UpdateReservationsCommand extends Command
 
         DB::transaction(function () use ($today) {
 
-            // 1. Récupérer toutes les réservations arrivées à échéance
-            $expired = Reservation::where('statut', 'confirmée')
-                ->where('date_fin', '<', $today)
+            // 1. Récupérer toutes les réservations arrivées à échéance (nuit + passage)
+            $activeStatuses = ['confirmée', 'confirmÃ©e', 'confirmÃƒÂ©e', 'en_attente', 'occupée', 'occupÃ©e', 'occupÃƒÂ©e'];
+            $expired = Reservation::whereIn('statut', $activeStatuses)
+                ->where(function ($q) use ($today) {
+                    $q->where('date_fin', '<', $today)
+                      ->orWhere(function ($q2) use ($today) {
+                          $q2->where('type_sejour', 'passage')
+                             ->where('date_debut', '<', $today);
+                      });
+                })
                 ->get();
             $this->info($expired->count() . " réservations expirées trouvées.");
 
@@ -37,6 +43,12 @@ class UpdateReservationsCommand extends Command
 
                 $this->info("Reservation #{$reservation->id} terminée.");
 
+                // 2.b Clôturer la facture liée si encore en attente
+                if ($reservation->facture && $reservation->facture->statut === 'en_attente') {
+                    $reservation->facture->update(['statut' => 'annulée']);
+                    $this->info("Facture #{$reservation->facture->id} passée en annulée (expiration).");
+                }
+
                 // 3. Vérifier la chambre concernée
                 if ($reservation->chambre_id) {
 
@@ -46,7 +58,7 @@ class UpdateReservationsCommand extends Command
 
                         // Vérifier s’il y a encore des réservations actives pour cette chambre
                         $hasActive = Reservation::where('chambre_id', $chambre->id)
-                            ->whereIn('statut', ['en_attente', 'confirmée'])
+                            ->whereIn('statut', $activeStatuses)
                             ->where('date_fin', '>=', $today)
                             ->exists();
 

@@ -1,15 +1,11 @@
 import { post, get, postJson } from "../modules/http.js";
 import Paginator from "../components/pagination.js";
 
-const Store = Vue.observable({
-    currentInventory: null,
-});
+const Store = Vue.observable({ currentInventory: null });
 
 new Vue({
     el: "#AppInventory",
-    components: {
-        Paginator,
-    },
+    components: { Paginator },
     data() {
         return {
             error: null,
@@ -17,18 +13,10 @@ new Vue({
             isLoading: false,
             isDataLoading: false,
             load_id: "",
-
             store: Store,
             search: "",
-            form: {
-                emplacement_id: "",
-            },
-            pagination: {
-                current_page: 1,
-                last_page: 1,
-                total: 10,
-                per_page: 10,
-            },
+            form: { emplacement_id: "" },
+            pagination: { current_page: 1, last_page: 1, total: 10, per_page: 10 },
             products: [],
             inventories: [],
             selectedProductIds: [],
@@ -44,12 +32,10 @@ new Vue({
     methods: {
         viewInventoriesHistory() {
             this.isDataLoading = true;
-            get(
-                `/inventories.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
-            )
-                .then(({ data, status }) => {
+            get(`/inventories.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`)
+                .then(({ data }) => {
                     this.isDataLoading = false;
-                    this.inventories = data.inventories.data;
+                    this.inventories = data.inventories.data || [];
                     this.pagination = {
                         current_page: data.inventories.current_page,
                         last_page: data.inventories.last_page,
@@ -57,24 +43,13 @@ new Vue({
                         per_page: data.inventories.per_page,
                     };
                 })
-                .catch((err) => {
-                    this.isDataLoading = false;
-                    console.error("Erreur:", err);
-                });
+                .catch(() => { this.isDataLoading = false; });
         },
 
-        changePage(page) {
-            this.pagination.current_page = page;
-            this.viewInventoriesHistory();
-        },
+        changePage(page) { this.pagination.current_page = page; this.viewInventoriesHistory(); },
+        onPerPageChange(perPage) { this.pagination.per_page = perPage; this.pagination.current_page = 1; this.viewInventoriesHistory(); },
 
-        onPerPageChange(perPage) {
-            this.pagination.per_page = perPage;
-            this.pagination.current_page = 1;
-            this.viewInventoriesHistory();
-        },
-
-        // Chargement de l'inventaire en cours depuis l'API
+        // Chargement de l'inventaire en cours
         loadCurrentInventory() {
             this.isDataLoading = true;
             get("/inventory.current")
@@ -83,56 +58,46 @@ new Vue({
                     if (res.data.status === "success" && res.data.inventory) {
                         this.store.currentInventory = res.data.inventory;
                         this.viewAllProducts(res.data.inventory.emplacement_id);
-                        this.loadInventoryFromCache(); // Restaurer depuis le cache
+                        this.loadInventoryFromCache();
                     }
                 })
-                .catch((err) => {
-                    this.isDataLoading = false;
-                    console.error(
-                        "Erreur lors du chargement de l'inventaire en cours :",
-                        err
-                    );
-                });
+                .catch(() => { this.isDataLoading = false; });
         },
 
-        // Voir tous les produits
-        viewAllProducts(id) {
+        // Voir tous les produits (stock global) avec prix de r�f�rence par emplacement si fourni
+        viewAllProducts(empId) {
             this.isDataLoading = true;
-            get(`/inventory.products?emp_id=${id}`)
+            get(`/inventory.products?emp_id=${empId || ""}`)
                 .then((res) => {
+                    this.products = res.data.products || [];
                     this.isDataLoading = false;
-                    this.products = res.data.products;
                 })
-                .catch((err) => {
-                    console.log("error", err);
-                    this.isDataLoading = false;
-                });
+                .catch(() => { this.isDataLoading = false; });
         },
 
-        // Ajouter ou retirer un produit de l'inventaire
+        // Ajouter / retirer produit de l�inventaire
         toggleProductSelection(product) {
             const exists = this.selectedProductIds.includes(product.id);
             if (exists) {
-                this.selectedProductIds = this.selectedProductIds.filter(
-                    (id) => id !== product.id
-                );
-                this.inventoryLines = this.inventoryLines.filter(
-                    (p) => p.id !== product.id
-                );
+                this.selectedProductIds = this.selectedProductIds.filter((id) => id !== product.id);
+                this.inventoryLines = this.inventoryLines.filter((p) => p.id !== product.id);
             } else {
                 this.selectedProductIds.push(product.id);
-                this.inventoryLines.push({
-                    ...product,
-                    real_quantity: null,
-                });
+                this.inventoryLines.push({ ...product, real_quantity: product.stock_global ?? null });
             }
+            this.saveInventoryToCache();
+        },
 
-            this.saveInventoryToCache(); // Sauvegarder après chaque changement
+        getRefPrice(line) {
+            if (this.currentInventory && this.currentInventory.emplacement_id && line.emplacements) {
+                const emp = line.emplacements.find(e => e.id === this.currentInventory.emplacement_id);
+                if (emp && emp.pivot && emp.pivot.prix !== undefined) return emp.pivot.prix;
+            }
+            return line.prix_unitaire || 0;
         },
 
         getInventoryGap(line) {
-            if (line.real_quantity === null || line.real_quantity === "")
-                return "";
+            if (line.real_quantity === null || line.real_quantity === "") return "";
             const theoretical = line.stock_global || 0;
             return line.real_quantity - theoretical;
         },
@@ -140,8 +105,7 @@ new Vue({
         getInventoryValue(line) {
             const gap = this.getInventoryGap(line);
             if (gap === "") return "";
-            const price = line.prix_unitaire || 0;
-            return gap * price;
+            return gap * this.getRefPrice(line);
         },
 
         getTotalGap() {
@@ -158,205 +122,99 @@ new Vue({
             }, 0);
         },
 
-        openStartModal() {
-            $(".modal-inventory-start").modal("show");
-        },
-        // Démarrer un nouvel inventaire
+        openStartModal() { $(".modal-inventory-start").modal("show"); },
+
         startInventory() {
             this.isLoading = true;
             postJson("/inventory.start", this.form)
                 .then(({ data }) => {
                     this.isLoading = false;
-                    if (data.errors !== undefined) {
-                        this.error = data.errors;
-                        $.toast({
-                            heading: "Echec de traitement",
-                            text: data.errors.toString(),
-                            position: "top-right",
-                            loaderBg: "#ff4949ff",
-                            icon: "error",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
+                    if (data.errors) {
+                        $.toast({ heading: "Echec de traitement", text: data.errors.toString(), icon: "error", position: "top-right" });
+                        return;
                     }
-                    if (data.result !== undefined) {
+                    if (data.result) {
                         $(".modal-inventory-start").modal("hide");
-                        this.loadCurrentInventory(); // Charge et restaure depuis le cache
+                        this.loadCurrentInventory();
                     }
                 })
-                .catch((err) => {
-                    console.log(err);
-                    this.isLoading = false;
-                    this.error = err;
-                });
+                .catch(() => { this.isLoading = false; });
         },
 
-        //valider un inventaire en cours
         validateInventory() {
-            let items = [];
-            this.inventoryLines.forEach((el) => {
-                items.push({
-                    theoretical_quantity: parseInt(el.stock_global),
-                    real_quantity: el.real_quantity,
-                    product_id: el.id,
-                });
-            });
-            let formData = {
-                inventory_id: this.currentInventory.id,
-                items: items,
-            };
+            const items = this.inventoryLines.map(el => ({
+                theoretical_quantity: parseInt(el.stock_global),
+                real_quantity: el.real_quantity,
+                product_id: el.id,
+            }));
+            const formData = { inventory_id: this.currentInventory.id, items };
             this.isLoading = true;
             postJson("/inventory.validate", formData)
                 .then(({ data }) => {
                     this.isLoading = false;
-                    if (data.errors !== undefined) {
-                        this.error = data.errors;
-                        $.toast({
-                            heading: "Echec de traitement",
-                            text: data.errors.toString(),
-                            position: "top-right",
-                            loaderBg: "#ff4949ff",
-                            icon: "error",
-                            hideAfter: 3000,
-                            stack: 6,
-                        });
+                    if (data.errors) {
+                        $.toast({ heading: "Echec de traitement", text: data.errors.toString(), icon: "error", position: "top-right" });
+                        return;
                     }
                     if (data.result !== undefined) {
                         this.loadCurrentInventory();
                         this.clearAll();
                         this.viewInventoriesHistory();
-                        Swal.fire({
-                            title: data.result,
-                            icon: "success",
-                            timer: 3000,
-                            showConfirmButton: !1,
-                        });
+                        localStorage.removeItem("inventory_cache");
+                        Swal.fire({ title: data.result, icon: "success", timer: 3000, showConfirmButton: false });
                     }
                 })
-                .catch((err) => {
-                    console.log(err);
-                    this.isLoading = false;
-                    this.error = err;
+                .catch(() => { this.isLoading = false; });
+        },
+
+        deleteInventory(id) {
+            Swal.fire({ title: "Attention! Action irréversible.", text: "Voulez-vous vraiment annuler l'inventaire en cours ?", icon: "warning", showCancelButton: true, confirmButtonText: "Confirmer", cancelButtonText: "Annuler" })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        this.load_id = id;
+                        postJson("/inventory.delete", { inventory_id: id })
+                            .then(() => { this.load_id = ""; this.viewInventoriesHistory(); })
+                            .catch(() => { this.load_id = ""; });
+                    }
                 });
         },
 
-        //Supprimer un inventaire en cours
-        deleteInventory(id) {
-            let self = this;
-            new Swal({
-                title: "Attention! Action irréversible.",
-                text: "Voulez-vous vraiment annuler l'inventaire en cours ?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Confirmer",
-                cancelButtonText: "Annuler",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    self.load_id = id;
-                    postJson("/inventory.delete", {
-                        inventory_id: id,
-                    })
-                        .then((res) => {
-                            self.load_id = "";
-                            self.viewInventoriesHistory();
-                        })
-                        .catch((err) => {
-                            self.load_id = "";
-                        });
-                }
-            });
-        },
-
-        // Sauvegarder l’état actuel dans le cache local
         saveInventoryToCache() {
             if (this.currentInventory) {
-                const cache = {
-                    inventory_id: this.currentInventory.id,
-                    selectedProductIds: this.selectedProductIds,
-                    inventoryLines: this.inventoryLines,
-                };
+                const cache = { inventory_id: this.currentInventory.id, selectedProductIds: this.selectedProductIds, inventoryLines: this.inventoryLines };
                 localStorage.setItem("inventory_cache", JSON.stringify(cache));
             }
         },
 
-        // Restaurer les données depuis le cache si l'ID correspond
         loadInventoryFromCache() {
             const cached = localStorage.getItem("inventory_cache");
             if (cached) {
                 try {
                     const data = JSON.parse(cached);
-                    if (
-                        this.store.currentInventory &&
-                        data.inventory_id === this.currentInventory.id
-                    ) {
+                    if (this.store.currentInventory && data.inventory_id === this.currentInventory.id) {
                         this.selectedProductIds = data.selectedProductIds || [];
                         this.inventoryLines = data.inventoryLines || [];
                     }
-                } catch (e) {
-                    console.error("Erreur de lecture du cache inventaire :", e);
-                }
+                } catch (e) { console.error("Erreur de lecture du cache inventaire :", e); }
             }
         },
 
-        // Nettoyer le cache
-        clearInventoryCache() {
-            localStorage.removeItem("inventory_cache");
-        },
-
-        clearAll() {
-            this.store.currentInventory = null;
-            this.selectedProductIds = [];
-            this.inventoryLines = [];
-        },
+        clearInventoryCache() { localStorage.removeItem("inventory_cache"); },
+        clearAll() { this.store.currentInventory = null; this.selectedProductIds = []; this.inventoryLines = []; },
     },
 
     computed: {
         allProducts() {
             if (this.search && this.search.trim()) {
-                return this.products.filter((el) =>
-                    el.libelle.toLowerCase().includes(this.search.toLowerCase())
-                );
-            } else {
-                return this.products;
+                return this.products.filter((el) => el.libelle.toLowerCase().includes(this.search.toLowerCase()));
             }
+            return this.products;
         },
-
-        allInventories() {
-            return this.inventories;
-        },
-
-        currentInventory() {
-            return this.store.currentInventory;
-        },
-
-        formateSimpleDate() {
-            return (date) =>
-                moment(date, "YYYY-MM-DD").locale("fr").format("DD MMMM YYYY");
-            // ex: "14 avril 2021"
-        },
-        formateDate() {
-            return (date) =>
-                moment(date, "YYYY-MM-DD HH:mm")
-                    .locale("fr")
-                    .format("DD MMM YYYY HH:mm");
-            // ex: "14 avril 2021"
-        },
-
-        formateTime() {
-            return (date) =>
-                moment(date, "DD/MM/YYYY HH:mm").locale("fr").format("hh:mm");
-            // ex: "03:13 AM"
-        },
-        getStatus() {
-            return (status) => {
-                if (status === "pending") {
-                    return "En cours";
-                } else if (status === "closed") {
-                    return "Terminé";
-                }
-            };
-        },
+        allInventories() { return this.inventories; },
+        currentInventory() { return this.store.currentInventory; },
+        formateSimpleDate() { return (date) => moment(date, "YYYY-MM-DD").locale("fr").format("DD MMMM YYYY"); },
+        formateDate() { return (date) => moment(date, "YYYY-MM-DD HH:mm").locale("fr").format("DD MMM YYYY HH:mm"); },
+        formateTime() { return (date) => moment(date, "DD/MM/YYYY HH:mm").locale("fr").format("hh:mm"); },
+        getStatus() { return (status) => status === "pending" ? "En cours" : status === "closed" ? "Terminé" : status; },
     },
 });

@@ -31,31 +31,34 @@ class Facture extends Model
     ];
 
     protected $dates = ["date_facture"];
+
     // Relations
 
-    // Facture appartient à un utilisateur
     public function user()
     {
         return $this->belongsTo(User::class, "user_id");
     }
 
-    // Facture peut être liée à une table de restaurant
     public function table()
     {
         return $this->belongsTo(RestaurantTable::class, 'table_id');
     }
+
     public function chambre()
     {
         return $this->belongsTo(Chambre::class, 'chambre_id');
     }
 
-    // Facture peut être liée à un sale day
+    public function emplacement()
+    {
+        return $this->belongsTo(Emplacement::class, "emplacement_id");
+    }
+
     public function saleDay()
     {
         return $this->belongsTo(SaleDay::class, "sale_day_id");
     }
 
-    // Une facture a plusieurs détails
     public function details()
     {
         return $this->hasMany(FactureDetail::class, "facture_id", "id");
@@ -64,7 +67,6 @@ class Facture extends Model
     public function payments(){
         return $this->hasMany(Payments::class, "facture_id", "id");
     }
-
 
     public function client(){
         return $this->belongsTo(Client::class, "client_id");

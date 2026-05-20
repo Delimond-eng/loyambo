@@ -47,7 +47,7 @@
 
 												<td class="d-flex align-items-center justify-content-end">
 													<a href="#"  data-bs-toggle="modal" data-bs-target="#tableModal" @click="formTable = {id:data.id, numero:data.numero, emplacement_id:data.emplacement_id}" class="btn btn-primary-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-													<a href="#" class="btn btn-danger-light btn-sm"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+													<a href="#" class="btn btn-danger-light btn-sm" @click.prevent="supprimerTable(data)"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
 												</td>
 											</tr>
 											<tr class="border-bottom" v-for="(data, j) in allChambres" :key="j">
@@ -57,7 +57,8 @@
 												</td>
 												<td>
 													<a href="#" class="text-dark fw-600 hover-primary fs-16 fw-700">Type <span class="text-primary">@{{ data.type }}</span></a>
-													<span class="text-fade d-block">Prix : @{{ data.prix }} @{{ data.prix_devise }}</span>
+													<span class="text-fade d-block">Nuit : @{{ data.prix_nuit || data.prix }} @{{ data.prix_devise }}</span>
+													<span class="text-fade d-block">Passage : @{{ data.prix_passage || data.prix }} @{{ data.prix_devise }}</span>
 												</td>
 
 												<td>
@@ -65,8 +66,8 @@
 												</td>
 
 												<td class="d-flex align-items-center justify-content-end">
-													<a href="#"  data-bs-toggle="modal" data-bs-target="#tableModal" @click="formTable = {id:data.id, numero:data.numero, emplacement_id:data.emplacement_id, prix:data.prix, type:data.type, capacite:data.capacite, prix_devise:data.prix_devise}" class="btn btn-primary-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
-													<a href="#" class="btn btn-danger-light btn-sm"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+													<a href="#"  data-bs-toggle="modal" data-bs-target="#tableModal" @click="formTable = {id:data.id, numero:data.numero, emplacement_id:data.emplacement_id, prix:data.prix, type:data.type, capacite:data.capacite, prix_devise:data.prix_devise, prix_nuit:data.prix_nuit, prix_passage:data.prix_passage}" class="btn btn-primary-light btn-sm me-1"><span class="icon-Write fs-18"><span class="path1"></span><span class="path2"></span></span></a>
+													<a href="#" class="btn btn-danger-light btn-sm" @click.prevent="supprimerChambre(data)"><span class="icon-Trash1 fs-18"><span class="path1"></span><span class="path2"></span></span></a>
 												</td>
 											</tr>
 										</tbody>
@@ -102,12 +103,23 @@
 									  	<label class="form-label">Prix de la chambre</label>
 									 	<div class="d-flex">
 											<input v-model="formTable.prix" type="number" class="form-control"
-												placeholder="Prix de la chambre." required>
+												placeholder="Prix standard (optionnel)">
 											<select style="width: 100px;" v-model="formTable.prix_devise" class="form-control">
 												<option value="CDF" selected>CDF</option>
 												<option value="USD">USD</option>
 											</select>
 										</div>
+										<div class="row mt-2">
+											<div class="col-6">
+												<label class="form-label">Prix Nuit</label>
+												<input v-model="formTable.prix_nuit" type="number" class="form-control" placeholder="Prix nuit">
+											</div>
+											<div class="col-6">
+												<label class="form-label">Prix Passage</label>
+												<input v-model="formTable.prix_passage" type="number" class="form-control" placeholder="Prix passage">
+											</div>
+										</div>
+
 									</div>
 									<div class="row g-4">
 										<div class="form-group col-md-6" v-if="isHotel">

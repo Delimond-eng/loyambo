@@ -30,10 +30,15 @@ class Produit extends Model
 
     public function inventaires()
     {
-        return $this->hasMany(Inventaire::class, 'produit_id');
+        return $this->hasMany(InventoryDetail::class, "produit_id", "id");
     }
 
     public function stocks(){
         return $this->hasMany(MouvementStock::class, "produit_id","id");
+    }
+
+    public function emplacements()
+    {
+        return $this->belongsToMany(Emplacement::class, 'emplacement_produit')->withPivot('prix')->withTimestamps();
     }
 }

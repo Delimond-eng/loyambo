@@ -29,7 +29,7 @@
                     <li class="btn-group nav-item d-none d-xl-inline-block">
                         <div class="app-menu">
                             <div class="search-bx mx-5">
-                                
+
                             </div>
                         </div>
                     </li>
@@ -38,12 +38,12 @@
 
             <div class="navbar-custom-menu r-side" >
                 <ul class="nav navbar-nav AppService" v-cloak>
-                    <li class="btn-group nav-item">
+                    <!--<li class="btn-group nav-item">
                         <span class="label label-danger">@{{ totalQte }}</span>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-right" title="Setting" class="waves-effect waves-light nav-link full-screen btn-danger-light">
                             <span class="icon-Cart2"><span class="path1"></span><span class="path2"></span></span>
                         </a>
-                    </li>
+                    </li>-->
 
                     <!-- User Account-->
                     <li class="dropdown user user-menu">

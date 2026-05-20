@@ -1,0 +1,973 @@
+import { post, postJson, get } from "../modules/http.js";
+
+const Store = Vue.observable({
+    cart: [],
+});
+
+document.querySelectorAll(".AppService").forEach((el) => {
+    new Vue({
+        el: el,
+        data() {
+            return {
+                error: null,
+                result: null,
+                isLoading: false,
+                isDataLoading: false,
+                serveurs: [],
+                tables: [],
+                chambres: [],
+                categories: [],
+                products: [],
+                session: null,
+                table: null,
+                chambre: null,
+                selectedPendingTable: null,
+                selectedFacture: null,
+                editedCommandeId: null,
+                modes: [
+                    { value: "cash", label: "CASH", icon: "fa fa-money" },
+                    {
+                        value: "mobile",
+                        label: "MOBILE MONEY",
+                        icon: "fa fa-mobile-phone",
+                    },
+                    {
+                        value: "card",
+                        label: "BANQUE/CARTE",
+                        icon: "fa fa-credit-card",
+                    },
+                ],
+                selectedMode: null,
+                selectedModeRef: "",
+                operation: null,
+                selectedTables: [],
+                selectedData: null,
+                store: Store,
+                search: "",
+                load_id: "",
+
+                form: {
+                    total_especes: 0,
+                    tickets_serveur: 0,
+                },
+            };
+        },
+
+        mounted() {
+            this.loadEditedCommande();
+            this.refreshUserOrderSession();
+            this.refreshTableData();
+            this.getAllServeursServices();
+            this.viewAllTables();
+            this.viewAllCategories();
+            this.viewAllProducts();
+        },
+
+        methods: {
+            triggerStartDay() {
+                $("body").toggleClass("right-bar-toggle");
+            },
+
+            triggerClosingDay() {
+                Swal.fire({
+                    title: "Confirmation ?",
+                    text: "Confirmez la clôture de la journée",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "Confirmer",
+                    cancelButtonText: "Annuler",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        postJson("/day.close", {})
+                            .then(({ data, status }) => {
+                                if (data.status === "failed") {
+                                    // Construire la liste des serveurs avec emplacement
+                                    let serveursList = "";
+                                    data.serveurs.forEach((srv) => {
+                                        serveursList += `<div class="col-xl-12">
+                                <div class="media bg-light overflow-hidden">
+                                <span class="avatar status-success">
+                                    <img class="avatar" src="assets/images/profil-2.png">
+                                </span>
+                                <div class="media-body text-start overflow-hidden">
+                                    <p><strong>${srv.name}</strong></p>
+                                    <p class="fs-12">${
+                                        srv.emplacement.libelle ?? "-----"
+                                    }</p>
+                                </div>
+                                </div>
+                                </div>`;
+                                    });
+
+                                    new Swal({
+                                        icon: "warning",
+                                        title: "Clôture impossible, Serveurs connectés : ".toUpperCase(),
+                                        html: `
+                                <div class="row gy-1 overflow-hidden">${serveursList}</div>
+                                `,
+                                        showCancelButton: true,
+                                        showConfirmButton: true,
+                                        confirmButtonColor: "#4c95dd",
+                                        confirmButtonText:
+                                            "Voir serveurs en service",
+                                        cancelButtonText: "Fermer",
+                                    }).then((res) => {
+                                        if (res.isConfirmed) {
+                                            location.href =
+                                                "/serveurs.activities";
+                                        }
+                                    });
+                                } else if (data.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Succès",
+                                        text: data.message,
+                                        confirmButtonText: "Fermer",
+                                    }).then((res) => {
+                                        let url = "/" + data.report_url;
+                                        document.getElementById(
+                                            "reportIframe"
+                                        ).src = url;
+                                        setTimeout(() => {
+                                            $("#reportModal").modal("show");
+                                        }, 500);
+                                    });
+                                } else {
+                                    new Swal({
+                                        icon: "error",
+                                        title: "Erreur",
+                                        text:
+                                            data.errors || "Erreur inattendue",
+                                        confirmButtonText: "Fermer",
+                                    });
+                                }
+                            })
+                            .catch((err) => {
+                                this.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plus tard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            });
+                    }
+                });
+            },
+
+            triggerSingleClosing(data) {
+                this.selectedData = data;
+                $("#reportAppendModal").modal("show");
+            },
+
+            setOperation(op) {
+                this.operation = op;
+            },
+
+            servirCmd(data) {
+                postJson(`/cmd.servir`, { id: data.id })
+                    .then(({ data, status }) => {
+                        $(".modal-commande").modal("hide");
+                        if (data.status === "success") {
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            editCommande(data) {
+                // Vider le panier actuel
+                localStorage.setItem("edited-orders", JSON.stringify(data));
+                localStorage.setItem(
+                    "table",
+                    JSON.stringify(this.selectedPendingTable)
+                );
+                location.href = "/orders.interface";
+            },
+
+            loadEditedCommande() {
+                if (location.pathname === "/orders.interface") {
+                    const cachedDatas = localStorage.getItem("edited-orders");
+                    if (cachedDatas !== null) {
+                        let data = JSON.parse(cachedDatas);
+                        this.editedCommandeId = data.id;
+                        this.store.cart = [];
+                        // S'assurer que la facture contient des détails
+                        if (data.details && data.details.length > 0) {
+                            data.details.forEach((detail) => {
+                                const produit = detail.produit;
+                                // Ajouter chaque produit avec sa quantité et prix
+                                this.store.cart.push({
+                                    id: produit.id,
+                                    libelle: produit.libelle,
+                                    prix_unitaire: parseFloat(
+                                        detail.prix_unitaire
+                                    ),
+                                    qte: parseInt(detail.quantite),
+                                    unite: produit.unite,
+                                    reference: produit.reference,
+                                    code_barre: produit.code_barre,
+                                    image: produit.image,
+                                });
+                            });
+                        }
+                    }
+                } else {
+                    localStorage.removeItem("edited-orders");
+                    localStorage.removeItem("table");
+                    this.store.cart = [];
+                }
+            },
+
+            triggerOperation(data) {
+                postJson(`/table.operation`, data)
+                    .then(({ data, status }) => {
+                        if (data.status === "success") {
+                            this.setOperation("");
+                            this.selectedTables = [];
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            libererTable(table) {
+                const self = this;
+                Swal.fire({
+                    title: "Etes-vous sûr ??",
+                    text: "Voulez-vous vraiment liberer cette table  ??.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Oui",
+                    cancelButtonText: "Non",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        postJson(`/table.liberer`, { table_id: table.id })
+                            .then(({ data, status }) => {
+                                $(".modal-commande").modal("hide");
+                                if (data.status === "success") {
+                                    self.viewAllTables();
+                                }
+                            })
+                            .catch((err) => {
+                                self.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plutard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            });
+                    }
+                });
+            },
+
+            triggerPayment() {
+                const facture = this.selectedFacture;
+                this.load_id = facture.id;
+                $(".modal-pay-trigger").modal("hide");
+                postJson(`/payment.create`, {
+                    facture_id: facture.id,
+                    mode: this.selectedMode,
+                    mode_ref: this.selectedModeRef,
+                })
+                    .then(({ data, status }) => {
+                        this.load_id = "";
+                        if (data.errors !== undefined) {
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: data.errors,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            return;
+                        }
+                        if (data.status === "success") {
+                            this.selectedPendingTable.commandes =
+                                this.selectedPendingTable.commandes.filter(
+                                    (c) => c.id !== facture.id
+                                );
+                            $.toast({
+                                heading: "Commande servie.",
+                                text: "Commande servie et payée avec succès!",
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            this.viewAllTables();
+                        }
+                    })
+                    .catch((err) => {
+                        this.load_id = "";
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            fusionnerCmds(cmds) {
+                let factures = [];
+                cmds.forEach((f) => {
+                    factures.push(f.id);
+                });
+                const self = this;
+                Swal.fire({
+                    title: "Confirmation ?",
+                    text: "Confirmez la fusion des commandes",
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "Confirmer",
+                    cancelButtonText: "Annuler",
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        const user = JSON.parse(localStorage.getItem("user"));
+                        postJson("/factures.link", {
+                            factures: factures,
+                            user_id: user ? user.id : null,
+                        })
+                            .then(({ data, status }) => {
+                                self.viewAllTables();
+                                $(".modal-commande").modal("hide");
+                                $.toast({
+                                    heading: "Fusion des commandes reussie",
+                                    text: "Commandes fusionnées avec succès !",
+                                    position: "top-right",
+                                    loaderBg: "#49ff73ff",
+                                    icon: "success",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            })
+                            .catch((err) => {
+                                this.isLoading = false;
+                                $.toast({
+                                    heading: "Echec de traitement",
+                                    text: "Veuillez réessayer plus tard !",
+                                    position: "top-right",
+                                    loaderBg: "#ff4949ff",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            });
+                    }
+                });
+            },
+
+            triggerSendServeurReport(e) {
+                const reportData = this.selectedData;
+                this.form.serveur_id = reportData.user.id;
+                this.form.valeur_theorique = reportData.total_encaisse;
+                this.form.tickets_emis = reportData.total_ticket;
+                this.isLoading = true;
+
+                postJson("/day.close.report", this.form)
+                    .then(({ data, status }) => {
+                        this.isLoading = false;
+                        if (data.errors !== undefined) {
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: data.errors,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                            return;
+                        }
+                        if (data.status === "success") {
+                            $("#reportAppendModal").modal("hide");
+                            this.getAllServeursServices();
+                            this.selectedData = null;
+                            this.form = {
+                                total_especes: 0,
+                                tickets_serveur: 0,
+                            };
+                            $.toast({
+                                heading: "Rapport effectué !",
+                                text: data.message,
+                                position: "top-right",
+                                loaderBg: "#49ff86ff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            //ADD TO CART
+            addToCart(product) {
+                if (product.quantified) {
+                    const found = this.cart.find((p) => p.id === product.id);
+                    // Stock indisponible
+                    if (product.stock_actuel <= 0) {
+                        Swal.fire({
+                            title: "Stock insuffisant !",
+                            text:
+                                "Impossible d'ajouter ce produit. Stock actuel : " +
+                                product.stock_actuel,
+                            icon: "warning",
+                            timer: 3000,
+                            showConfirmButton: false,
+                        });
+                        return;
+                    }
+                    // Déjà dans le panier
+                    if (found) {
+                        if (found.qte + 1 > product.stock_actuel) {
+                            Swal.fire({
+                                title: "Stock insuffisant !",
+                                text: "Stock actuel : " + product.stock_actuel,
+                                icon: "warning",
+                                timer: 3000,
+                                showConfirmButton: false,
+                            });
+
+                            // Si stock = 0, retire le produit du panier
+                            if (product.stock_actuel <= 0) {
+                                this.cart = this.cart.filter(
+                                    (p) => p.id !== product.id
+                                );
+                            } else {
+                                found.qte = product.stock_actuel; // limite à la quantité max en stock
+                            }
+                            return;
+                        }
+                        // Sinon on ajoute +1
+                        found.qte += 1;
+                    } else {
+                        // Ajout premier au panier
+                        this.cart.push({ ...product, qte: 1 });
+                    }
+                } else {
+                    const found = this.cart.find((p) => p.id === product.id);
+                    if (found) {
+                        found.qte += 1;
+                    } else {
+                        this.cart.push({ ...product, qte: 1 });
+                    }
+                }
+            },
+            //REMOVE ITEM
+            removeFromCart(product) {
+                this.store.cart = this.store.cart.filter(
+                    (p) => p.id !== product.id
+                );
+            },
+
+            cancelCart() {
+                this.store.cart = [];
+            },
+
+            //GET ALL AGENTS SERVEUR
+            getAllServeursServices() {
+                if (location.pathname === "/serveurs") {
+                    this.isDataLoading = true;
+                }
+                if (location.pathname === "/serveurs") {
+                    get("/serveurs.all")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.serveurs = data.users;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                } else {
+                    get("/serveurs.services")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.serveurs = data.serveurs;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
+            },
+
+            viewAllTables() {
+                if (location.pathname === "/orders.portal") {
+                    this.isDataLoading = true;
+                }
+                this.refreshUserOrderSession();
+                const validPath = true;
+                if (validPath) {
+                    const session = JSON.parse(localStorage.getItem("user"));
+                    let url = session
+                        ? `/tables.all?place=${session.emplacement_id}`
+                        : "/tables.all";
+                    get(url)
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.tables = data.tables;
+                            this.chambres = data.chambres;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
+            },
+
+            goToUserOrderSession(user) {
+                localStorage.setItem("user", JSON.stringify(user));
+                location.href = "/orders.portal";
+            },
+
+            goToOrderPannel(table, isTable = false) {
+                if (this.operation) {
+                    this.selectedTables.push(table);
+                    if (this.selectedTables.length === 2) {
+                        if (this.operation === "transfert") {
+                            let source = this.selectedTables.find(
+                                (t) => t.statut === "occupée"
+                            );
+                            let cible = this.selectedTables.find(
+                                (t) => t.statut === "libre"
+                            );
+
+                            if (!source || !cible) {
+                                $.toast({
+                                    heading: "Erreur de transfert",
+                                    text: "Choisissez une table occupée et une table libre !",
+                                    position: "top-right",
+                                    loaderBg: "#49f3ff",
+                                    icon: "info",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            } else {
+                                this.triggerOperation({
+                                    op: "transfert",
+                                    source_id: source.id,
+                                    cible_id: cible.id,
+                                });
+                            }
+                        }
+
+                        if (this.operation === "combiner") {
+                            let tablesOccupees = this.selectedTables.filter(
+                                (t) => t.statut === "occupée"
+                            );
+                            if (tablesOccupees.length !== 2) {
+                                $.toast({
+                                    heading: "Erreur de combinaison",
+                                    text: "Choisissez deux tables occupées !",
+                                    position: "top-right",
+                                    loaderBg: "#ff5733",
+                                    icon: "error",
+                                    hideAfter: 3000,
+                                    stack: 6,
+                                });
+                            } else {
+                                this.triggerOperaation({
+                                    op: "combiner",
+                                    table1_id: tablesOccupees[0].id,
+                                    table2_id: tablesOccupees[1].id,
+                                });
+                            }
+                        }
+                        // reset toujours après deux sélections
+                        this.selectedTables = [];
+                        this.operation = "";
+                    }
+                    return;
+                }
+
+                if (table.statut === "occupée" && !isTable) {
+                    this.selectedPendingTable = table;
+                    $(".modal-commande").modal("show");
+                    return;
+                }
+                localStorage.removeItem("table");
+                localStorage.removeItem("chambre");
+                localStorage.setItem("table", JSON.stringify(table));
+                location.href = "/orders.interface";
+            },
+
+            refreshUserOrderSession() {
+                const data = localStorage.getItem("user");
+                this.session = JSON.parse(data);
+            },
+
+            refreshTableData() {
+                if (location.pathname === "/orders.interface") {
+                    if (localStorage.getItem("table")) {
+                        const data = localStorage.getItem("table");
+                        this.table = JSON.parse(data);
+                    }
+                    if (localStorage.getItem("chambre")) {
+                        const data = localStorage.getItem("chambre");
+                        this.chambre = JSON.parse(data);
+                    }
+                }
+            },
+
+            viewAllCategories() {
+                const validPath = location.pathname === "/orders.interface";
+                if (validPath) {
+                    this.isDataLoading = true;
+                    get("/categories.all")
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.categories = data.categories;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
+            },
+
+            viewAllProducts() {
+                const validPath = location.pathname === "/orders.interface";
+                if (validPath) {
+                    const data = localStorage.getItem("user");
+                    const u = JSON.parse(data);
+                    get(`/products.all?emp_id=${u.emplacement_id}`)
+                        .then(({ data, status }) => {
+                            this.isDataLoading = false;
+                            this.products = data.produits;
+                        })
+                        .catch((err) => {
+                            this.isDataLoading = false;
+                        });
+                }
+            },
+
+            createFacture() {
+                const user = JSON.parse(localStorage.getItem("user"));
+                const table = JSON.parse(localStorage.getItem("table"));
+                const chambre = JSON.parse(localStorage.getItem("chambre"));
+                let details = [];
+                this.store.cart.forEach((el) => {
+                    details.push({
+                        produit_id: el.id,
+                        quantite: el.qte,
+                        prix_unitaire: el.prix_unitaire,
+                    });
+                });
+                const form = {
+                    user_id: user ? user.id : null,
+                    facture_id: this.editedCommandeId,
+                    details: details,
+                };
+                if (chambre) {
+                    form.chambre_id = chambre.id;
+                } else {
+                    form.table_id = table.id;
+                }
+                this.isLoading = true;
+                postJson("/facture.create", form)
+                    .then(({ data, status }) => {
+                        this.isLoading = false;
+                        // Gestion des erreurs
+                        if (data.errors !== undefined) {
+                            this.error = data.errors;
+                            $.toast({
+                                heading: "Echec de traitement",
+                                text: `${data.errors}`,
+                                position: "top-right",
+                                loaderBg: "#ff4949ff",
+                                icon: "error",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+                        }
+                        if (data.status === "success") {
+                            this.error = null;
+                            this.result = data.result;
+                            $.toast({
+                                heading: "Opération effectuée",
+                                text: data.message,
+                                position: "top-right",
+                                loaderBg: "#49ff5eff",
+                                icon: "success",
+                                hideAfter: 3000,
+                                stack: 6,
+                            });
+
+                            setTimeout(() => {
+                                location.href = "/orders.portal";
+                            }, 1000);
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        $.toast({
+                            heading: "Echec de traitement",
+                            text: "Veuillez réessayer plutard !",
+                            position: "top-right",
+                            loaderBg: "#ff4949ff",
+                            icon: "error",
+                            hideAfter: 3000,
+                            stack: 6,
+                        });
+                    });
+            },
+
+            printInvoiceFromJson(facture, place, copies = 3) {
+                // Génération du contenu HTML
+                const singleTicket = `
+            <div class="ticket">
+                <h2>${place.libelle}</h2>
+                <p><strong>Facture N°:</strong> ${facture.numero_facture}</p>
+                <p><strong>Date:</strong> ${this.formateDate2(
+                    facture.date_facture
+                )}</p>
+                <hr/>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Désignation</th>
+                            <th>Qté</th>
+                            <th class="right">PU</th>
+                            <th class="right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${facture.details
+                            .map(
+                                (d) => `
+                            <tr>
+                                <td>${d.produit.libelle}</td>
+                                <td>${d.quantite}</td>
+                                <td class="right">${d.prix_unitaire}</td>
+                                <td class="right">${d.total_ligne}</td>
+                            </tr>
+                        `
+                            )
+                            .join("")}
+                    </tbody>
+                </table>
+                <hr/>
+                <p class="right">Total HT: ${facture.total_ht}</p>
+                <p class="right">Remise: ${facture.remise}%</p>
+                <p class="right">TVA:  ${facture.tva}</p>
+                <h3 class="right">TOTAL TTC: ${facture.total_ttc}</h3>
+                <hr/>
+                <p class="center">Merci pour votre visite !</p>
+            </div>
+        `;
+
+                // Répéter le ticket selon le nombre de copies
+                let content = "";
+                for (let i = 0; i < copies; i++) {
+                    content +=
+                        singleTicket +
+                        '<div style="page-break-after: always;"></div>';
+                }
+
+                const style = `
+            <style>
+                *, *::before, *::after { box-sizing: border-box; }
+                body { font-family: 'Courier New', monospace; font-size: 14px; margin: 0; padding: 0; }
+                .ticket { width: 240px; max-width: 100%; margin: 0 auto; padding: 10px; }
+                h2 { text-align: center; margin: 0 0 10px; font-size: 16px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+                th, td { padding: 2px 0; font-size: 12px; }
+                th { border-bottom: 1px dashed #000; text-align: left; }
+                td { vertical-align: top; }
+                .right { text-align: right; }
+                .center { text-align: center; }
+                hr { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+                @media print {
+                    body { margin: 0; padding: 0; }
+                    .ticket { width: 100%; max-width: 240px; margin: 0 auto; }
+                    table, th, td { border: none; }
+                }
+            </style>
+        `;
+
+                const printWindow = window.open("", "", "height=600,width=400");
+                printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Facture ${facture.numero_facture}</title>
+                    ${style}
+                </head>
+                <body>${content}</body>
+            </html>
+        `);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            },
+        },
+
+        computed: {
+            cart() {
+                return this.store.cart;
+            },
+
+            allProducts() {
+                if (this.search) {
+                    return this.products.filter((p) =>
+                        p.libelle
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase())
+                    );
+                }
+                return this.products;
+            },
+
+            allCategories() {
+                return this.categories;
+            },
+
+            userSession() {
+                return this.session;
+            },
+
+            selectedTable() {
+                return this.table;
+            },
+
+            selectedChambre() {
+                return this.chambre;
+            },
+
+            totalGlobal() {
+                return this.cart.reduce((sum, item) => {
+                    return sum + item.prix_unitaire * item.qte;
+                }, 0);
+            },
+
+            totalQte() {
+                return this.cart.reduce((somme, item) => {
+                    return somme + (item.qte || 0);
+                }, 0);
+            },
+
+            allTables() {
+                return this.tables;
+            },
+
+            allChambres() {
+                return this.chambres;
+            },
+
+            allServeurs() {
+                return this.serveurs;
+            },
+
+            formateDate2() {
+                return (date) =>
+                    moment(date, "YYYY-MM-DD HH:mm")
+                        .locale("fr")
+                        .format("DD MMMM YYYY");
+                // ex: "14 avril 2021"
+            },
+            formateDate() {
+                return (date) =>
+                    moment(date, "DD/MM/YYYY HH:mm")
+                        .locale("fr")
+                        .format("DD MMMM YYYY");
+                // ex: "14 avril 2021"
+            },
+
+            formateTime() {
+                return (date) =>
+                    moment(date, "DD/MM/YYYY HH:mm")
+                        .locale("fr")
+                        .format("hh:mm");
+                // ex: "03:13 AM"
+            },
+
+            getTableOperationColorClass() {
+                let borderClass = "border-primary";
+                switch (this.operation) {
+                    case "transfert":
+                        borderClass = "border-info";
+                        break;
+                    case "combiner":
+                        borderClass = "border-success";
+                        break;
+                    case "reservation":
+                        borderClass = "border-info";
+                        break;
+                    default:
+                        borderClass = "border-primary";
+                        break;
+                }
+                return borderClass;
+            },
+
+            getTextColor() {
+                return (hex) => {
+                    // Supprimer le # si présent
+                    hex = hex.replace("#", "");
+                    // Convertir en valeurs RGB
+                    let r = parseInt(hex.substr(0, 2), 16);
+                    let g = parseInt(hex.substr(2, 2), 16);
+                    let b = parseInt(hex.substr(4, 2), 16);
+
+                    // Calcul de la luminance
+                    let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                    return luminance > 186 ? "#000000" : "#ffffff";
+                };
+            },
+
+            checkServiceStatus() {
+                return (cmds) => {
+                    return cmds.some(
+                        (item) => item.statut_service === "servie"
+                    );
+                };
+            },
+        },
+    });
+});

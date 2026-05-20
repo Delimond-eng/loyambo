@@ -1,0 +1,276 @@
+4:<div class="content-wrapper">
+5:    <div class="container-full">
+6:        <div class="content-header">
+7:            <div class="d-flex align-items-center">
+8:               <div class="col-xl-12">
+16:                <div class="col-12">
+18:                        <div class="box-header with-border p-5 text-center">
+19:                            <h4 class="box-title">Finances - recettes et tresorerie</h4>
+20:                            <p class="text-muted">Analyse des encaissements par periode, service, emplacement, mode de paiement et devise.</p>
+23:                        <!-- Filtres -->
+24:                        <div class="box-body">
+26:                                <div class="row mb-4">
+27:                                    <div class="col-md-2">
+29:                                        <select name="service_type" id="service_type" class="form-control">
+38:                                    <div class="col-md-2">
+40:                                        <select name="emplacement_id" id="emplacement_id" class="form-control">
+43:                                                <option value="{{ $emplacement->id }}" {{ request('emplacement_id') == $emplacement->id ? 'selected' : '' }}>
+44:                                                    {{ $emplacement->libelle }}
+49:                                    <div class="col-md-2">
+51:                                        <select name="caissier_id" id="caissier_id" class="form-control">
+54:                                                <option value="{{ $caissier->id }}" {{ request('caissier_id') == $caissier->id ? 'selected' : '' }}>
+55:                                                    {{ $caissier->name }}
+60:                                    <div class="col-md-2">
+62:                                        <select name="mode" id="mode" class="form-control">
+71:                                    <div class="col-md-2">
+73:                                        <select name="devise" id="devise" class="form-control">
+76:                                                <option value="{{ $devise->devise }}" {{ request('devise') == $devise->devise ? 'selected' : '' }}>
+77:                                                    {{ $devise->devise }}
+82:                                    <div class="col-md-2">
+84:                                        <div class="input-group">
+85:                                            <input type="date" name="date_debut" id="date_debut" class="form-control" value="{{ request('date_debut') }}" placeholder="Debut">
+86:                                            <input type="date" name="date_fin" id="date_fin" class="form-control" value="{{ request('date_fin') }}" placeholder="Fin">
+91:                                    <div class="col-md-12 d-flex justify-content-center">
+92:                                        <div class="text-center">
+93:                                            <button type="submit" class="btn btn-primary">
+94:                                                <i class="fa fa-filter"></i> Appliquer les filtres
+96:                                            <a href="{{ route('reports.finances') }}" class="btn btn-secondary">
+97:                                                <i class="fa fa-refresh"></i> Reinitialiser
+99:                                            <a href="{{ route('reports.finances.export.pdf', request()->query()) }}" class="btn btn-outline-danger ms-2">
+100:                                                <i class="fa fa-file-pdf"></i> Export PDF
+102:                                            <a href="{{ route('reports.finances.export.excel', request()->query()) }}" class="btn btn-outline-success ms-1">
+103:                                                <i class="fa fa-file-excel"></i> Export Excel
+111:                        <!-- Statistiques principales DYNAMIQUES -->
+112:                        <div class="box-body">
+113:                            <div class="row mb-4">
+114:                                <div class="col-xl-3 col-md-6 mb-3">
+115:                                    <div class="box bg-primary text-white h-100">
+116:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+118:                                                <h2 class="mb-0">{{ number_format($stats['total_recettes'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+119:                                                <p class="mb-0">Recettes Totales</p>
+125:                                <div class="col-xl-3 col-md-6 mb-3">
+126:                                    <div class="box bg-success text-white h-100">
+127:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+129:                                                <h2 class="mb-0">{{ number_format($stats['recettes_aujourdhui'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+130:                                                <p class="mb-0">Aujourd'hui</p>
+132:                                            <small>{{ now()->format('d/m/Y') }}</small>
+136:                                <div class="col-xl-3 col-md-6 mb-3">
+137:                                    <div class="box bg-info text-white h-100">
+138:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+140:                                                <h2 class="mb-0">{{ number_format($stats['recettes_semaine'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+141:                                                <p class="mb-0">Cette Semaine</p>
+143:                                            <small>{{ now()->startOfWeek()->format('d/m') }} - {{ now()->endOfWeek()->format('d/m/Y') }}</small>
+147:                                <div class="col-xl-3 col-md-6 mb-3">
+148:                                    <div class="box bg-warning text-white h-100">
+149:                                        <div class="box-body text-center d-flex flex-column justify-content-between" style="min-height: 140px;">
+151:                                                <h2 class="mb-0">{{ number_format($stats['recettes_mois'] ?? 0, 0, ',', ' ') }} {{ $stats_devise_principale ?? 'CDF' }}</h2>
+152:                                                <p class="mb-0">Ce Mois</p>
+154:                                            <small>{{ now()->format('F Y') }}</small>
+160:                            <!-- Onglets -->
+162:                                <div class="col-12">
+164:                                        <div class="box-header">
+165:                                            <ul class="nav nav-tabs" role="tablist">
+166:                                                <li class="nav-item">
+167:                                                    <a class="nav-link active" data-bs-toggle="tab" href="#modes">
+168:                                                        <i class="fa fa-credit-card"></i> Modes de Paiement
+171:                                                <li class="nav-item">
+172:                                                    <a class="nav-link" data-bs-toggle="tab" href="#emplacements">
+173:                                                        <i class="fa fa-store"></i> Par Emplacement
+176:                                                <li class="nav-item">
+177:                                                    <a class="nav-link" data-bs-toggle="tab" href="#caissiers">
+178:                                                        <i class="fa fa-user"></i> Performance Caissiers
+181:                                                <li class="nav-item">
+182:                                                    <a class="nav-link" data-bs-toggle="tab" href="#graphiques">
+183:                                                        <i class="fa fa-chart-bar"></i> Graphiques
+186:                                                <li class="nav-item">
+187:                                                    <a class="nav-link" data-bs-toggle="tab" href="#details">
+188:                                                        <i class="fa fa-list"></i> Détail des Paiements
+193:                                        <div class="box-body">
+194:                                            <div class="tab-content">
+195:                                                <!-- Tab Modes de Paiement -->
+196:                                                <div class="tab-pane fade show active" id="modes" role="tabpanel">
+201:                                                            $pourcentage = $total_recettes > 0 ? ($stat->total / $total_recettes) * 100 : 0;
+202:                                                            $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+204:                                                        <div class="col-md-4 mb-3">
+205:                                                            <div class="card border-0 shadow-sm ">
+206:                                                                <div class="card-body text-center d-flex flex-column justify-content-between">
+208:                                                                        <h5 class="card-title text-uppercase text-primary">
+209:                                                                            @if($stat->mode == 'cash') Espèces
+210:                                                                            @elseif($stat->mode == 'card') Carte
+211:                                                                            @elseif($stat->mode == 'mobile') Mobile
+212:                                                                            @elseif($stat->mode == 'virement') Virement
+213:                                                                            @elseif($stat->mode == 'cheque') Chèque
+214:                                                                            @else {{ $stat->mode }}
+217:                                                                        <h3 class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</h3>
+218:                                                                        <p class="text-muted">{{ $stat->nombre }} transactions</p>
+221:                                                                        <div class="progress-bar bg-success" style="width: {{ $pourcentage }}%">
+230:                                                    @if($stats_modes->count() == 0)
+231:                                                    <div class="alert alert-info text-center">
+232:                                                        <i class="fa fa-info-circle"></i> Aucun paiement trouvé avec les critères sélectionnés.
+237:                                                <!-- Tab Par Emplacement -->
+238:                                                <div class="tab-pane fade" id="emplacements" role="tabpanel">
+239:                                                    @if($stats_emplacements->count() > 0)
+240:                                                    <div class="table-responsive">
+241:                                                        <table class="table table-bordered table-hover">
+243:                                                                <tr class="bg-light">
+245:                                                                    <th class="text-center">Nombre de Paiements</th>
+246:                                                                    <th class="text-end">Montant Total</th>
+247:                                                                    <th class="text-center">Part du Total</th>
+254:                                                                        $pourcentage = $total_recettes > 0 ? ($stat->total / $total_recettes) * 100 : 0;
+255:                                                                        $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+259:                                                                            <strong>{{ $stat->libelle }}</strong>
+261:                                                                        <td class="text-center">
+262:                                                                            <span class="badge bg-primary">{{ $stat->nombre }}</span>
+264:                                                                        <td class="text-end">
+265:                                                                            <strong class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</strong>
+267:                                                                        <td class="text-center">
+268:                                                                            <span class="badge bg-info">{{ number_format($pourcentage, 1) }}%</span>
+276:                                                    <div class="alert alert-info text-center">
+277:                                                        <i class="fa fa-info-circle"></i> Aucun emplacement avec des paiements trouvé.
+282:                                                <!-- Tab Performance Caissiers -->
+283:                                                <div class="tab-pane fade" id="caissiers" role="tabpanel">
+284:                                                    @if($stats_caissiers->count() > 0)
+285:                                                    <div class="table-responsive">
+286:                                                        <table class="table table-bordered table-hover">
+288:                                                                <tr class="bg-light">
+290:                                                                    <th class="text-center">Nombre de Paiements</th>
+291:                                                                    <th class="text-end">Montant Total</th>
+292:                                                                    <th class="text-center">Moyenne par Paiement</th>
+298:                                                                        $moyenne = ($stat->nombre > 0 && $stat->total > 0) ? $stat->total / $stat->nombre : 0;
+299:                                                                        $devise_stat = $stat->devise ?? $stats_devise_principale ?? 'CDF';
+303:                                                                            <strong>{{ $stat->name ?? 'N/A' }}</strong>
+305:                                                                        <td class="text-center">
+306:                                                                            <span class="badge bg-primary">{{ $stat->nombre }}</span>
+308:                                                                        <td class="text-end">
+309:                                                                            <strong class="text-success">{{ number_format($stat->total, 0, ',', ' ') }} {{ $devise_stat }}</strong>
+311:                                                                        <td class="text-center">
+312:                                                                            <span class="badge bg-info">{{ number_format($moyenne, 0, ',', ' ') }} {{ $devise_stat }}</span>
+320:                                                    <div class="alert alert-info text-center">
+321:                                                        <i class="fa fa-info-circle"></i> Aucun caissier trouvé avec des paiements.
+326:                                                <!-- Tab Graphiques -->
+327:                                                <div class="tab-pane fade" id="graphiques" role="tabpanel">
+329:                                                        <!-- Graphique 1: Répartition par mode de paiement -->
+330:                                                        <div class="col-md-6 mb-4">
+332:                                                                <div class="card-header bg-primary text-white">
+333:                                                                    <h5 class="card-title mb-0">
+334:                                                                        <i class="fa fa-pie-chart"></i> Modes de Paiement ({{ $stats_devise_principale ?? 'CDF' }})
+337:                                                                <div class="card-body">
+343:                                                        <!-- Graphique 2: Répartition par devise -->
+344:                                                        <div class="col-md-6 mb-4">
+346:                                                                <div class="card-header bg-success text-white">
+347:                                                                    <h5 class="card-title mb-0">
+348:                                                                        <i class="fa fa-money"></i> Répartition par Devise
+351:                                                                <div class="card-body">
+357:                                                        <!-- Graphique 3: Performance par emplacement -->
+358:                                                        <div class="col-md-6 mb-4">
+360:                                                                <div class="card-header bg-info text-white">
+361:                                                                    <h5 class="card-title mb-0">
+362:                                                                        <i class="fa fa-bar-chart"></i> Recettes par Emplacement ({{ $stats_devise_principale ?? 'CDF' }})
+365:                                                                <div class="card-body">
+371:                                                        <!-- Graphique 4: Performance des caissiers -->
+372:                                                        <div class="col-md-6 mb-4">
+374:                                                                <div class="card-header bg-warning text-white">
+375:                                                                    <h5 class="card-title mb-0">
+376:                                                                        <i class="fa fa-users"></i> Top Caissiers ({{ $stats_devise_principale ?? 'CDF' }})
+379:                                                                <div class="card-body">
+385:                                                        <!-- Graphique 5: Évolution mensuelle -->
+386:                                                        <div class="col-12 mb-4">
+388:                                                                <div class="card-header bg-danger text-white">
+389:                                                                    <h5 class="card-title mb-0">
+390:                                                                        <i class="fa fa-line-chart"></i> Évolution des Recettes ({{ $stats_devise_principale ?? 'CDF' }})
+393:                                                                <div class="card-body">
+403:                                                <!-- Tab Détail des Paiements -->
+404:                                                <div class="tab-pane fade" id="details" role="tabpanel">
+405:                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+407:                                                        <button class="btn btn-sm btn-info" onclick="exporterExcel()">
+408:                                                            <i class="fa fa-download"></i> Exporter
+411:                                                    @if($paiements->count() > 0)
+412:                                                        <div class="table-responsive">
+413:                                                            <table class="table table-bordered table-hover" id="table-paiements">
+415:                                                                    <tr class="bg-light">
+420:                                                                        <th class="text-end">Montant</th>
+429:                                                                            $devise_paiement = $paiement->devise ?? $paiement->facture->devise ?? 'CDF';
+431:                                                                        <tr class="payment-row" data-payment-id="{{ $paiement->id }}" style="cursor: pointer;">
+433:                                                                                {{ \Carbon\Carbon::parse($paiement->pay_date)->format('d/m/Y H:i') }}
+436:                                                                                @if($paiement->facture)
+437:                                                                                    <strong>{{ $paiement->facture->numero_facture ?? 'N/A' }}</strong>
+439:                                                                                    <span class="text-muted">-</span>
+443:                                                                                <span class="badge bg-secondary">{{ $paiement->emplacement->libelle ?? 'N/A' }}</span>
+447:                                                                                    @if($paiement->mode == 'cash') bg-success
+448:                                                                                    @elseif($paiement->mode == 'card') bg-primary
+449:                                                                                    @elseif($paiement->mode == 'mobile') bg-info
+450:                                                                                    @else bg-warning @endif">
+451:                                                                                    @if($paiement->mode == 'cash') Espèces
+452:                                                                                    @elseif($paiement->mode == 'card') Carte
+453:                                                                                    @elseif($paiement->mode == 'mobile') Mobile
+454:                                                                                    @elseif($paiement->mode == 'virement') Virement
+455:                                                                                    @elseif($paiement->mode == 'cheque') Chèque
+456:                                                                                    @else {{ $paiement->mode }}
+460:                                                                            <td class="text-end">
+461:                                                                                <strong class="text-success">{{ number_format($paiement->amount, 0, ',', ' ') }}</strong>
+463:                                                                            <td class="text-center">
+464:                                                                                <span class="badge bg-dark text-white">{{ $devise_paiement }}</span>
+467:                                                                                <small>{{ $paiement->user->name ?? 'N/A' }}</small>
+469:                                                                            <td class="text-center">
+470:                                                                                <button class="btn btn-sm btn-outline-primary view-payment" data-payment-id="{{ $paiement->id }}">
+471:                                                                                    <i class="fa fa-eye"></i>
+481:                                                        <div class="alert alert-info text-center">
+482:                                                            <i class="fa fa-info-circle"></i> Aucun paiement trouvé avec les critères sélectionnés.
+499:<!-- Modal pour les détails du paiement -->
+500:<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+501:    <div class="modal-dialog modal-lg">
+502:        <div class="modal-content">
+503:            <div class="modal-header bg-primary text-white">
+504:                <h5 class="modal-title" id="paymentModalLabel">Détails du Paiement</h5>
+505:                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+507:            <div class="modal-body" id="paymentDetails">
+508:                <!-- Les détails seront chargés ici -->
+510:            <div class="modal-footer">
+511:                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+526:    const table = document.getElementById('table-paiements');
+532:    const url = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(html);
+541:    fetch(`/reports/payment-details/${paymentId}`)
+553:                        <div class="col-md-6">
+555:                            <table class="table table-bordered">
+558:                                    <td>${new Date(payment.pay_date).toLocaleString('fr-FR')}</td>
+562:                                    <td>${payment.amount.toLocaleString('fr-FR')} ${devisePaiement}</td>
+566:                                    <td><span class="badge bg-primary">${payment.mode}</span></td>
+582:                        <div class="col-md-6">
+591:                        <table class="table table-bordered">
+598:                                <td>${new Date(payment.facture.date_facture).toLocaleDateString('fr-FR')}</td>
+602:                                <td>${payment.facture.total_ttc?.toLocaleString('fr-FR') || 'N/A'} ${deviseFacture}</td>
+606:                                <td><span class="badge ${payment.facture.statut === 'payée' ? 'bg-success' : 'bg-warning'}">${payment.facture.statut}</span></td>
+611:                    detailsHTML += `<p class="text-muted">Aucune facture associée</p>`;
+624:                        <div class="row mt-3">
+625:                            <div class="col-12">
+627:                                <div class="table-responsive">
+628:                                    <table class="table table-sm table-bordered">
+630:                                            <tr class="bg-light">
+632:                                                <th class="text-end">Prix Unitaire</th>
+633:                                                <th class="text-center">Quantité</th>
+634:                                                <th class="text-end">Sous-Total</th>
+646:                                <td class="text-end">${detail.prix_unitaire?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</td>
+647:                                <td class="text-center">${detail.quantite || '0'}</td>
+648:                                <td class="text-end">${detail.total?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</td>
+656:                                            <tr class="bg-light">
+657:                                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+658:                                                <td class="text-end"><strong>${payment.facture.total_ttc?.toLocaleString('fr-FR') || '0'} ${deviseFacture}</strong></td>
+682:    document.querySelectorAll('.payment-row').forEach(row => {
+684:            const paymentId = this.getAttribute('data-payment-id');
+690:    document.querySelectorAll('.view-payment').forEach(button => {
+693:            const paymentId = this.getAttribute('data-payment-id');
+698:    // Auto-submit des filtres principaux
+963:            ctxEvolution.innerHTML = '<div class="text-center p-4 text-muted">Aucune donnée disponible pour l\'évolution mensuelle</div>';
+970:.payment-row:hover {
+971:    background-color: #f8f9fa !important;
+972:    transform: translateY(-1px);
+979:    transform: translateY(-2px);
+980:    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+985:.progress-bar {
+986:    font-size: 12px;
+987:    line-height: 20px;
+989:.nav-tabs .nav-link.active {
+990:    font-weight: bold;
+991:    border-bottom: 3px solid #3498db;
+994:    background-color: #f8f9fa !important;
+995:    font-weight: 600;

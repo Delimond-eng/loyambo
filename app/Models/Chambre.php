@@ -17,6 +17,8 @@ class Chambre extends Model
         "type",
         "capacite",
         "prix",
+        "prix_nuit",
+        "prix_passage",
         "prix_devise",
         "emplacement_id",
         "statut",

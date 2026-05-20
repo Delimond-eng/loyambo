@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire de Stock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .products-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 2px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+
+        .products-section h2 {
+            font-size: 20px;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-item {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .product-item:hover {
+            transform: translateX(4px);
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .product-item.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .product-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .product-meta {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .inventory-section {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+
+        .inventory-section h2 {
+            font-size: 20px;
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .inventory-table thead th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .inventory-table tbody tr {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .inventory-table tbody td {
+            padding: 16px 12px;
+            vertical-align: middle;
+        }
+
+        .inventory-table tbody tr:first-child td:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        .inventory-table tbody tr:first-child td:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        .product-cell {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .gap-cell {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .gap-positive {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .gap-negative {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .gap-zero {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .remove-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #f56565;
+            transform: scale(1.05);
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+            font-size: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .products-section {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+                max-height: 400px;
+            }
+
+            .inventory-section {
+                max-height: 500px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .products-section,
+            .inventory-section {
+                padding: 20px;
+            }
+
+            .inventory-table {
+                font-size: 13px;
+            }
+
+            .quantity-input {
+                width: 60px;
+                font-size: 13px;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Inventaire de Stock</h1>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un produit..."
+                    autocomplete="off">
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="products-section">
+                <h2>Liste des Produits</h2>
+                <div id="productList" class="product-list"></div>
+                <div id="noResults" class="no-results" style="display: none;">
+                    Aucun produit trouvé
+                </div>
+            </div>
+
+            <div class="inventory-section">
+                <h2>Inventaire en Cours</h2>
+                <div id="emptyState" class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p>Sélectionnez des produits pour commencer l'inventaire</p>
+                </div>
+                <div id="inventoryTableContainer" style="display: none;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Qté Théorique</th>
+                                <th>Qté Réelle</th>
+                                <th>Écart</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span id="totalProducts" class="stat-value">0</span>
+                <span class="stat-label">Produits inventoriés</span>
+            </div>
+            <div class="stat-item">
+                <span id="totalGap" class="stat-value">0</span>
+                <span class="stat-label">Écart total</span>
+            </div>
+            <div class="stat-item">
+                <span id="accuracy" class="stat-value">100%</span>
+                <span class="stat-label">Précision</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+            { id: 1, name: 'MacBook Pro 16"', category: 'Électronique', sku: 'ELEC-001', theoreticalQty: 15 },
+            { id: 2, name: 'iPhone 15 Pro', category: 'Électronique', sku: 'ELEC-002', theoreticalQty: 42 },
+            { id: 3, name: 'Chaise de Bureau Ergonomique', category: 'Mobilier', sku: 'MOBI-001', theoreticalQty: 28 },
+            { id: 4, name: 'Bureau Réglable en Hauteur', category: 'Mobilier', sku: 'MOBI-002', theoreticalQty: 12 },
+            { id: 5, name: 'Clavier Mécanique RGB', category: 'Accessoires', sku: 'ACCE-001', theoreticalQty: 65 },
+            { id: 6, name: 'Souris Sans Fil', category: 'Accessoires', sku: 'ACCE-002', theoreticalQty: 87 },
+            { id: 7, name: 'Moniteur 27" 4K', category: 'Électronique', sku: 'ELEC-003', theoreticalQty: 23 },
+            { id: 8, name: 'Casque Audio Bluetooth', category: 'Accessoires', sku: 'ACCE-003', theoreticalQty: 34 },
+            { id: 9, name: 'Webcam HD 1080p', category: 'Électronique', sku: 'ELEC-004', theoreticalQty: 19 },
+            { id: 10, name: 'Lampe de Bureau LED', category: 'Mobilier', sku: 'MOBI-003', theoreticalQty: 45 },
+            { id: 11, name: 'Tapis de Souris XXL', category: 'Accessoires', sku: 'ACCE-004', theoreticalQty: 72 },
+            { id: 12, name: 'Hub USB-C 7 Ports', category: 'Accessoires', sku: 'ACCE-005', theoreticalQty: 56 },
+        ];
+
+        let selectedProducts = new Map();
+        let filteredProducts = [...products];
+
+        function renderProducts() {
+            const productList = document.getElementById('productList');
+            const noResults = document.getElementById('noResults');
+
+            if (filteredProducts.length === 0) {
+                productList.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            productList.style.display = 'flex';
+            noResults.style.display = 'none';
+
+            productList.innerHTML = filteredProducts.map(product => {
+                const isSelected = selectedProducts.has(product.id);
+                return `
+                    <div class="product-item ${isSelected ? 'selected' : ''}" onclick="toggleProduct(${product.id})">
+                        <input
+                            type="checkbox"
+                            class="product-checkbox"
+                            ${isSelected ? 'checked' : ''}
+                            onclick="event.stopPropagation(); toggleProduct(${product.id})"
+                        >
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-meta">${product.category} • ${product.sku}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleProduct(productId) {
+            const product = products.find(p => p.id === productId);
+
+            if (selectedProducts.has(productId)) {
+                selectedProducts.delete(productId);
+            } else {
+                selectedProducts.set(productId, {
+                    ...product,
+                    realQty: product.theoreticalQty
+                });
+            }
+
+            renderProducts();
+            renderInventory();
+            updateStats();
+        }
+
+        function renderInventory() {
+            const emptyState = document.getElementById('emptyState');
+            const tableContainer = document.getElementById('inventoryTableContainer');
+            const inventoryBody = document.getElementById('inventoryBody');
+
+            if (selectedProducts.size === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tableContainer.style.display = 'block';
+
+            inventoryBody.innerHTML = Array.from(selectedProducts.values()).map(product => {
+                const gap = product.realQty - product.theoreticalQty;
+                let gapClass = 'gap-zero';
+                if (gap > 0) gapClass = 'gap-positive';
+                if (gap < 0) gapClass = 'gap-negative';
+
+                return `
+                    <tr>
+                        <td class="product-cell">${product.name}</td>
+                        <td>${product.theoreticalQty}</td>
+                        <td>
+                            <input
+                                type="number"
+                                class="quantity-input"
+                                value="${product.realQty}"
+                                min="0"
+                                onchange="updateRealQuantity(${product.id}, this.value)"
+                            >
+                        </td>
+                        <td>
+                            <span class="gap-cell ${gapClass}">
+                                ${gap > 0 ? '+' : ''}${gap}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="remove-btn" onclick="toggleProduct(${product.id})">
+                                Retirer
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateRealQuantity(productId, value) {
+            const product = selectedProducts.get(productId);
+            if (product) {
+                product.realQty = parseInt(value) || 0;
+                renderInventory();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const totalProducts = selectedProducts.size;
+            let totalGap = 0;
+            let totalTheoretical = 0;
+            let totalReal = 0;
+
+            selectedProducts.forEach(product => {
+                totalGap += (product.realQty - product.theoreticalQty);
+                totalTheoretical += product.theoreticalQty;
+                totalReal += product.realQty;
+            });
+
+            const accuracy = totalTheoretical > 0
+                ? (100 - Math.abs(totalGap / totalTheoretical * 100)).toFixed(1)
+                : 100;
+
+            document.getElementById('totalProducts').textContent = totalProducts;
+            document.getElementById('totalGap').textContent = totalGap > 0 ? `+${totalGap}` : totalGap;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+        }
+
+        function handleSearch(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            filteredProducts = products.filter(product =>
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.category.toLowerCase().includes(searchTerm) ||
+                product.sku.toLowerCase().includes(searchTerm)
+            );
+            renderProducts();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+        renderProducts();
+        updateStats();
+    </script>
+</body>
+
+</html>

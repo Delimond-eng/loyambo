@@ -16,19 +16,21 @@ use App\Models\RestaurantTable;
 use App\Models\SaleDay;
 use App\Models\User;
 use App\Models\UserLog;
+use App\Support\ReportExporter;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Permission;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
     /**
-     * Fonction permettant de commencer une journée de ventes
+     * Fonction permettant de commencer une journÃƒÂ©e de ventes
      * @param Request $request
      * @return 
     */
@@ -79,7 +81,7 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
     }
 
@@ -87,26 +89,76 @@ class AdminController extends Controller
     {
         try {
             $data = $request->validate([
-                "serveur_id"=>"required|int|exists:users,id",
-                "total_especes"=>"required|numeric",
-                "tickets_serveur"=>"required|int",
-                "tickets_emis"=>"required|int",
-                "valeur_theorique"=>"required|numeric"
+                "serveur_id" => "required|int|exists:users,id",
+                "total_especes" => "required|numeric|min:0",
+                "tickets_serveur" => "required|int|min:0",
+                "tickets_emis" => "required|int|min:0",
+                "valeur_theorique" => "required|numeric|min:0",
             ]);
             $user = Auth::user();
-            $taux = Currencie::where('ets_id', Auth::user()->ets_id)->latest('id')->value('currencie_value') ?? 0;
-            $saleDay = SaleDay::where("ets_id", $user->ets_id)->whereNull("end_time")->latest()->first();
-            $data["caissier_id"] = $user->id;
-            $data["sale_day_id"] = $saleDay->id;
-            $data["taux"] = (double) $taux;
-            $data["rapport_date"] = Carbon::now(tz:"Africa/Kinshasa")->toDateString();
-            $result = CaisseReport::create($data);
+
+            $saleDay = $this->getOpenedSaleDay($user->ets_id);
+            if (!$saleDay) {
+                return response()->json([
+                    "errors" => "Aucune journee ouverte a cloturer.",
+                ]);
+            }
+
+            $emplacementFilter = ($user->role !== "admin" && $user->emplacement_id)
+                ? (int) $user->emplacement_id
+                : null;
+
+            $serveurStats = $this->getServeursActivitiesStats($saleDay->id, $user->ets_id, $emplacementFilter)
+                ->firstWhere("user_id", (int) $data["serveur_id"]);
+
+            if (!$serveurStats) {
+                return response()->json([
+                    "status" => "failed",
+                    "message" => "Ce serveur n'a aucune activite a cloturer pour cette journee.",
+                ], 422);
+            }
+
+            $expectedTickets = (int) $serveurStats->total_ticket;
+            $expectedTheorique = (double) $serveurStats->total_encaisse;
+
+            if (
+                (int) $data["tickets_emis"] !== $expectedTickets ||
+                abs(((double) $data["valeur_theorique"]) - $expectedTheorique) > 0.01
+            ) {
+                return response()->json([
+                    "status" => "failed",
+                    "message" => "Les donnees systeme ont change. Actualisez la liste puis recommencez.",
+                    "expected" => [
+                        "tickets_emis" => $expectedTickets,
+                        "valeur_theorique" => $expectedTheorique,
+                    ],
+                ], 409);
+            }
+
+            $taux = Currencie::where("ets_id", $user->ets_id)->latest("id")->value("currencie_value") ?? 0;
+
+            $result = CaisseReport::updateOrCreate(
+                [
+                    "serveur_id" => (int) $data["serveur_id"],
+                    "sale_day_id" => $saleDay->id,
+                ],
+                [
+                    "caissier_id" => $user->id,
+                    "rapport_date" => Carbon::now(tz: "Africa/Kinshasa")->toDateString(),
+                    "taux" => (double) $taux,
+                    "valeur_theorique" => $expectedTheorique,
+                    "tickets_emis" => $expectedTickets,
+                    "total_especes" => (double) $data["total_especes"],
+                    "tickets_serveur" => (int) $data["tickets_serveur"],
+                ]
+            );
+
             return response()->json([
                 "status" => "success",
-                "message" => "La journée du serveur clôturée avec succès.",
-                "result" => $result
+                "message" => "Le rapport serveur a ete enregistre avec succes.",
+                "result" => $result,
             ]);
-        }catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -118,72 +170,74 @@ class AdminController extends Controller
     {
         try {
             $user = Auth::user();
-            // 1. Vérifier qu'il y a une journée ouverte
-            $saleDay = SaleDay::whereNull("end_time")
-                ->where("ets_id", $user->ets_id)
-                ->latest("id")
-                ->first();
+            $saleDay = $this->getOpenedSaleDay($user->ets_id);
 
             if (!$saleDay) {
                 return response()->json([
-                    "errors" => "Aucune journée ouverte à clôturer."
+                    "errors" => "Aucune journee ouverte a cloturer.",
                 ]);
             }
 
-            // 2. Récupérer tous les serveurs ayant fait des factures dans cette journée
-            $serveursAvecFactures = Facture::where("sale_day_id", $saleDay->id)
+            $serveursActifs = $this->getServeursActivitiesStats($saleDay->id, $user->ets_id);
+            $serveursAvecActivite = $serveursActifs
                 ->pluck("user_id")
                 ->unique();
 
-            // 3. Récupérer tous les serveurs ayant déjà un rapport de caisse
             $serveursAvecRapport = CaisseReport::where("sale_day_id", $saleDay->id)
                 ->pluck("serveur_id")
                 ->unique();
 
-            // 4. Identifier les serveurs qui n'ont pas encore de rapport
-            $serveursManquants = $serveursAvecFactures->diff($serveursAvecRapport);
+            $serveursManquants = $serveursAvecActivite->diff($serveursAvecRapport);
 
             if ($serveursManquants->isNotEmpty()) {
-                // Charger les infos des serveurs manquants
-                $serveursInfos = User::with("emplacement")->whereIn("id", $serveursManquants)->get();
+                $serveursInfos = $serveursActifs
+                    ->whereIn("user_id", $serveursManquants)
+                    ->sortByDesc("total_encaisse")
+                    ->values();
+
                 return response()->json([
                     "status" => "failed",
-                    "message" => "Impossible de clôturer, serveurs connectés !",
-                    "serveurs" => $serveursInfos
+                    "message" => "Impossible de cloturer: certains serveurs actifs n'ont pas encore remis leur rapport.",
+                    "serveurs" => $serveursInfos,
+                    "missing_count" => $serveursInfos->count(),
+                    "missing_total_encaisse" => (double) $serveursInfos->sum("total_encaisse"),
                 ]);
             }
-            // 5. Tout est OK → clôturer la journée
-            $saleDay->update([
-                "end_time" => Carbon::now()->setTimezone("Africa/Kinshasa")
-            ]);
 
-            // 6. Mettre à jour les logs utilisateurs
-            UserLog::where("sale_day_id", $saleDay->id)
-                ->whereNull("logged_out_at")
-                ->update([
-                    "logged_out_at" => Carbon::now(),
-                    "status" => "offline"
+            $now = Carbon::now("Africa/Kinshasa");
+            DB::transaction(function () use ($saleDay, $user, $now) {
+                $saleDay->update([
+                    "end_time" => $now,
                 ]);
-            // 7. Bloquer l'accès
-            $accessAllow = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
-            if ($accessAllow) {
-                $accessAllow->update(["allowed" => false]);
-            }
+
+                UserLog::where("sale_day_id", $saleDay->id)
+                    ->whereNull("logged_out_at")
+                    ->update([
+                        "logged_out_at" => $now,
+                        "status" => "offline",
+                    ]);
+
+                $accessAllow = AccessAllow::where("ets_id", $user->ets_id)->latest()->first();
+                if ($accessAllow) {
+                    $accessAllow->update(["allowed" => false]);
+                }
+            });
+
             return response()->json([
                 "status" => "success",
-                "message" => "La journée a été clôturée avec succès.",
+                "message" => "La journee a ete cloturee avec succes.",
                 "saleDay" => $saleDay,
-                "report_url" => "caisse.day.report/".$saleDay->id,
+                "report_url" => "caisse.day.report/" . $saleDay->id,
             ]);
 
-        }catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
             return response()->json(['errors' => $errors]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
     }
 
@@ -238,46 +292,88 @@ class AdminController extends Controller
     public function getAllServeursServices(Request $request)
     {
         $user = Auth::user();
-        $saleDay = SaleDay::where("ets_id", $user->ets_id)
-            ->whereNull("end_time")
-            ->latest()
-            ->first();
+        $saleDay = $this->getOpenedSaleDay($user->ets_id);
 
         if (!$saleDay) {
             return response()->json([
                 "status" => "error",
-                "message" => "Aucune journée de vente active trouvée."
+                "message" => "Aucune journÃƒÂ©e de vente active trouvÃƒÂ©e."
             ]);
         }
 
-        $req = Facture::with("user.lastLog")
-            ->selectRaw("user_id, SUM(total_ttc) as total_encaisse, COUNT(id) as total_ticket")
-            ->where("sale_day_id", $saleDay->id)
-            ->whereHas("user", function ($q) {
-                $q->where("role", "serveur");
-            })
-            ->where("statut", "payée")
-            ->where("ets_id", $user->ets_id);
-        // Si l'utilisateur n'est pas admin, filtrer selon l'emplacement
-        if ($user->role !== "admin" && $user->emplacement_id) {
-            $req->where("emplacement_id", $user->emplacement_id);
-        }
-        $serveurs = $req->groupBy("user_id")->get();
-        // Ajout du statut du rapport
-        $serveurs->transform(function ($srv) use ($saleDay, $user) {
-            $rapport = CaisseReport::where("serveur_id", $srv->user_id)
-                ->where("sale_day_id", $saleDay->id)
-                ->where("caissier_id", $user->id)
-                ->first();
-            $srv->rapport_statut = $rapport ? "done" : "none";
-            $srv->rapport_id = $rapport->id ?? null;
-            return $srv;
-        });
+        $emplacementFilter = ($user->role !== "admin" && $user->emplacement_id)
+            ? (int) $user->emplacement_id
+            : null;
+
+        $serveurs = $this->getServeursActivitiesStats($saleDay->id, $user->ets_id, $emplacementFilter);
 
         return response()->json([
             "status" => "success",
             "serveurs" => $serveurs
         ]);
+    }
+
+    private function getOpenedSaleDay(int $etsId): ?SaleDay
+    {
+        return SaleDay::whereNull("end_time")
+            ->where("ets_id", $etsId)
+            ->latest("id")
+            ->first();
+    }
+
+    private function getServeursActivitiesStats(int $saleDayId, int $etsId, ?int $emplacementId = null): Collection
+    {
+        $query = Facture::with("user.lastLog", "user.emplacement")
+            ->selectRaw("user_id, COUNT(id) as total_ticket")
+            ->selectRaw("
+                SUM(
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM payments
+                            WHERE payments.facture_id = factures.id
+                        )
+                        THEN total_ttc
+                        ELSE 0
+                    END
+                ) as total_encaisse
+            ")
+            ->where("sale_day_id", $saleDayId)
+            ->where("ets_id", $etsId)
+            ->whereNotIn("statut", ["annulee", "annulée", "annulÃ©e", "annulÃƒÂ©e"])
+            ->whereHas("user", function ($q) use ($etsId) {
+                $q->where("role", "serveur")
+                    ->where("ets_id", $etsId);
+            });
+
+        if (!is_null($emplacementId)) {
+            $query->where("emplacement_id", $emplacementId);
+        }
+
+        $serveurs = $query
+            ->groupBy("user_id")
+            ->get();
+
+        $reportsByServeur = CaisseReport::where("sale_day_id", $saleDayId)
+            ->orderByDesc("id")
+            ->get()
+            ->unique("serveur_id")
+            ->keyBy("serveur_id");
+
+        return $serveurs
+            ->map(function ($srv) use ($reportsByServeur) {
+                $rapport = $reportsByServeur->get((int) $srv->user_id);
+                $srv->serveur_id = (int) $srv->user_id;
+                $srv->total_encaisse = (double) $srv->total_encaisse;
+                $srv->total_ticket = (int) $srv->total_ticket;
+                $srv->montant_vendu = (double) $srv->total_encaisse;
+                $srv->factures_actives = (int) $srv->total_ticket;
+                $srv->rapport_statut = $rapport ? "done" : "none";
+                $srv->rapport_id = $rapport->id ?? null;
+                $srv->rapport_caissier_id = $rapport->caissier_id ?? null;
+                return $srv;
+            })
+            ->values();
     }
 
 
@@ -306,12 +402,12 @@ class AdminController extends Controller
             $permissionNames = Permission::whereIn('id', $data['permissions'])
                                 ->pluck('name')
                                 ->toArray();
-            \Log::info('Permissions à synchroniser: ', $permissionNames);
+            \Log::info('Permissions ÃƒÂ  synchroniser: ', $permissionNames);
             // Synchroniser les permissions
             $user->syncPermissions($permissionNames);
             return response()->json([
                 'status'=>'success',
-                'message' => 'Permissions mises à jour avec succès',
+                'message' => 'Permissions mises ÃƒÂ  jour avec succÃƒÂ¨s',
                 'result' => $user->getAllPermissions()
             ]);
         }
@@ -322,7 +418,7 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
         
     }
@@ -346,7 +442,7 @@ class AdminController extends Controller
            
             return response()->json([
                 'status'=>'success',
-                'message' => 'Nouveau emplacement créé avec succès !',
+                'message' => 'Nouveau emplacement crÃƒÂ©ÃƒÂ© avec succÃƒÂ¨s !',
                 'result' => $emplacement
             ]);
         }
@@ -357,7 +453,7 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
     }
 
@@ -406,10 +502,10 @@ class AdminController extends Controller
             $emplacement = Emplacement::find($data["emplacement_id"]);
 
 
-            if($emplacement->type === 'hôtel'){
+            if($emplacement->type === 'hÃƒÂ´tel'){
                 $check = Chambre::where("numero",$data["numero"])->whereNot("id", $data["id"] ?? '')->where("ets_id", Auth::user()->ets_id)->first();
                 if($check && $check->emplacement_id === $data['emplacement_id']){
-                    return response()->json(["errors"=> "Numéro de la table existe déjà."]);
+                    return response()->json(["errors"=> "NumÃƒÂ©ro de la table existe dÃƒÂ©jÃƒÂ ."]);
                 }
                 $result = Chambre::updateOrCreate(["numero"=>$data["numero"]],[
                     "numero"=>$data["numero"], 
@@ -423,7 +519,7 @@ class AdminController extends Controller
             }else{
                 $check = RestaurantTable::where("numero",$data["numero"])->whereNot("id", $data["id"])->where("ets_id", Auth::user()->ets_id)->first();
                 if($check && $check->emplacement_id === $data['emplacement_id']){
-                    return response()->json(["errors"=> "Numéro de la table existe déjà."]);
+                    return response()->json(["errors"=> "NumÃƒÂ©ro de la table existe dÃƒÂ©jÃƒÂ ."]);
                 }
                 $result = RestaurantTable::updateOrCreate($cdts,[
                     "numero"=>$data["numero"], 
@@ -433,7 +529,7 @@ class AdminController extends Controller
             }
             return response()->json([
                 'status'=>'success',
-                'message' => 'Nouvelle table créée avec succès !',
+                'message' => 'Nouvelle table crÃƒÂ©ÃƒÂ©e avec succÃƒÂ¨s !',
                 'result' => $result,
             ]);
         }
@@ -443,7 +539,7 @@ class AdminController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         } catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
     }
 
@@ -456,7 +552,7 @@ class AdminController extends Controller
         $query = RestaurantTable::with([
             "emplacement",
             "commandes" => function ($query) {
-                $query->where("statut", "!=", "payée")
+                $query->where("statut", "!=", "payÃƒÂ©e")
                     ->with(["details.produit"]);
             }
         ])->where("ets_id", $user->ets_id);
@@ -495,7 +591,7 @@ class AdminController extends Controller
     {
         $operation = $request->op;
 
-        // 🔹 Transfert
+        // Ã°Å¸â€Â¹ Transfert
         if ($operation === 'transfert') {
             $request->validate([
                 'source_id' => 'required|integer|exists:restaurant_tables,id',
@@ -507,15 +603,15 @@ class AdminController extends Controller
 
             if ($tableSource->id === $tableCible->id) {
                 return response()->json([
-                    "errors" => "Impossible de transférer vers la même table."
+                    "errors" => "Impossible de transfÃƒÂ©rer vers la mÃƒÂªme table."
                 ]);
             }
 
             DB::transaction(function () use ($tableSource, $tableCible) {
                 $tableSource->update(["statut" => "libre"]);
-                $tableCible->update(["statut" => "occupée"]);
+                $tableCible->update(["statut" => "occupÃƒÂ©e"]);
 
-                // Déplacer toutes les commandes de la source vers la cible
+                // DÃƒÂ©placer toutes les commandes de la source vers la cible
                 $tableSource->commandes()->update([
                     "table_id" => $tableCible->id
                 ]);
@@ -523,11 +619,11 @@ class AdminController extends Controller
 
             return response()->json([
                 "status" => "success",
-                "result" => "Transfert effectué avec succès !"
+                "result" => "Transfert effectuÃƒÂ© avec succÃƒÂ¨s !"
             ]);
         }
 
-        // 🔹 Combinaison
+        // Ã°Å¸â€Â¹ Combinaison
         if ($operation === 'combiner') {
             $request->validate([
                 'table1_id' => 'required|integer|exists:restaurant_tables,id',
@@ -539,31 +635,31 @@ class AdminController extends Controller
 
             if ($table1->id === $table2->id) {
                 return response()->json([
-                    "errors" => "Impossible de combiner une table avec elle-même."
+                    "errors" => "Impossible de combiner une table avec elle-mÃƒÂªme."
                 ]);
             }
 
             DB::transaction(function () use ($table1, $table2) {
-                // Déplacer toutes les commandes de la table1 vers la table2
+                // DÃƒÂ©placer toutes les commandes de la table1 vers la table2
                 $table1->commandes()->update([
                     "table_id" => $table2->id
                 ]);
 
-                // Libérer la table1
+                // LibÃƒÂ©rer la table1
                 $table1->update(["statut" => "libre"]);
 
-                // Table2 reste occupée
-                $table2->update(["statut" => "occupée"]);
+                // Table2 reste occupÃƒÂ©e
+                $table2->update(["statut" => "occupÃƒÂ©e"]);
             });
 
             return response()->json([
                 "status" => "success",
-                "result" => "Tables combinées avec succès !"
+                "result" => "Tables combinÃƒÂ©es avec succÃƒÂ¨s !"
             ]);
         }
 
         return response()->json([
-            "errors" => "Opération inconnue ou non supportée."
+            "errors" => "OpÃƒÂ©ration inconnue ou non supportÃƒÂ©e."
         ]);
     }
 
@@ -575,7 +671,7 @@ class AdminController extends Controller
         }
         return response()->json([
             "status"=>"success",
-            "result" => "Table liberée avec succès !"
+            "result" => "Table liberÃƒÂ©e avec succÃƒÂ¨s !"
         ]);
     }
     public function servirCommande(Request $request)
@@ -586,7 +682,7 @@ class AdminController extends Controller
         }
         return response()->json([
             "status"=>"success",
-            "result" => "commande servie avec succès !"
+            "result" => "commande servie avec succÃƒÂ¨s !"
         ]);
     }
 
@@ -602,44 +698,44 @@ class AdminController extends Controller
         }
 
         $today = Carbon::today();
-        // Vérifier s’il existe des réservations futures ou en cours pour cette chambre
+        // VÃƒÂ©rifier sÃ¢â‚¬â„¢il existe des rÃƒÂ©servations futures ou en cours pour cette chambre
         $hasFutureReservations = Reservation::where('chambre_id', $chambre->id)
-            ->where('statut', '!=', 'annulée')
+            ->where('statut', '!=', 'annulÃƒÂ©e')
             ->whereDate('date_fin', '>=', $today)
             ->exists();
 
         $newStatus = $chambre->statut;
 
         switch ($chambre->statut) {
-            case 'occupée':
-                // Si aucune réservation future → libre, sinon réservée
-                $newStatus = $hasFutureReservations ? 'réservée' : 'libre';
+            case 'occupÃƒÂ©e':
+                // Si aucune rÃƒÂ©servation future Ã¢â€ â€™ libre, sinon rÃƒÂ©servÃƒÂ©e
+                $newStatus = $hasFutureReservations ? 'rÃƒÂ©servÃƒÂ©e' : 'libre';
                 break;
 
-            case 'réservée':
-                // Si le client vient d’arriver → occupée, sinon libre si plus de résa
+            case 'rÃƒÂ©servÃƒÂ©e':
+                // Si le client vient dÃ¢â‚¬â„¢arriver Ã¢â€ â€™ occupÃƒÂ©e, sinon libre si plus de rÃƒÂ©sa
                 if (!$hasFutureReservations) {
                     $newStatus = 'libre';
                 } else {
-                    $newStatus = 'occupée';
+                    $newStatus = 'occupÃƒÂ©e';
                 }
                 break;
 
             case 'libre':
-                // Si on déclenche l’action et qu’il y a une résa future → réservée
+                // Si on dÃƒÂ©clenche lÃ¢â‚¬â„¢action et quÃ¢â‚¬â„¢il y a une rÃƒÂ©sa future Ã¢â€ â€™ rÃƒÂ©servÃƒÂ©e
                 if ($hasFutureReservations) {
-                    $newStatus = 'réservée';
+                    $newStatus = 'rÃƒÂ©servÃƒÂ©e';
                 }
                 break;
         }
-        // Mise à jour uniquement si changement réel
+        // Mise ÃƒÂ  jour uniquement si changement rÃƒÂ©el
         if ($newStatus !== $chambre->statut) {
             $chambre->update(['statut' => $newStatus]);
         }
         return response()->json([
             'status' => 'success',
-            'result' => "Statut mis à jour : {$newStatus}",
-            'message' => "Statut mis à jour : {$newStatus}",
+            'result' => "Statut mis ÃƒÂ  jour : {$newStatus}",
+            'message' => "Statut mis ÃƒÂ  jour : {$newStatus}",
         ]);
     }
 
@@ -692,13 +788,13 @@ class AdminController extends Controller
                             "emplacement_id"=>$facture->emplacement_id,
                         ]);
                     }
-                    $facture->update(["statut"=>"payée"]);
+                    $facture->update(["statut"=>"payÃƒÂ©e"]);
                 }
             }
 
             return response()->json([
                 'status'=>'success',
-                'message' => 'Nouvelle table créée avec succès !',
+                'message' => 'Nouvelle table crÃƒÂ©ÃƒÂ©e avec succÃƒÂ¨s !',
                 'result' => $payment,
             ]);
         }
@@ -709,88 +805,227 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
         catch (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e) {
-            return response()->json(['errors' => "Action non autorisée !"]);
+            return response()->json(['errors' => "Action non autorisÃƒÂ©e !"]);
         }
     }
+    public function deleteTable(Request $request){
+        $data = $request->validate([
+            'id' => 'required|exists:restaurant_tables,id'
+        ]);
 
+        $table = RestaurantTable::where('id', $data['id'])->where('ets_id', Auth::user()->ets_id)->first();
+        if (!$table) {
+            return response()->json(["errors" => "Introuvable."], 404);
+        }
+
+        $table->delete();
+        return response()->json(["status" => "success", "message" => "Table supprimÃ©e"]);
+    }
+
+    public function deleteChambre(Request $request){
+        $data = $request->validate([
+            'id' => 'required|exists:chambres,id'
+        ]);
+
+        $chambre = Chambre::where('id', $data['id'])->where('ets_id', Auth::user()->ets_id)->first();
+        if (!$chambre) {
+            return response()->json(["errors" => "Introuvable."], 404);
+        }
+
+        $chambre->delete();
+        return response()->json(["status" => "success", "message" => "Chambre supprimÃ©e"]);
+    }
+    public function globalReportsView()
+    {
+        $etsId = Auth::user()->ets_id;
+        $emplacements = Emplacement::where("ets_id", $etsId)->orderBy("libelle")->get();
+        $serviceTypes = Emplacement::getTypesForEts($etsId);
+        $caissiers = User::where("ets_id", $etsId)
+            ->whereNotIn("role", ["serveur", "cuisinier"])
+            ->orderBy("name")
+            ->get();
+
+        return view("reports_global", compact("emplacements", "serviceTypes", "caissiers"));
+    }
+
+    private function buildGlobalReports(Request $request)
+    {
+        $etsId = Auth::user()->ets_id;
+        $serviceType = $request->query("service_type");
+        $emplacementId = $request->query("emplacement_id");
+        $caissierId = $request->query("caissier_id");
+        $dateDebut = $request->query("date_debut");
+        $dateFin = $request->query("date_fin");
+
+        $rows = Payments::query()
+            ->select([
+                'sale_day_id',
+                'user_id',
+                DB::raw('SUM(amount) as total_factures'),
+                DB::raw('COUNT(*) as total_paiements'),
+                DB::raw('COUNT(DISTINCT facture_id) as total_factures_count'),
+            ])
+            ->where('ets_id', $etsId)
+            ->whereNotNull('sale_day_id')
+            ->when($emplacementId, fn($q) => $q->where('emplacement_id', (int) $emplacementId))
+            ->when($caissierId, fn($q) => $q->where('user_id', (int) $caissierId))
+            ->when($dateDebut, fn($q) => $q->whereDate('pay_date', '>=', $dateDebut))
+            ->when($dateFin, fn($q) => $q->whereDate('pay_date', '<=', $dateFin))
+            ->when($serviceType, function ($q) use ($serviceType) {
+                $q->whereHas('emplacement', fn($e) => $e->where('type', $serviceType));
+            })
+            ->groupBy('sale_day_id', 'user_id')
+            ->orderByDesc(DB::raw('MAX(sale_day_id)'))
+            ->get();
+
+        $saleDayIds = $rows->pluck('sale_day_id')->unique()->values();
+        $userIds = $rows->pluck('user_id')->unique()->values();
+
+        $saleDays = SaleDay::where('ets_id', $etsId)->whereIn('id', $saleDayIds)->get()->keyBy('id');
+        $users = User::where('ets_id', $etsId)
+            ->whereIn('id', $userIds)
+            ->whereNotIn('role', ['serveur', 'cuisinier'])
+            ->get()
+            ->keyBy('id');
+
+        return $rows
+            ->filter(fn($row) => isset($saleDays[$row->sale_day_id]) && isset($users[$row->user_id]))
+            ->map(fn($row) => [
+                'sale_day' => $saleDays[$row->sale_day_id],
+                'user' => $users[$row->user_id],
+                'total_factures' => (double) $row->total_factures,
+                'total_paiements' => (int) $row->total_paiements,
+                'total_factures_count' => (int) $row->total_factures_count,
+            ])
+            ->values();
+    }
+
+    private function formatGlobalReportFilters(Request $request): string
+    {
+        $parts = [];
+        if ($request->filled("service_type")) {
+            $parts[] = "Service: " . $request->service_type;
+        }
+        if ($request->filled("emplacement_id")) {
+            $emp = Emplacement::where("id", (int) $request->emplacement_id)->value("libelle");
+            $parts[] = "Emplacement: " . ($emp ?? $request->emplacement_id);
+        }
+        if ($request->filled("caissier_id")) {
+            $caissier = User::where("id", (int) $request->caissier_id)->value("name");
+            $parts[] = "Caissier: " . ($caissier ?? $request->caissier_id);
+        }
+        if ($request->filled("date_debut") || $request->filled("date_fin")) {
+            $parts[] = "PÃƒÂ©riode: " . ($request->date_debut ?? "-") . " au " . ($request->date_fin ?? "-");
+        }
+
+        return implode(" | ", $parts);
+    }
 
     //GLOBAL REPORT GROUPED BY USER
     public function viewGlobalReports(Request $request)
     {
-        $saleDays = SaleDay::with([
-            "sales" => function ($query) {
-                $query->where("type_mouvement", "vente")
-                    ->with([
-                        "produit",
-                        "user" => function($q){
-                            $q->whereNotIn("role", ["serveur", "cuisinier"]);
-                        }
-                    ]);
-            },
-            "factures" => function ($query) {
-                $query->where("statut", "payée")->with("details");
-            }
-        ])->where("ets_id", Auth::user()->ets_id)
-        ->orderByDesc("sale_date")
-        ->get();
-
-        $reports = collect();
-
-        foreach ($saleDays as $saleDay) {
-            // Grouper les ventes par utilisateur
-            $groupedSales = $saleDay->sales
-                ->filter(fn($s) => $s->user) // retirer les ventes sans user ou filtrés
-                ->groupBy("user_id");
-            foreach ($groupedSales as $userId => $sales) {
-                $user = $sales->first()->user;
-
-                // Calcul du total_factures à partir des ventes
-                $totalFactures = $sales->reduce(function($carry, $sale) {
-                    return $carry + ($sale->produit->prix_unitaire ?? 0) * $sale->quantite;
-                }, 0);
-                // Mouvements de vente
-                $userSales = $sales
-                    ->map(fn($s) => [
-                        "numdoc" => $s->numdoc,
-                        "produit" => $s->produit->name ?? null,
-                        "quantite" => $s->quantite,
-                        "prix_unitaire" => $s->produit->prix_unitaire ?? 0,
-                        "total" => ($s->produit->prix_unitaire ?? 0) * $s->quantite,
-                        "date_mouvement" => optional($s->date_mouvement)->format("d/m/Y H:i")
-                    ]);
-
-                $reports->push([
-                    "sale_day"       => $saleDay,
-                    "user"           =>$user,
-                    "total_factures" => $totalFactures,
-                    "sales"          => $userSales,
-                ]);
-            }
-        }
+        $reports = $this->buildGlobalReports($request);
 
         return response()->json([
-            "status" => "success",
-            "reports" => $reports->values()
+            'status' => 'success',
+            'reports' => $reports,
         ]);
+    }
+
+    public function exportGlobalReportsPdf(Request $request)
+    {
+        $reports = $this->buildGlobalReports($request);
+        $headers = ["JournÃƒÂ©e", "Caissier", "Total encaissÃƒÂ©", "Factures", "Paiements"];
+        $rows = $reports->map(function ($row) {
+            $saleDay = $row["sale_day"] ?? null;
+            $user = $row["user"] ?? null;
+            $date = $saleDay ? $saleDay->sale_date : "-";
+            $caissier = $user ? $user->name : "-";
+            return [
+                $date,
+                $caissier,
+                number_format($row["total_factures"], 0, ",", " "),
+                $row["total_factures_count"],
+                $row["total_paiements"],
+            ];
+        })->toArray();
+
+        $filters = $this->formatGlobalReportFilters($request);
+
+        $pdf = Pdf::loadView("pdf.report_table", [
+            "title" => "Rapport des journÃƒÂ©es de vente",
+            "subtitle" => "SynthÃƒÂ¨se des encaisses par journÃƒÂ©e et caissier",
+            "filters" => $filters,
+            "headers" => $headers,
+            "rows" => $rows,
+        ])->setPaper("a4", "landscape");
+
+        return $pdf->download("rapport_journees_vente_" . date("Ymd_His") . ".pdf");
+    }
+
+    public function exportGlobalReportsExcel(Request $request)
+    {
+        $reports = $this->buildGlobalReports($request);
+        $headers = ["JournÃƒÂ©e", "Caissier", "Total encaissÃƒÂ©", "Factures", "Paiements"];
+        $rows = $reports->map(function ($row) {
+            $saleDay = $row["sale_day"] ?? null;
+            $user = $row["user"] ?? null;
+            $date = $saleDay ? $saleDay->sale_date : "-";
+            $caissier = $user ? $user->name : "-";
+            return [
+                $date,
+                $caissier,
+                $row["total_factures"],
+                $row["total_factures_count"],
+                $row["total_paiements"],
+            ];
+        })->toArray();
+
+        return ReportExporter::toExcel(
+            "rapport_journees_vente_" . date("Ymd_His") . ".xlsx",
+            "Ventes journaliÃƒÂ¨res",
+            $headers,
+            $rows
+        );
     }
 
 
     public function showDaySaleFacturesByCaissier(Request $request)
     {
-        $caissierId = $request->query("id");
-        $factures = Facture::with(["payments", "saleDay.sales.user", "user"])
-            ->whereHas("saleDay.sales", function($query) use ($caissierId) {
-                $query->where("user_id", $caissierId);
-            })->where("statut", "payée")
-            ->orderByDesc("id")
+        $etsId = Auth::user()->ets_id;
+        $caissierId = (int) $request->query('id');
+        $saleDayId = $request->query('sale_day_id');
+        $serviceType = $request->query("service_type");
+        $emplacementId = $request->query("emplacement_id");
+        $dateDebut = $request->query("date_debut");
+        $dateFin = $request->query("date_fin");
+
+        $factures = Facture::query()
+            ->with(['payments', 'saleDay', 'user'])
+            ->where('ets_id', $etsId)
+            ->where('statut', 'payÃƒÂ©e')
+            ->when($saleDayId, fn($q) => $q->where('sale_day_id', (int) $saleDayId))
+            ->when($emplacementId, fn($q) => $q->where('emplacement_id', (int) $emplacementId))
+            ->when($dateDebut, fn($q) => $q->whereDate('date_facture', '>=', $dateDebut))
+            ->when($dateFin, fn($q) => $q->whereDate('date_facture', '<=', $dateFin))
+            ->when($serviceType, fn($q) => $q->whereHas('emplacement', fn($e) => $e->where('type', $serviceType)))
+            ->when($caissierId, function ($q) use ($caissierId) {
+                $q->whereHas('payments', fn($p) => $p->where('user_id', $caissierId));
+            })
+            ->orderByDesc('id')
             ->get();
 
         return response()->json([
-            "status" => "success",
-            "factures" => $factures
+            'status' => 'success',
+            'factures' => $factures,
         ]);
     }
-
-
-
 }
+
+
+
+
+
+
+
+

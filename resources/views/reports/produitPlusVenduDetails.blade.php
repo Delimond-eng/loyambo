@@ -32,6 +32,30 @@
                         </div>
 
                         <div class="box-body">
+<div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="date_debut">Date début</label>
+                                    <input type="date" id="date_debut" class="form-control" value="{{ request('date_debut') }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="date_fin">Date fin</label>
+                                    <input type="date" id="date_fin" class="form-control" value="{{ request('date_fin') }}">
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end justify-content-end">
+                                    <button type="button" class="btn btn-primary me-2" id="appliquerFiltres">
+                                        <i class="fa fa-filter"></i> Appliquer
+                                    </button>
+                                    <a href="{{ route('reports.produits.plusVendus.details', ['emplacement_id' => $emplacement->id] + request()->except(['date_debut','date_fin'])) }}" class="btn btn-secondary me-2">
+                                        <i class="fa fa-refresh"></i> Réinitialiser
+                                    </a>
+                                    <a href="{{ route('reports.produits.plusVendus.export.pdf', ['emplacement_id' => $emplacement->id] + request()->query()) }}" class="btn btn-outline-danger me-2">
+                                        <i class="fa fa-file-pdf"></i> PDF
+                                    </a>
+                                    <a href="{{ route('reports.produits.plusVendus.export.excel', ['emplacement_id' => $emplacement->id] + request()->query()) }}" class="btn btn-outline-success">
+                                        <i class="fa fa-file-excel"></i> Excel
+                                    </a>
+                                </div>
+                            </div>
                             <!-- Statistiques globales -->
                             <div class="row mb-4">
                                 <div class="col-xl-3 col-md-6">
@@ -198,3 +222,32 @@
 </div>
 <!-- /.content-wrapper -->
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebut = document.getElementById('date_debut');
+    const dateFin = document.getElementById('date_fin');
+    const appliquerFiltres = document.getElementById('appliquerFiltres');
+
+    if (appliquerFiltres) {
+        appliquerFiltres.addEventListener('click', function() {
+            const params = new URLSearchParams(window.location.search);
+            if (dateDebut && dateDebut.value) {
+                params.set('date_debut', dateDebut.value);
+            } else {
+                params.delete('date_debut');
+            }
+            if (dateFin && dateFin.value) {
+                params.set('date_fin', dateFin.value);
+            } else {
+                params.delete('date_fin');
+            }
+            const baseUrl = '{{ route("reports.produits.plusVendus.details", ["emplacement_id" => $emplacement->id]) }}';
+            const query = params.toString();
+            window.location.href = query ? `${baseUrl}?${query}` : baseUrl;
+        });
+    }
+});
+</script>
+@endpush

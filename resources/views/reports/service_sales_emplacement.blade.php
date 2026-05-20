@@ -19,20 +19,20 @@
                 <div class="col-12">
                     <div class="box">
                         <div class="box-header with-border p-5 text-center">
-                            <h4 class="box-title">Journées de vente - {{ $emplacement->libelle }}</h4>
-                            <p class="text-muted">Sélectionnez une journée pour voir les détails des ventes</p>
+                            <h4 class="box-title">Ventes par service - etape 2/2 ({{ $emplacement->libelle }})</h4>
+                            <p class="text-muted">Les donnees sont groupees par journee de vente avec heure de debut et de fin.</p>
                         </div>
                         
                         <!-- Filtres -->
                         <div class="box-body">
-                            <div class="row mb-4">
+<div class="row mb-4">
                                 <div class="col-md-4">
-                                    <label for="date_debut">Date début</label>
-                                    <input type="date" id="date_debut" class="form-control">
+                                    <label for="date_debut">Date dÃ©but</label>
+                                    <input type="date" id="date_debut" class="form-control" value="{{ request('date_debut') }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="date_fin">Date fin</label>
-                                    <input type="date" id="date_fin" class="form-control">
+                                    <input type="date" id="date_fin" class="form-control" value="{{ request('date_fin') }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="search">Recherche</label>
@@ -45,33 +45,33 @@
                                         <i class="fa fa-filter"></i> Appliquer les filtres
                                     </button>
                                     <button class="btn btn-secondary" id="resetFiltres">
-                                        <i class="fa fa-refresh"></i> Réinitialiser
+                                        <i class="fa fa-refresh"></i> RÃ©initialiser
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Liste des journées de vente -->
+                        <!-- Liste des journÃ©es de vente -->
                         <div class="box-body">
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
                                             <th>Date de vente</th>
-                                            <th>Heure début</th>
+                                            <th>Heure dÃ©but</th>
                                             <th>Heure fin</th>
-                                            <th>Factures payées</th>
+                                            <th>Factures payÃ©es</th>
                                             <th>Total des ventes</th>
                                             <th>Statut</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($saledays as $saleday)
+                                        @forelse($saledays as $saleday)
                                             @php
-                                                // Filtrer les factures par emplacement et statut payée
+                                                // Filtrer les factures par emplacement et statut payÃ©e
                                                 $facturesFiltrees = $saleday->factures->filter(function($facture) use ($emplacement) {
-                                                    // Vérifier l'emplacement
+                                                    // VÃ©rifier l'emplacement
                                                     $emplacementOk = false;
                                                     if ($emplacement->type === 'hotel') {
                                                         $emplacementOk = $facture->chambre && $facture->chambre->emplacement_id == $emplacement->id;
@@ -79,8 +79,8 @@
                                                         $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
                                                     }
                                                     
-                                                    // Vérifier le statut payée
-                                                    $statutOk = $facture->statut === 'payée';
+                                                    // VÃ©rifier le statut payÃ©e
+                                                    $statutOk = $facture->statut === 'payÃ©e';
                                                     
                                                     return $emplacementOk && $statutOk;
                                                 });
@@ -88,7 +88,7 @@
                                                 $totalFacturesPayees = $facturesFiltrees->count();
                                                 $totalVentesPayees = $facturesFiltrees->sum('total_ttc');
                                                 
-                                                // Récupérer toutes les devises utilisées dans les paiements des factures payées
+                                                // RÃ©cupÃ©rer toutes les devises utilisÃ©es dans les paiements des factures payÃ©es
                                                 $devises = [];
                                                 foreach ($facturesFiltrees as $facture) {
                                                     foreach ($facture->payments as $payment) {
@@ -123,7 +123,7 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge badge-primary" style="font-size: 14px;">
-                                                        {{ $totalFacturesPayees }} factures payées
+                                                        {{ $totalFacturesPayees }} factures payÃ©es
                                                     </span>
                                                 </td>
                                                 <td>
@@ -134,35 +134,39 @@
                                                 </td>
                                                 <td>
                                                     @if($saleday->end_time)
-                                                        <span class="badge badge-success">Terminée</span>
+                                                        <span class="badge badge-success">TerminÃ©e</span>
                                                     @else
                                                         <span class="badge badge-warning">En cours</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('reports.service.vente.details', ['id_saleDay'=>$saleday->id,"emplacement_id"=>$emplacement->id]) }}" 
+                                                    <a href="{{ route('reports.service.vente.details', ['id_saleDay'=>$saleday->id,"emplacement_id"=>$emplacement->id] + request()->query()) }}" 
                                                        class="btn btn-sm btn-primary">
-                                                        <i class="fa fa-eye"></i> Voir détails
+                                                        <i class="fa fa-eye"></i> Voir dÃ©tails
                                                     </a>
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">Aucune journee de vente trouvee pour ce filtre.</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
 
                             <!-- Pagination -->
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $saledays->links() }}
+                            <div class="mt-4">
+                                {{ $saledays->links('vendor.pagination.vue-table') }}
                             </div>
 
-                            <!-- Statistiques résumées -->
+                            <!-- Statistiques rÃ©sumÃ©es -->
                             <div class="row mt-4">
                                 <div class="col-md-4">
                                     <div class="box bg-primary text-white">
                                         <div class="box-body text-center">
                                             <h3 class="mb-0">{{ $saledays->total() }}</h3>
-                                            <p class="mb-0">Journées totales</p>
+                                            <p class="mb-0">JournÃ©es totales</p>
                                         </div>
                                     </div>
                                 </div>
@@ -180,14 +184,14 @@
                                                             } else {
                                                                 $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
                                                             }
-                                                            return $emplacementOk && $facture->statut === 'payée';
+                                                            return $emplacementOk && $facture->statut === 'payÃ©e';
                                                         });
                                                         $totalFacturesGlobal += $facturesFiltrees->count();
                                                     });
                                                 @endphp
                                                 {{ $totalFacturesGlobal }}
                                             </h3>
-                                            <p class="mb-0">Factures payées totales</p>
+                                            <p class="mb-0">Factures payÃ©es totales</p>
                                         </div>
                                     </div>
                                 </div>
@@ -206,7 +210,7 @@
                                                             } else {
                                                                 $emplacementOk = $facture->table && $facture->table->emplacement_id == $emplacement->id;
                                                             }
-                                                            return $emplacementOk && $facture->statut === 'payée';
+                                                            return $emplacementOk && $facture->statut === 'payÃ©e';
                                                         });
                                                         $totalVentesGlobal += $facturesFiltrees->sum('total_ttc');
                                                         
@@ -220,7 +224,7 @@
                                                         }
                                                     });
                                                     
-                                                    // Déterminer l'affichage de la devise pour les stats globales
+                                                    // DÃ©terminer l'affichage de la devise pour les stats globales
                                                     if (count($devisesGlobal) > 1) {
                                                         $deviseAffichageGlobal = 'Multiples';
                                                     } elseif (count($devisesGlobal) === 1) {
@@ -231,7 +235,7 @@
                                                 @endphp
                                                 {{ number_format($totalVentesGlobal, 0, ',', ' ') }} {{ $deviseAffichageGlobal }}
                                             </h3>
-                                            <p class="mb-0">Chiffre d'affaires (payé)</p>
+                                            <p class="mb-0">Chiffre d'affaires (payÃ©)</p>
                                         </div>
                                     </div>
                                 </div>
@@ -257,76 +261,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetFiltres = document.getElementById('resetFiltres');
     const rows = document.querySelectorAll('.sale-day-row');
 
-    // Appliquer les filtres
-    appliquerFiltres.addEventListener('click', function() {
-        filterRows();
-    });
-
-    // Réinitialiser les filtres
-    resetFiltres.addEventListener('click', function() {
-        dateDebut.value = '';
-        dateFin.value = '';
-        search.value = '';
-        filterRows();
-    });
-
-    // Recherche en temps réel
-    search.addEventListener('input', function() {
-        filterRows();
-    });
-
-    function filterRows() {
-        const filterDateDebut = dateDebut.value;
-        const filterDateFin = dateFin.value;
-        const filterSearch = search.value.toLowerCase();
-
-        rows.forEach(row => {
-            const rowDate = row.getAttribute('data-date');
-            const rowSearch = row.getAttribute('data-search').toLowerCase();
-            
-            let showRow = true;
-
-            // Filtre par date
-            if (filterDateDebut && rowDate < filterDateDebut) {
-                showRow = false;
+    if (appliquerFiltres) {
+        appliquerFiltres.addEventListener('click', function() {
+            const params = new URLSearchParams(window.location.search);
+            if (dateDebut && dateDebut.value) {
+                params.set('date_debut', dateDebut.value);
+            } else {
+                params.delete('date_debut');
             }
-            if (filterDateFin && rowDate > filterDateFin) {
-                showRow = false;
+            if (dateFin && dateFin.value) {
+                params.set('date_fin', dateFin.value);
+            } else {
+                params.delete('date_fin');
             }
-
-            // Filtre par recherche - recherche dans tout le contenu de data-search
-            if (filterSearch && !rowSearch.includes(filterSearch)) {
-                showRow = false;
-            }
-
-            // Afficher ou masquer la ligne
-            row.style.display = showRow ? '' : 'none';
+            const baseUrl = '{{ route("reports.service_sales.emplacement", ["emplacement_id" => $emplacement->id]) }}';
+            const query = params.toString();
+            window.location.href = query ? `${baseUrl}?${query}` : baseUrl;
         });
     }
 
-    // Rendre les lignes cliquables
-    rows.forEach(row => {
-        const link = row.querySelector('a');
-        if (link) {
-            row.style.cursor = 'pointer';
-            
-            row.addEventListener('click', function(e) {
-                // Éviter de déclencher le clic si on clique sur le bouton
-                if (!e.target.closest('a, button')) {
-                    link.click();
-                }
-            });
-        }
+    if (resetFiltres) {
+        resetFiltres.addEventListener('click', function() {
+            if (dateDebut) dateDebut.value = '';
+            if (dateFin) dateFin.value = '';
+            if (search) search.value = '';
+            const params = new URLSearchParams(window.location.search);
+            params.delete('date_debut');
+            params.delete('date_fin');
+            const baseUrl = '{{ route("reports.service_sales.emplacement", ["emplacement_id" => $emplacement->id]) }}';
+            const query = params.toString();
+            window.location.href = query ? `${baseUrl}?${query}` : baseUrl;
+        });
+    }
 
-        // Effet hover
-        row.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#f8f9fa';
+    if (search) {
+        search.addEventListener('input', function() {
+            const filterSearch = search.value.toLowerCase();
+            rows.forEach(row => {
+                const rowSearch = row.getAttribute('data-search').toLowerCase();
+                row.style.display = filterSearch && !rowSearch.includes(filterSearch) ? 'none' : '';
+            });
         });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '';
-        });
-    });
+    }
 });
 </script>
 
@@ -360,3 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 @endpush
+
+
+
+

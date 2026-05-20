@@ -1,0 +1,209 @@
+@extends("layouts.admin")
+
+@section("content")
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<div class="container-full AppHotel" v-cloak>
+	<!-- Content Header (Page header) -->
+	 	<div class="content-header">
+            <div class="d-sm-block d-md-flex d-lg-flex d-xl-flex align-items-center justify-content-between">
+                <div class="me-auto">
+					<h3 class="page-title">Reservation chambre</h3>
+					<div class="d-inline-block align-items-center">
+						<nav>
+							<ol class="breadcrumb">
+								<li class="breadcrumb-item active" aria-current="page">Reservez en toute sécurité les chambres d'hôtel pour vos clients.</li>
+							</ol>
+						</nav>
+					</div>
+                </div>
+
+				<div class="clearfix mt-3 mt-lg-0 mt-xl-0">
+					<button type="button" @click="setOperation('transfert')" class="waves-effect waves-light btn-sm btn btn-info mb-2">Transferer chambre <i class="mdi mdi-arrow-expand-left ms-2"></i></button>
+					<!-- <button type="button" @click="setOperation('combiner')" class="waves-effect waves-light btn btn-rounded btn-success mb-2">Combiner Table <i class="mdi mdi-link ms-2"></i></button> -->
+					<!-- <button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-rounded btn-info mb-2">Reservation <i class="mdi mdi-lock-outline ms-2"></i></button> -->
+					<button type="button" @click="setOperation('')" class="waves-effect waves-light btn btn-sm btn-danger mb-2">Annuler <i class="mdi mdi-cancel ms-2"></i></button>
+				</div>
+            </div>
+        </div>
+
+		<section class="content">
+		  	<div>
+			  <!-- Default box -->
+			  	<div class="box bg-transparent no-shadow b-0">
+					<div class="box-body">
+						<div class="row">
+							<div class="col-md-6 col-sm-3 col-lg-2 col-6" v-for="(chambre, i) in allChambres">
+								<a href="#" @click="reserverChambreView(chambre)" class="box box-shadowed b-3" :class="getTableOperationColorClass">
+									<div class="box-body ribbon-box">
+										<div class="ribbon-two" :class="{'ribbon-two-danger': chambre.statut==='occupée', 'ribbon-two-success':chambre.statut==='libre','ribbon-two-warning':chambre.statut==='réservée' }"><span>@{{ chambre.statut }}</span></div>
+                                        <img :src="chambre.statut==='libre' ? 'assets/images/bed-empty.png' : 'assets/images/bed-2.png'" class="img-fluid img-hov-fadein">
+										<div style="position:absolute; left: 20px; bottom: 20px;" class="bg-primary fw-900 rounded-circle w-40 h-40 l-h-40 text-center">
+											@{{ chambre.numero }}
+										</div>
+										<span style="position:absolute; right: 20px; top: 20px;" class="badge badge-pill badge-primary-light">@{{ chambre.type }}</span>
+									</div> <!-- end box-body-->
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			<!-- /.box-body -->
+		  </div>
+		  <!-- /.box -->
+		</section>
+
+		<!-- Modal mode de paiement -->
+		<div class="modal fade modal-reservation" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabelRes" aria-modal="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<form @submit.prevent="makeReservation" class="modal-content" v-if="selectedBed">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Reservation chambre n°@{{ selectedBed.numero }}</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label class="form-label">Prix de la chambre</label>
+							<div class="d-flex">
+								<input v-model="selectedBed.prix" type="number" class="form-control me-2"
+									 readonly>
+								<input style="width: 100px;" v-model="selectedBed.prix_devise" type="text" class="form-control"
+									 readonly>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Type de chambre & capacité</label>
+							<div class="d-flex">
+								<input v-model="selectedBed.type" type="text" class="form-control me-2"
+									 readonly>
+								<input v-model="selectedBed.capacite" type="text" class="form-control"
+									 readonly>
+							</div>
+						</div>
+						<div class="row g-1">
+							<div class="col-md-12">
+								<div class="form-group">
+									<label class="form-label">Client Nom <sup class="text-danger">*</sup></label>
+									<input  type="text" v-model="form.client.nom" placeholder="nom complet...ex: Gaston" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Email<sup class="text-danger">(optionnel)</sup></label>
+									<input  type="text" v-model="form.client.email" placeholder="client@domain" class="form-control me-2">
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Téléphone<sup class="text-danger">(optionnel)</sup></label>
+									<input  type="text" v-model="form.client.telephone" placeholder="+(243)........" class="form-control me-2">
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Pièce d'identité<sup class="text-danger">*</sup></label>
+									<select v-model="form.client.identite" class="form-select" required>
+										<option value="" selected hidden>--Sélectionnez un type de pièce--</option>
+										<option value="passeport">Passeport</option>
+										<option value="carte d'électeur">Carte d'électeur</option>
+										<option value="permis de conduire">Permis de conduire</option>
+									</select>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">N° Pièce d'identité<sup class="text-danger">*</sup></label>
+									<input  type="text" v-model="form.client.identite_type" placeholder="CNIxxxxxx" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Date début sejour <sup class="text-danger">*</sup></label>
+									<input  type="date" v-model="form.date_debut" class="form-control me-2" required>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label">Date Fin <sup class="text-danger">*</sup></label>
+									<input  type="date" v-model="form.date_fin" class="form-control me-2" required>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-end">
+						<div class="form-actions">
+							<button type="button" class="btn btn-danger" @click="cancelForm">Annuler</button>
+							<button type="submit" class="btn btn-primary" :disabled="isLoading"><span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span> <i v-else class="fa fa-check"></i> Reserver</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Modal Commandes -->
+		<div class="modal fade modal-chambre-infos" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content" v-if="selectedBed">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Chambre @{{  selectedBed.type }} NO.@{{ selectedBed.numero }}</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="d-flex">
+							<button v-if="selectedBed.statut === 'occupée'" @click="libererEtOccuperChambre" class="btn btn-danger btn-xs mb-20  me-2">Liberer chambre <i class="mdi mdi-arrange-bring-forward"></i></button>
+							<button v-else class="btn btn-success btn-xs mb-20  me-2" @click="libererEtOccuperChambre">Occuper la chambre <i class="mdi mdi-check-all"></i></button>
+							<button @click="addCommande(selectedBed)" class="btn btn-primary btn-xs mb-20 me-2">+ Ajouter une commande</button>
+							<button @click="addNewReservation" class="btn btn-info mb-20 btn-xs">+ Ajouter une reservation</button>
+						</div>
+						<div class="row g-3">
+							<div class="col-sm-12 invoice-col mb-15 " v-for="(rv, index) in selectedBed.reservations">
+								<div class="invoice-details row no-margin">
+								<div class="col-md-6 col-lg-3"><b>Date début </b> <br> @{{ formateDate(rv.date_debut) }}</div>
+								<div class="col-md-6 col-lg-3"><b>Date Fin:</b> <br> @{{ formateDate(rv.date_fin) }}</div>
+								<div class="col-md-6 col-lg-3"><b>Nbre jours:</b> <br> @{{ joursRestants(rv.date_debut, rv.date_fin)}} </div>
+								<div class="col-md-6 col-lg-3">
+									<div class="d-flex justify-content-between align-items-center">
+										<span><b>Statut:</b> <br> 
+										@{{ rv.statut }}</span>
+										<div class="d-flex">
+											<button type="button" class="btn btn-primary btn-xs ms-3 me-1" @click="editReservation(rv)"><i class="mdi mdi-pencil"></i></button>
+											<button type="button" class="btn btn-danger btn-xs"><i class="mdi mdi-delete"></i></button>
+										</div>
+									</div> 
+								</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade modal-serveurs-list" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-modal="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="myModalLabel">Sélectionnez un serveur.</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-6 col-sm-4 col-lg-4 col-6" v-for="(data, index) in allServeurs" :key="index">
+								<a href="#" @click="goToUserOrderSession(data)" class="box box-body d-flex flex-column justify-content-center align-items-center py-30 box-inverse bg-indigo-500">
+									<img class="avatar avatar-xxl" src="assets/images/serveur.png" alt="">
+									<h5 class="mt-10 mb-1"><span class="text-white hover-danger fw-700">@{{ data.name }}</span></h5>
+									<p class="text-white">--- @{{ data.role }} ---</p>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@endsection
+@push("scripts")
+    <script type="module" src="{{ asset("assets/js/scripts/hotel.js") }}"></script>	
+@endpush

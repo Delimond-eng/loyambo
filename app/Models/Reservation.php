@@ -16,6 +16,10 @@ class Reservation extends Model
         "client_id",
         "date_debut",
         "date_fin",
+        "type_sejour",
+        "prix_base",
+        "prix_facture",
+        "remise_appliquee",
         "statut",
         "ets_id",
         "emplacement_id"

@@ -20,6 +20,11 @@ use Log;
 
 class ReservationController extends Controller
 {
+    private const STATUS_CONFIRMED = ['confirmée', 'confirmÃ©e', 'confirmÃƒÂ©e'];
+    private const STATUS_OCCUPIED = ['occupée', 'occupÃ©e', 'occupÃƒÂ©e'];
+    private const STATUS_RESERVED = ['réservée', 'rÃ©servÃ©e', 'rÃ©servÃƒÂ©e'];
+    private const STATUS_CANCELLED = ['annulée', 'annulÃ©e', 'annulÃƒÂ©e'];
+    private const STATUS_TERMINATED = ['terminée', 'terminÃ©e', 'terminÃƒÂ©e'];
     public function occupeChambre($chambreId)
     {
         try {
@@ -30,7 +35,7 @@ class ReservationController extends Controller
             $today = Carbon::today();
 
             $reservation = Reservation::where('chambre_id', $chambreId)
-                ->where('statut', 'confirmée')
+                ->whereIn('statut', self::STATUS_CONFIRMED)
                 ->whereDate('date_debut', '<=', $today)  // peut être occupée dès aujourd’hui
                 ->whereDate('date_fin', '>=', $today)    // la réservation doit toujours être active
                 ->orderBy('date_debut', 'asc')
@@ -44,7 +49,7 @@ class ReservationController extends Controller
 
             DB::transaction(function () use ($reservation, $chambre) {
                 // 3. Mettre la chambre en statut occupée
-                if($chambre->statut === 'occupée'){
+                if (in_array($chambre->statut, self::STATUS_OCCUPIED, true)) {
                     $chambre->update([
                         'statut' => 'libre'
                     ]);
@@ -77,11 +82,8 @@ class ReservationController extends Controller
     {
         $emplacement = auth()->user()->emplacement;
 
-        //on reuperer les chambre libres
-
-        $chambres = $emplacement->chambres()->get();
+        $chambres = $emplacement ? $emplacement->chambres()->get() : Chambre::where("ets_id", auth()->user()->ets_id)->get();
         return view('reservation.create_reservation', compact('emplacement', 'chambres'));
-
     }
 
     public function reserverChambre(Request $request)
@@ -94,13 +96,19 @@ class ReservationController extends Controller
                 'client.identite'     => 'required|string',
                 'client.identite_type'=> 'required|string',
                 'paiement.amount'     => 'nullable|numeric',
-                'paiement.mode_ref'    =>'nullable|string',
+                'paiement.mode_ref'   => 'nullable|string',
                 'paiement.mode'       => 'nullable|string',
                 'paiement.devise'     => 'nullable|string',
                 'chambre_id'          => 'required|exists:chambres,id',
                 'date_debut'          => 'required|date|after_or_equal:today',
-                'date_fin'            => 'required|date|after:date_debut',
+                'date_fin'            => 'required_if:type_sejour,nuit|date|after_or_equal:date_debut',
+                'type_sejour'         => 'required|in:nuit,passage',
+                'prix_negocie'        => 'nullable|numeric|min:0',
             ]);
+
+            if ($data['type_sejour'] === 'passage') {
+                $data['date_fin'] = $data['date_debut'];
+            }
 
             $saleDay = SaleDay::whereNull("end_time")->where("ets_id", Auth::user()->ets_id)->latest()->first();
 
@@ -118,10 +126,11 @@ class ReservationController extends Controller
             $factureUrl = null;
 
             $reservation = DB::transaction(function () use ($data, $client, $saleDay, &$factureUrl) {
-                $chambre = $data['chambre_id'] ? Chambre::lockForUpdate()->find($data['chambre_id']) : null;
-                /*  $table   = $data['table_id']  ? RestaurantTable::lockForUpdate()->find($data['table_id']) : null; */
+                $chambre = Chambre::lockForUpdate()->find($data['chambre_id']);
+                $tarif = $this->calculTarif($chambre, $data['type_sejour'], $data['date_debut'], $data['date_fin'], $data['prix_negocie'] ?? null);
                 // Vérifier la disponibilité
-                $query = Reservation::where('statut', 'confirmée')
+                $activeStatuses = array_merge(self::STATUS_CONFIRMED, self::STATUS_OCCUPIED);
+                $query = Reservation::whereIn('statut', $activeStatuses)
                     ->where(function ($q) use ($data) {
                         $q->whereBetween('date_debut', [$data['date_debut'], $data['date_fin']])
                         ->orWhereBetween('date_fin', [$data['date_debut'], $data['date_fin']])
@@ -131,18 +140,21 @@ class ReservationController extends Controller
                         });
                     });
 
-                if ($chambre) $query->where('chambre_id', $chambre->id);
-                /* if ($table)   $query->where('table_id', $table->id); */
+                $query->where('chambre_id', $chambre->id);
 
                 if ($query->exists()) {
                     throw new Exception('Cette chambre est déjà réservée sur cette période.');
                 }
                 // Créer la réservation
                 $reservation = Reservation::create([
-                    'chambre_id' => $chambre?->id ,
+                    'chambre_id' => $chambre->id ,
                     'client_id'  => $client->id,
                     'date_debut' => $data['date_debut'] ?? Carbon::now(),
                     'date_fin'   => $data['date_fin'],
+                    'type_sejour'=> $data['type_sejour'],
+                    'prix_base'  => $tarif['prix_base'],
+                    'prix_facture' => $tarif['prix_applique'],
+                    'remise_appliquee' => $tarif['remise'],
                     'sale_day_id'=> $saleDay->id ?? null,
                     'statut'     => "en_attente",
                     'emplacement_id'     => auth()->user()->emplacement_id,
@@ -152,45 +164,42 @@ class ReservationController extends Controller
                 if ($chambre) $chambre->update(['statut' => 'réservée']);
                 /* if ($table)   $table->update(['statut' => 'réservée']); */
                 $paiement = $data["paiement"];
-                if($reservation && $paiement["mode"]){
-                    // --- Calcul du total ---
-                    $prixJ = (float)$reservation->chambre->prix;
-                    $nbreJrs = $reservation->date_debut->diffInDays($reservation->date_fin); // Correction
-                    $tot_ht = $prixJ * $nbreJrs;
-                    // --- Vérification du montant ---
-                    $amount = (float)$paiement["amount"];
-                    // --- Création facture ---
+                if($reservation && !empty($paiement["mode"])){
+                    $amount = (float)($paiement["amount"] ?? 0);
                     $facture = Facture::create([
                         'numero_facture'=> 'FAC-' . time(),
                         'user_id'=>Auth::id(),
                         'chambre_id'=> $reservation->chambre_id,
+                        'reservation_id' => $reservation->id,
                         'sale_day_id'=> $saleDay->id ?? null,
-                        'total_ht'=>$tot_ht,
-                        'remise'=>0,
-                        'total_ttc'=>$tot_ht,
+                        'total_ht'=>$tarif['prix_applique'],
+                        'remise'=>$tarif['remise'],
+                        'total_ttc'=>$tarif['prix_applique'],
                         'tva'=> 0,
                         'devise'=>$reservation->chambre->prix_devise,
                         'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
                         'ets_id'=>Auth::user()->ets_id,
                         'emplacement_id'=>Auth::user()->emplacement_id,
-                        'statut'=>'payée',
+                        'statut'=>$amount >= $tarif['prix_applique'] ? 'payée' : 'partiel',
                     ]);
 
                     // --- Paiement ---
-                    Payments::create([
-                        "amount"=>$tot_ht,
-                        "devise"=>$reservation->chambre->prix_devise,
-                        "mode"=>$paiement["mode"],
-                        "mode_ref"=>$paiement["mode_ref"],
-                        "pay_date"=>Carbon::today(tz:"Africa/Kinshasa"),
-                        'emplacement_id'=>Auth::user()->emplacement_id,
-                        'facture_id'=>$facture->id,
-                        'chambre_id'=>$reservation->chambre_id,
-                        'sale_day_id'=> $saleDay->id ?? null,
-                        'user_id'=> Auth::id(),
-                        'caissier_id'=> Auth::id(),
-                        'ets_id'=> Auth::user()->ets_id,
-                    ]);
+                    if ($amount > 0) {
+                        Payments::create([
+                            "amount"=>$amount,
+                            "devise"=>$reservation->chambre->prix_devise,
+                            "mode"=>$paiement["mode"],
+                            "mode_ref"=>$paiement["mode_ref"] ?? null,
+                            "pay_date"=>Carbon::today(tz:"Africa/Kinshasa"),
+                            'emplacement_id'=>Auth::user()->emplacement_id,
+                            'facture_id'=>$facture->id,
+                            'chambre_id'=>$reservation->chambre_id,
+                            'sale_day_id'=> $saleDay->id ?? null,
+                            'user_id'=> Auth::id(),
+                            'caissier_id'=> Auth::id(),
+                            'ets_id'=> Auth::user()->ets_id,
+                        ]);
+                    }
                     $reservation->statut = "confirmée";
                     $reservation->save();
                     $factureUrl = "/reservation.facture/{$facture->id}";
@@ -307,7 +316,10 @@ class ReservationController extends Controller
                 'reservation_id' => 'required|exists:reservations,id',
                 'chambre_id' => 'nullable|exists:chambres,id',
                 'date_debut' => 'required|date|after_or_equal:today',
-                'date_fin'   => 'required|date|after:date_debut',
+                'date_fin'   => 'required|date|after_or_equal:date_debut',
+                'type_sejour'=> 'nullable|in:nuit,passage',
+                'prix_negocie' => 'nullable|numeric|min:0',
+                'remove_payment' => 'nullable|boolean',
                 'paiement.amount' => 'nullable|numeric',
                 'paiement.mode'   => 'nullable|in:cash,mobile,cheque,virement,card',
                 'paiement.mode_ref'=> 'nullable|string',
@@ -316,13 +328,18 @@ class ReservationController extends Controller
 
             $reservation = Reservation::with(['facture', 'chambre'])->findOrFail((int) $data['reservation_id']);
 
+            $effectiveType = $data['type_sejour'] ?? $reservation->type_sejour ?? 'nuit';
+            if ($effectiveType === 'passage') {
+                $data['date_fin'] = $data['date_debut'];
+            }
+
             DB::transaction(function () use ($reservation, $data, &$factureUrl) {
 
                 /**
                  * 1. Vérification disponibilité
                  */
                 $query = Reservation::where('id', '!=', $reservation->id)
-                    ->where('statut', 'confirmée')
+                    ->whereIn('statut', array_merge(self::STATUS_CONFIRMED, self::STATUS_OCCUPIED))
                     ->where(function ($q) use ($data) {
                         $q->whereBetween('date_debut', [$data['date_debut'], $data['date_fin']])
                         ->orWhereBetween('date_fin', [$data['date_debut'], $data['date_fin']])
@@ -349,7 +366,7 @@ class ReservationController extends Controller
                     if ($reservation->chambre_id) {
                         $autres = Reservation::where('chambre_id', $reservation->chambre_id)
                             ->where('id', '!=', $reservation->id)
-                            ->where('statut', 'confirmée')
+                            ->whereIn('statut', array_merge(self::STATUS_CONFIRMED, self::STATUS_OCCUPIED))
                             ->exists();
 
                         if (!$autres) {
@@ -361,85 +378,84 @@ class ReservationController extends Controller
                     Chambre::where('id', $data['chambre_id'])->update(['statut' => 'réservée']);
                 }
 
-                /**
-                 * 3. Mise à jour de la réservation
-                 */
+                $pricing = $this->calculTarif(
+                    $reservation->chambre,
+                    $effectiveType,
+                    $data['date_debut'],
+                    $data['date_fin'],
+                    $data['prix_negocie'] ?? null
+                );
+
                 $reservation->update([
                     'chambre_id' => $data['chambre_id'] ?? $reservation->chambre_id,
                     'date_debut' => $data['date_debut'],
                     'date_fin'   => $data['date_fin'],
+                    'type_sejour'=> $effectiveType,
+                    'prix_base'  => $pricing['prix_base'],
+                    'prix_facture' => $pricing['prix_applique'],
+                    'remise_appliquee' => $pricing['remise'],
                 ]);
 
-                /**
-                 * 4. Gestion facture + paiements
-                 */
                 $paiement = $data['paiement'] ?? null;
                 $facture = $reservation->facture;
+                $hasPaymentMode = $paiement && !empty($paiement['mode']);
 
-                // Calcul du montant total
-                $prixJour = (float) $reservation->chambre->prix;
-                $jours = Carbon::parse($reservation->date_debut)
-                            ->diffInDays(Carbon::parse($reservation->date_fin));
-                $jours = max($jours, 1);
-                $total = $prixJour * $jours;
-
-                /**
-                 * 4A. Si un mode de paiement est fourni → créer ou modifier facture
-                 */
-                if ($paiement && isset($paiement['mode'])) {
+                if ($hasPaymentMode) {
                     if ($facture) {
-                        // Mise à jour facture
                         $facture->update([
-                            'total_ht'  => $total,
-                            'total_ttc' => $total,
+                            'total_ht'  => $pricing['prix_applique'],
+                            'total_ttc' => $pricing['prix_applique'],
+                            'remise'    => $pricing['remise'],
+                            'statut'    => ($paiement['amount'] ?? 0) >= $pricing['prix_applique'] ? 'payée' : 'partiel',
                         ]);
 
-                        // supprimer anciens paiements
                         Payments::where('facture_id', $facture->id)->delete();
 
-                        // recréer le paiement
-                        Payments::create([
-                            'amount'       => $total,
-                            'devise'       => $reservation->chambre->prix_devise,
-                            'mode'         => $paiement['mode'],
-                            'mode_ref'     => $paiement['mode_ref'] ?? null,
-                            'pay_date'     => Carbon::now('Africa/Kinshasa'),
-                            'facture_id'   => $facture->id,
-                            'chambre_id'   => $reservation->chambre_id,
-                            'user_id'      => Auth::id(),
-                            'ets_id'       => Auth::user()->ets_id,
-                            'emplacement_id'=> Auth::user()->emplacement_id,
-                        ]);
-                    } 
-                    else {
-                        // création facture + paiement
+                        if (($paiement['amount'] ?? 0) > 0) {
+                            Payments::create([
+                                'amount'       => $paiement['amount'],
+                                'devise'       => $reservation->chambre->prix_devise,
+                                'mode'         => $paiement['mode'],
+                                'mode_ref'     => $paiement['mode_ref'] ?? null,
+                                'pay_date'     => Carbon::now('Africa/Kinshasa'),
+                                'facture_id'   => $facture->id,
+                                'chambre_id'   => $reservation->chambre_id,
+                                'user_id'      => Auth::id(),
+                                'ets_id'       => Auth::user()->ets_id,
+                                'emplacement_id'=> Auth::user()->emplacement_id,
+                            ]);
+                        }
+                    } else {
                         $facture = Facture::create([
                             'numero_facture'  => "FAC-MOD-" . time(),
                             'user_id'         => Auth::id(),
                             'chambre_id'      => $reservation->chambre_id,
                             'reservation_id'  => $reservation->id,
-                            'total_ht'        => $total,
-                            'total_ttc'       => $total,
+                            'total_ht'        => $pricing['prix_applique'],
+                            'total_ttc'       => $pricing['prix_applique'],
+                            'remise'          => $pricing['remise'],
                             'tva'             => 0,
                             'devise'          => $reservation->chambre->prix_devise,
                             'date_facture'    => Carbon::now('Africa/Kinshasa'),
                             'ets_id'          => Auth::user()->ets_id,
                             'emplacement_id'  => Auth::user()->emplacement_id,
-                            'statut'          => 'payée'
+                            'statut'          => ($paiement['amount'] ?? 0) >= $pricing['prix_applique'] ? 'payée' : 'partiel'
                         ]);
 
-                        Payments::create([
-                            'amount'        => $total,
-                            'devise'        => $reservation->chambre->prix_devise,
-                            'mode'          => $paiement['mode'],
-                            'mode_ref'      => $paiement['mode_ref'] ?? null,
-                            'pay_date'      => Carbon::now('Africa/Kinshasa'),
-                            'facture_id'    => $facture->id,
-                            'chambre_id'    => $reservation->chambre_id,
-                            'user_id'       => Auth::id(),
-                            'ets_id'        => Auth::user()->ets_id,
-                            'emplacement_id'=> Auth::user()->emplacement_id,
-                        ]);
+                        if (($paiement['amount'] ?? 0) > 0) {
+                            Payments::create([
+                                'amount'        => $paiement['amount'],
+                                'devise'        => $reservation->chambre->prix_devise,
+                                'mode'          => $paiement['mode'],
+                                'mode_ref'      => $paiement['mode_ref'] ?? null,
+                                'pay_date'      => Carbon::now('Africa/Kinshasa'),
+                                'facture_id'    => $facture->id,
+                                'chambre_id'    => $reservation->chambre_id,
+                                'user_id'       => Auth::id(),
+                                'ets_id'        => Auth::user()->ets_id,
+                                'emplacement_id'=> Auth::user()->emplacement_id,
+                            ]);
+                        }
                     }
                     $factureUrl = "/reservation.facture/{$facture->id}";
                 }
@@ -447,7 +463,7 @@ class ReservationController extends Controller
                 /**
                  * 4B. Aucun mode de paiement → supprimer facture + paiements
                  */
-                if ((!$paiement || empty($paiement['mode'])) && $facture) {
+                if (($data['remove_payment'] ?? false) && $facture) {
                     Payments::where('facture_id', $facture->id)->delete();
                     $facture->delete();
                     $reservation->update([
@@ -510,7 +526,7 @@ class ReservationController extends Controller
             }
 
             // Vérifier disponibilité de la chambre (exclure la réservation courante)
-            $check = Reservation::where('statut', 'confirmée')
+            $check = Reservation::whereIn('statut', array_merge(self::STATUS_CONFIRMED, self::STATUS_OCCUPIED))
                 ->where('chambre_id', $reservation->chambre_id)
                 ->where('id', '!=', $reservation->id)                            // <- important
                 ->where(function($q) use ($startExtend, $newDateFin) {
@@ -534,8 +550,8 @@ class ReservationController extends Controller
             }
 
             // Prix
-            $prixJour = (float) $reservation->chambre->prix;
-            $totalHT = $prixJour * $daysAdded;
+            $prixJour = $reservation->type_sejour === 'passage' ? ($reservation->chambre->prix_passage ?? $reservation->chambre->prix) : ($reservation->chambre->prix_nuit ?? $reservation->chambre->prix);
+            $totalHT = (float)$prixJour * $daysAdded;
 
             $factureUrl = null;
 
@@ -559,6 +575,7 @@ class ReservationController extends Controller
                     $factureExistante->update([
                         'total_ht'  => $newTotal,
                         'total_ttc' => $newTotal,
+                        'statut'    => $factureExistante->statut,
                     ]);
 
                     // → Si mode paiement fourni → ajouter un paiement (ne supprime pas les anciens paiements)
@@ -578,6 +595,10 @@ class ReservationController extends Controller
                             'ets_id' => Auth::user()->ets_id,
                         ]);
                     }
+                    $totalPaye = Payments::where('facture_id', $factureExistante->id)->sum('amount');
+                    $factureExistante->update([
+                        'statut' => $totalPaye >= $factureExistante->total_ttc ? 'payée' : ($hasPaymentMode ? 'partiel' : $factureExistante->statut),
+                    ]);
                 } else {
                     // → Aucune facture n’existe encore → en créer une
                     $facture = Facture::create([
@@ -593,7 +614,7 @@ class ReservationController extends Controller
                         'date_facture' => Carbon::today("Africa/Kinshasa"),
                         'ets_id' => Auth::user()->ets_id,
                         'emplacement_id' => Auth::user()->emplacement_id,
-                        'statut' => $hasPaymentMode ? 'payée' : 'en_attente',
+                        'statut' => $hasPaymentMode ? (($paiement['amount'] ?? 0) >= $totalHT ? 'payée' : 'partiel') : 'en_attente',
                         'reservation_id' => $reservation->id,
                     ]);
                     $factureUrl = "/reservation.facture/{$facture->id}";
@@ -612,6 +633,12 @@ class ReservationController extends Controller
                             'user_id' => Auth::id(),
                             'caissier_id' => Auth::id(),
                             'ets_id' => Auth::user()->ets_id,
+                        ]);
+                    }
+                    if ($facture) {
+                        $totalPaye = Payments::where('facture_id', $facture->id)->sum('amount');
+                        $facture->update([
+                            'statut' => $totalPaye >= $facture->total_ttc ? 'payée' : ($hasPaymentMode ? 'partiel' : $facture->statut),
                         ]);
                     }
                 }
@@ -667,38 +694,37 @@ class ReservationController extends Controller
                 ->latest()
                 ->first();
 
-            // --- Calcul du total ---
-            $prixJ = (float)$reservation->chambre->prix;
-            $nbreJrs = $reservation->date_debut->diffInDays($reservation->date_fin); // Correction
-            $tot_ht = $prixJ * $nbreJrs;
-
-            // --- Vérification du montant ---
+            $pricing = $this->calculTarif(
+                $reservation->chambre,
+                $reservation->type_sejour ?? 'nuit',
+                $reservation->date_debut,
+                $reservation->date_fin,
+                $reservation->prix_facture ?? null
+            );
             $amount = (float)$data["amount"];
 
-            if ($amount < $tot_ht) {
-                throw new Exception("Le montant à payer doit être $tot_ht pour $nbreJrs jours !");
+            $facture = $reservation->facture;
+            if (!$facture) {
+                $facture = Facture::create([
+                    'numero_facture'=> 'FAC-' . time(),
+                    'user_id'=>Auth::id(),
+                    'chambre_id'=> $reservation->chambre_id,
+                    'reservation_id'=> $reservation->id,
+                    'sale_day_id'=> $saleDay->id ?? null,
+                    'total_ht'=>$pricing['prix_applique'],
+                    'remise'=>$pricing['remise'],
+                    'total_ttc'=>$pricing['prix_applique'],
+                    'tva'=> 0,
+                    'devise'=>$reservation->chambre->prix_devise,
+                    'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
+                    'ets_id'=>Auth::user()->ets_id,
+                    'emplacement_id'=>Auth::user()->emplacement_id,
+                    'statut'=>'en_attente',
+                ]);
             }
 
-            // --- Création facture ---
-            $facture = Facture::create([
-                'numero_facture'=> 'FAC-' . time(),
-                'user_id'=>Auth::id(),
-                'chambre_id'=> $reservation->chambre_id,
-                'sale_day_id'=> $saleDay->id ?? null,
-                'total_ht'=>$tot_ht,
-                'remise'=>0,
-                'total_ttc'=>$tot_ht,
-                'tva'=> 0,
-                'devise'=>$reservation->chambre->prix_devise,
-                'date_facture'=>Carbon::today(tz:"Africa/Kinshasa"),
-                'ets_id'=>Auth::user()->ets_id,
-                'emplacement_id'=>Auth::user()->emplacement_id,
-                'statut'=>'payée',
-            ]);
-
-            // --- Paiement ---
             $payment = Payments::create([
-                "amount"=>$tot_ht,
+                "amount"=>$amount,
                 "devise"=>$reservation->chambre->prix_devise,
                 "mode"=>$data["mode"],
                 "mode_ref"=>$data["mode_ref"],
@@ -710,6 +736,11 @@ class ReservationController extends Controller
                 'user_id'=> Auth::id(),
                 'caissier_id'=> Auth::id(),
                 'ets_id'=> Auth::user()->ets_id,
+            ]);
+
+            $totalPaye = Payments::where('facture_id', $facture->id)->sum('amount');
+            $facture->update([
+                'statut' => $totalPaye >= $facture->total_ttc ? 'payée' : 'partiel',
             ]);
 
             $reservation->statut = "confirmée";
@@ -744,7 +775,7 @@ class ReservationController extends Controller
                 // 1. Vérifier si la chambre est occupée par une autre réservation confirmée
                 if ($reservation->chambre_id) {
                     $autresReservations = Reservation::where('chambre_id', $reservation->chambre_id)
-                        ->where('statut', 'confirmée')
+                        ->whereIn('statut', array_merge(self::STATUS_CONFIRMED, self::STATUS_OCCUPIED))
                         ->where('id', '!=', $reservation->id)
                         ->where('date_fin', '>=', now())
                         ->exists();
@@ -780,7 +811,7 @@ class ReservationController extends Controller
         $user = Auth::user();
         $reservations = Reservation::with(["chambre","facture.payments", "client"])
                         ->where("ets_id", $user->ets_id)
-                        ->where("emplacement_id", $user->emplacement_id)
+                        ->when($user->emplacement_id, fn($q)=>$q->where("emplacement_id", $user->emplacement_id))
                         ->orderByDesc("created_at")
                         ->paginate(5);
 
@@ -790,6 +821,21 @@ class ReservationController extends Controller
         ]);
     }
 
+    private function calculTarif(Chambre $chambre, string $typeSejour, $dateDebut, $dateFin, ?float $prixNegocie): array
+    {
+        $jours = Carbon::parse($dateDebut)->diffInDays(Carbon::parse($dateFin));
+        $jours = max(1, $jours);
+        $prixUnitaire = $typeSejour === 'passage' ? ($chambre->prix_passage ?? $chambre->prix) : ($chambre->prix_nuit ?? $chambre->prix);
+        $prixBase = (float)$prixUnitaire * $jours;
+        $prixApplique = $prixNegocie !== null ? $prixNegocie : $prixBase;
+        $prixApplique = max(0, $prixApplique);
+        $remise = max(0, $prixBase - $prixApplique);
 
-
+        return [
+            'prix_base' => $prixBase,
+            'prix_applique' => $prixApplique,
+            'remise' => $remise,
+            'jours' => $jours,
+        ];
+    }
 }
